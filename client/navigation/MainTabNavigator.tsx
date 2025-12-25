@@ -2,7 +2,6 @@ import React from "react";
 import { View, Pressable, StyleSheet, Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
-import { BlurView } from "expo-blur";
 import { Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -33,16 +32,14 @@ function EmptyScreen() {
   return <View />;
 }
 
-function PostButton() {
+export default function MainTabNavigator() {
   const { theme } = useTheme();
   const { t } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
-  const BASE_TAB_HEIGHT = 75;
-  const TAB_BAR_HEIGHT = BASE_TAB_HEIGHT + insets.bottom;
 
-  const handlePress = () => {
+  const handlePostPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     navigation.navigate("PostCar");
   };
@@ -50,152 +47,148 @@ function PostButton() {
   const isSeller = user?.roles?.includes("seller");
 
   return (
-    <View style={[styles.fabContainer, { bottom: TAB_BAR_HEIGHT + Spacing.md }]}>
-      <Pressable
-        onPress={handlePress}
-        style={[styles.fab, { backgroundColor: theme.primary }]}
-      >
-        <Feather name={isSeller ? "plus-circle" : "file-text"} size={22} color="#FFFFFF" />
-        <Text style={styles.fabText}>{isSeller ? t("listYourCar") : t("request")}</Text>
-      </Pressable>
-    </View>
-  );
-}
-
-export default function MainTabNavigator() {
-  const { theme, isDark } = useTheme();
-  const { t } = useLanguage();
-  const insets = useSafeAreaInsets();
-  
-  const BASE_TAB_HEIGHT = 75;
-  const tabBarHeight = BASE_TAB_HEIGHT + insets.bottom;
-
-  return (
     <View style={{ flex: 1 }}>
       <Tab.Navigator
         initialRouteName="HomeTab"
         screenOptions={{
-          tabBarActiveTintColor: theme.primary,
-          tabBarInactiveTintColor: theme.tabIconDefault,
-          tabBarStyle: {
-            backgroundColor: theme.backgroundDefault,
-            borderTopWidth: 1,
-            borderTopColor: theme.border,
-            height: tabBarHeight,
-            paddingTop: 12,
-            paddingBottom: insets.bottom > 0 ? insets.bottom : Spacing.md,
-          },
-          tabBarLabelStyle: {
-            fontSize: 13,
-            fontWeight: "600",
-            marginTop: 4,
-          },
-          tabBarIconStyle: {
-            marginBottom: 0,
-          },
+          tabBarStyle: { display: "none" },
           headerShown: false,
         }}
       >
-        <Tab.Screen
-          name="HomeTab"
-          component={HomeStackNavigator}
-          options={{
-            title: t("home"),
-            tabBarIcon: ({ color, focused }) => (
-              <View style={[styles.tabIconContainer, focused && { backgroundColor: color + "15" }]}>
-                <Feather name="home" size={26} color={color} />
-              </View>
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="SearchTab"
-          component={SearchScreen}
-          options={{
-            title: t("search"),
-            tabBarIcon: ({ color, focused }) => (
-              <View style={[styles.tabIconContainer, focused && { backgroundColor: color + "15" }]}>
-                <Feather name="search" size={26} color={color} />
-              </View>
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="PostTab"
-          component={EmptyScreen}
-          options={{
-            title: "",
-            tabBarIcon: () => null,
-            tabBarButton: () => null,
-          }}
-          listeners={{
-            tabPress: (e) => {
-              e.preventDefault();
-            },
-          }}
-        />
-        <Tab.Screen
-          name="ServicesTab"
-          component={ServicesScreen}
-          options={{
-            title: t("services"),
-            tabBarIcon: ({ color, focused }) => (
-              <View style={[styles.tabIconContainer, focused && { backgroundColor: color + "15" }]}>
-                <Feather name="tool" size={26} color={color} />
-              </View>
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="ProfileTab"
-          component={ProfileStackNavigator}
-          options={{
-            title: t("profile"),
-            tabBarIcon: ({ color, focused }) => (
-              <View style={[styles.tabIconContainer, focused && { backgroundColor: color + "15" }]}>
-                <Feather name="user" size={26} color={color} />
-              </View>
-            ),
-          }}
-        />
+        <Tab.Screen name="HomeTab" component={HomeStackNavigator} />
+        <Tab.Screen name="SearchTab" component={SearchScreen} />
+        <Tab.Screen name="PostTab" component={EmptyScreen} />
+        <Tab.Screen name="ServicesTab" component={ServicesScreen} />
+        <Tab.Screen name="ProfileTab" component={ProfileStackNavigator} />
       </Tab.Navigator>
-      <PostButton />
+
+      <View style={[styles.floatingNavContainer, { bottom: insets.bottom + Spacing.md }]}>
+        <Pressable
+          onPress={handlePostPress}
+          style={[styles.fabButton, { backgroundColor: theme.primary }]}
+        >
+          <Feather name={isSeller ? "plus-circle" : "file-text"} size={20} color="#FFFFFF" />
+          <Text style={styles.fabText}>{isSeller ? t("listYourCar") : t("request")}</Text>
+        </Pressable>
+
+        <View style={[styles.navButtonsRow, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
+          <NavButton
+            icon="home"
+            label={t("home")}
+            tabName="HomeTab"
+            theme={theme}
+          />
+          <NavButton
+            icon="search"
+            label={t("search")}
+            tabName="SearchTab"
+            theme={theme}
+          />
+          <NavButton
+            icon="tool"
+            label={t("services")}
+            tabName="ServicesTab"
+            theme={theme}
+          />
+          <NavButton
+            icon="user"
+            label={t("profile")}
+            tabName="ProfileTab"
+            theme={theme}
+          />
+        </View>
+      </View>
     </View>
   );
 }
 
+interface NavButtonProps {
+  icon: keyof typeof Feather.glyphMap;
+  label: string;
+  tabName: keyof MainTabParamList;
+  theme: any;
+}
+
+function NavButton({ icon, label, tabName, theme }: NavButtonProps) {
+  const navigation = useNavigation<any>();
+  const state = navigation.getState();
+  const currentRoute = state?.routes[state?.index]?.name;
+  const isActive = currentRoute === tabName;
+
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate(tabName);
+  };
+
+  return (
+    <Pressable onPress={handlePress} style={styles.navButton}>
+      <View style={[styles.navIconContainer, isActive && { backgroundColor: theme.primary + "15" }]}>
+        <Feather name={icon} size={24} color={isActive ? theme.primary : theme.tabIconDefault} />
+      </View>
+      <Text style={[styles.navLabel, { color: isActive ? theme.primary : theme.tabIconDefault }]}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
-  fabContainer: {
+  floatingNavContainer: {
     position: "absolute",
-    left: 0,
-    right: 0,
+    left: Spacing.lg,
+    right: Spacing.lg,
     alignItems: "center",
-    zIndex: 100,
+    gap: Spacing.sm,
   },
-  fab: {
+  fabButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
     borderRadius: 30,
     gap: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
     elevation: 8,
   },
   fabText: {
     color: "#FFFFFF",
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "700",
   },
-  tabIconContainer: {
-    width: 50,
-    height: 42,
-    borderRadius: 21,
+  navButtonsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    width: "100%",
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  navButton: {
     alignItems: "center",
     justifyContent: "center",
+    flex: 1,
+  },
+  navIconContainer: {
+    width: 44,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  navLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    marginTop: 4,
   },
 });
