@@ -1,8 +1,8 @@
-# Car Marketplace Mobile App
+# Arabaty - Car Marketplace Mobile App
 
 ## Overview
 
-A multi-role car marketplace mobile application built with React Native and Expo. The app connects car buyers, sellers, and automotive service providers (mechanics, electricians, lawyers, and inspection centers) in a unified marketplace. The application features mobile-first authentication via phone number with OTP verification (demo code: 123456), car listing and browsing capabilities, and a service provider directory.
+A multi-role car marketplace mobile application built with React Native and Expo for the Sudanese market. The app connects car buyers, sellers, and automotive service providers (mechanics, electricians, lawyers, and inspection centers) in a unified marketplace. The application features mobile-first authentication via phone number with OTP verification (demo code: 123456), car listing and browsing capabilities, and a service provider directory. **Arabic is the default language** with English available as an option.
 
 ## Recent Changes (December 2025)
 
@@ -13,6 +13,10 @@ A multi-role car marketplace mobile application built with React Native and Expo
 - Implemented favorites and AsyncStorage persistence
 - Generated app icon and updated splash screen
 - Applied iOS 26 Liquid Glass-inspired design guidelines
+- **Added Arabic as default language with RTL layout support**
+- **Created LanguageContext with full translations for onboarding, login, and profile screens**
+- **Language switcher in Profile screen to toggle between Arabic and English**
+- **3-screen onboarding flow with Arabaty logo and bilingual content**
 
 ## User Preferences
 

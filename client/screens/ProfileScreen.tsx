@@ -10,35 +10,28 @@ import * as Haptics from "expo-haptics";
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
-
-const ROLE_LABELS: Record<string, string> = {
-  buyer: "Buyer",
-  seller: "Seller",
-  mechanic: "Mechanic",
-  electrician: "Electrician",
-  lawyer: "Lawyer",
-  inspection_center: "Inspection Center",
-};
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
   const { theme } = useTheme();
+  const { t, language, setLanguage, isRTL } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
     Alert.alert(
-      "Log Out",
-      "Are you sure you want to log out?",
+      t("logout"),
+      isRTL ? "هل أنت متأكد من تسجيل الخروج؟" : "Are you sure you want to log out?",
       [
-        { text: "Cancel", style: "cancel" },
+        { text: isRTL ? "إلغاء" : "Cancel", style: "cancel" },
         {
-          text: "Log Out",
+          text: t("logout"),
           style: "destructive",
           onPress: async () => {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -49,18 +42,19 @@ export default function ProfileScreen() {
     );
   };
 
+  const handleLanguageToggle = async () => {
+    Haptics.selectionAsync();
+    await setLanguage(language === "ar" ? "en" : "ar");
+  };
+
   const menuItems = [
-    { id: "listings", label: "My Listings", icon: "list" as const, badge: "3" },
-    { id: "favorites", label: "Favorites", icon: "heart" as const },
-    { id: "reviews", label: "My Reviews", icon: "star" as const },
-    { id: "requests", label: "Service Requests", icon: "file-text" as const },
+    { id: "listings", labelKey: "myListings", icon: "list" as const, badge: "3" },
+    { id: "favorites", labelKey: "favorites", icon: "heart" as const },
   ];
 
   const settingsItems = [
-    { id: "notifications", label: "Notifications", icon: "bell" as const },
-    { id: "language", label: "Language", icon: "globe" as const, value: "English" },
-    { id: "privacy", label: "Privacy", icon: "lock" as const },
-    { id: "help", label: "Help & Support", icon: "help-circle" as const },
+    { id: "language", labelKey: "language", icon: "globe" as const, value: language === "ar" ? "العربية" : "English", onPress: handleLanguageToggle },
+    { id: "settings", labelKey: "settings", icon: "settings" as const },
   ];
 
   return (
@@ -80,13 +74,13 @@ export default function ProfileScreen() {
           </ThemedText>
         </View>
         <View style={styles.profileInfo}>
-          <ThemedText type="h3">{user?.name || "User"}</ThemedText>
+          <ThemedText type="h3">{user?.name || (isRTL ? "مستخدم" : "User")}</ThemedText>
           <ThemedText type="small" style={{ color: theme.textSecondary }}>
-            {user?.phoneNumber || "+966 5XX XXX XXXX"}
+            {user?.phoneNumber || "+249 9XX XXX XXXX"}
           </ThemedText>
           <View style={[styles.roleBadge, { backgroundColor: theme.primary + "20" }]}>
             <ThemedText type="small" style={{ color: theme.primary }}>
-              {ROLE_LABELS[user?.role || "buyer"]}
+              {t(user?.role === "inspection_center" ? "inspectionCenter" : (user?.role || "buyer"))}
             </ThemedText>
           </View>
         </View>
@@ -99,8 +93,8 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <ThemedText type="small" style={[styles.sectionTitle, { color: theme.textSecondary }]}>
-          Activity
+        <ThemedText type="small" style={[styles.sectionTitle, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+          {isRTL ? "النشاط" : "Activity"}
         </ThemedText>
         <View style={[styles.menuCard, { backgroundColor: theme.backgroundDefault }]}>
           {menuItems.map((item, index) => (
@@ -112,19 +106,19 @@ export default function ProfileScreen() {
               ]}
               onPress={() => Haptics.selectionAsync()}
             >
-              <View style={styles.menuItemLeft}>
+              <View style={[styles.menuItemLeft, isRTL && styles.menuItemLeftRTL]}>
                 <View style={[styles.iconContainer, { backgroundColor: theme.backgroundSecondary }]}>
                   <Feather name={item.icon} size={18} color={theme.primary} />
                 </View>
-                <ThemedText>{item.label}</ThemedText>
+                <ThemedText style={isRTL ? styles.rtlText : undefined}>{t(item.labelKey)}</ThemedText>
               </View>
-              <View style={styles.menuItemRight}>
+              <View style={[styles.menuItemRight, isRTL && styles.menuItemRightRTL]}>
                 {item.badge ? (
                   <View style={[styles.badge, { backgroundColor: theme.primary }]}>
                     <ThemedText type="small" style={{ color: "#FFFFFF" }}>{item.badge}</ThemedText>
                   </View>
                 ) : null}
-                <Feather name="chevron-right" size={20} color={theme.textSecondary} />
+                <Feather name={isRTL ? "chevron-left" : "chevron-right"} size={20} color={theme.textSecondary} />
               </View>
             </Pressable>
           ))}
@@ -132,8 +126,8 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <ThemedText type="small" style={[styles.sectionTitle, { color: theme.textSecondary }]}>
-          Settings
+        <ThemedText type="small" style={[styles.sectionTitle, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+          {t("settings")}
         </ThemedText>
         <View style={[styles.menuCard, { backgroundColor: theme.backgroundDefault }]}>
           {settingsItems.map((item, index) => (
@@ -143,19 +137,19 @@ export default function ProfileScreen() {
                 styles.menuItem,
                 index < settingsItems.length - 1 && { borderBottomWidth: 1, borderBottomColor: theme.border },
               ]}
-              onPress={() => Haptics.selectionAsync()}
+              onPress={item.onPress || (() => Haptics.selectionAsync())}
             >
-              <View style={styles.menuItemLeft}>
+              <View style={[styles.menuItemLeft, isRTL && styles.menuItemLeftRTL]}>
                 <View style={[styles.iconContainer, { backgroundColor: theme.backgroundSecondary }]}>
                   <Feather name={item.icon} size={18} color={theme.primary} />
                 </View>
-                <ThemedText>{item.label}</ThemedText>
+                <ThemedText style={isRTL ? styles.rtlText : undefined}>{t(item.labelKey)}</ThemedText>
               </View>
-              <View style={styles.menuItemRight}>
+              <View style={[styles.menuItemRight, isRTL && styles.menuItemRightRTL]}>
                 {item.value ? (
                   <ThemedText type="small" style={{ color: theme.textSecondary }}>{item.value}</ThemedText>
                 ) : null}
-                <Feather name="chevron-right" size={20} color={theme.textSecondary} />
+                <Feather name={isRTL ? "chevron-left" : "chevron-right"} size={20} color={theme.textSecondary} />
               </View>
             </Pressable>
           ))}
@@ -167,11 +161,11 @@ export default function ProfileScreen() {
         onPress={handleLogout}
       >
         <Feather name="log-out" size={20} color={theme.error} />
-        <ThemedText style={{ color: theme.error, marginLeft: Spacing.sm }}>Log Out</ThemedText>
+        <ThemedText style={{ color: theme.error, marginLeft: Spacing.sm }}>{t("logout")}</ThemedText>
       </Pressable>
 
       <ThemedText type="small" style={[styles.version, { color: theme.textSecondary }]}>
-        Version 1.0.0
+        {isRTL ? "الإصدار 1.0.0" : "Version 1.0.0"}
       </ThemedText>
     </ScrollView>
   );
@@ -186,6 +180,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: Spacing.lg,
     borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.xl,
   },
   avatar: {
     width: 64,
@@ -196,13 +191,13 @@ const styles = StyleSheet.create({
   },
   profileInfo: {
     flex: 1,
-    marginLeft: Spacing.lg,
+    marginLeft: Spacing.md,
   },
   roleBadge: {
     alignSelf: "flex-start",
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.xs,
+    borderRadius: BorderRadius.sm,
     marginTop: Spacing.xs,
   },
   editButton: {
@@ -213,13 +208,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   section: {
-    marginTop: Spacing.xl,
+    marginBottom: Spacing.xl,
   },
   sectionTitle: {
     marginBottom: Spacing.sm,
     marginLeft: Spacing.sm,
-    textTransform: "uppercase",
-    letterSpacing: 1,
   },
   menuCard: {
     borderRadius: BorderRadius.lg,
@@ -229,11 +222,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: Spacing.lg,
+    padding: Spacing.md,
   },
   menuItemLeft: {
     flexDirection: "row",
     alignItems: "center",
+    gap: Spacing.md,
+  },
+  menuItemLeftRTL: {
+    flexDirection: "row-reverse",
+  },
+  menuItemRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  menuItemRightRTL: {
+    flexDirection: "row-reverse",
   },
   iconContainer: {
     width: 36,
@@ -241,28 +246,27 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: Spacing.md,
-  },
-  menuItemRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.sm,
   },
   badge: {
     paddingHorizontal: Spacing.sm,
     paddingVertical: 2,
     borderRadius: 10,
+    minWidth: 20,
+    alignItems: "center",
   },
   logoutButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    padding: Spacing.lg,
+    padding: Spacing.md,
     borderRadius: BorderRadius.lg,
-    marginTop: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   version: {
     textAlign: "center",
-    marginTop: Spacing.xl,
+    marginBottom: Spacing.lg,
+  },
+  rtlText: {
+    writingDirection: "rtl",
   },
 });

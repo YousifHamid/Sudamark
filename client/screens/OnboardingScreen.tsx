@@ -10,6 +10,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -17,36 +18,28 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 interface OnboardingSlide {
   id: string;
   icon: keyof typeof Feather.glyphMap;
-  title: string;
-  titleAr: string;
-  description: string;
-  descriptionAr: string;
+  titleKey: string;
+  descKey: string;
 }
 
 const SLIDES: OnboardingSlide[] = [
   {
     id: "1",
     icon: "search",
-    title: "Find Your Perfect Car",
-    titleAr: "اعثر على سيارتك المثالية",
-    description: "Browse thousands of cars from trusted sellers across Sudan and the region",
-    descriptionAr: "تصفح آلاف السيارات من بائعين موثوقين في السودان والمنطقة",
+    titleKey: "slide1Title",
+    descKey: "slide1Desc",
   },
   {
     id: "2",
     icon: "shield",
-    title: "Verified Services",
-    titleAr: "خدمات موثوقة",
-    description: "Connect with mechanics, electricians, lawyers and inspection centers",
-    descriptionAr: "تواصل مع الميكانيكيين والكهربائيين والمحامين ومراكز الفحص",
+    titleKey: "slide2Title",
+    descKey: "slide2Desc",
   },
   {
     id: "3",
     icon: "check-circle",
-    title: "Buy & Sell with Confidence",
-    titleAr: "اشترِ وبِع بثقة",
-    description: "Safe transactions and trusted community for all your automotive needs",
-    descriptionAr: "معاملات آمنة ومجتمع موثوق لجميع احتياجاتك السيارات",
+    titleKey: "slide3Title",
+    descKey: "slide3Desc",
   },
 ];
 
@@ -57,6 +50,7 @@ interface OnboardingScreenProps {
 export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const { t, isRTL } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const progress = useSharedValue(0);
@@ -89,15 +83,11 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
       <View style={[styles.iconCircle, { backgroundColor: theme.primary + "15" }]}>
         <Feather name={item.icon} size={48} color={theme.primary} />
       </View>
-      <ThemedText type="h2" style={styles.slideTitle}>{item.title}</ThemedText>
-      <ThemedText type="h4" style={[styles.slideTitleAr, { color: theme.primary }]}>
-        {item.titleAr}
+      <ThemedText type="h2" style={[styles.slideTitle, isRTL && styles.rtlText]}>
+        {t(item.titleKey)}
       </ThemedText>
-      <ThemedText style={[styles.slideDescription, { color: theme.textSecondary }]}>
-        {item.description}
-      </ThemedText>
-      <ThemedText style={[styles.slideDescriptionAr, { color: theme.textSecondary }]}>
-        {item.descriptionAr}
+      <ThemedText style={[styles.slideDescription, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+        {t(item.descKey)}
       </ThemedText>
     </View>
   );
@@ -106,7 +96,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     <ThemedView style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.lg }]}>
         <Pressable onPress={handleSkip} style={styles.skipButton}>
-          <ThemedText type="link">Skip</ThemedText>
+          <ThemedText type="link">{t("skip")}</ThemedText>
         </Pressable>
       </View>
 
@@ -146,7 +136,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         </View>
 
         <Button onPress={handleNext} style={styles.nextButton}>
-          {currentIndex === SLIDES.length - 1 ? "Get Started" : "Next"}
+          {currentIndex === SLIDES.length - 1 ? t("getStarted") : t("next")}
         </Button>
       </View>
     </ThemedView>
@@ -192,18 +182,13 @@ const styles = StyleSheet.create({
   },
   slideTitle: {
     textAlign: "center",
-    marginBottom: Spacing.sm,
-  },
-  slideTitleAr: {
-    textAlign: "center",
     marginBottom: Spacing.lg,
   },
   slideDescription: {
     textAlign: "center",
     marginBottom: Spacing.sm,
   },
-  slideDescriptionAr: {
-    textAlign: "center",
+  rtlText: {
     writingDirection: "rtl",
   },
   footer: {

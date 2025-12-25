@@ -10,6 +10,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { Button } from "@/components/Button";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { useTheme } from "@/hooks/useTheme";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -39,6 +40,7 @@ const SUPPORTED_COUNTRIES: Country[] = [
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const { t, isRTL } = useLanguage();
   const { login, verifyOtp, setUserRole } = useAuth();
 
   const [step, setStep] = useState<LoginStep>("phone");
@@ -52,18 +54,18 @@ export default function LoginScreen() {
   const [showCountryPicker, setShowCountryPicker] = useState(false);
 
   const roles = [
-    { id: "buyer", label: "Buyer", icon: "shopping-cart" as const },
-    { id: "seller", label: "Seller", icon: "tag" as const },
-    { id: "mechanic", label: "Mechanic", icon: "tool" as const },
-    { id: "electrician", label: "Electrician", icon: "zap" as const },
-    { id: "lawyer", label: "Lawyer", icon: "briefcase" as const },
-    { id: "inspection_center", label: "Inspection Center", icon: "clipboard" as const },
+    { id: "buyer", labelKey: "buyer", icon: "shopping-cart" as const },
+    { id: "seller", labelKey: "seller", icon: "tag" as const },
+    { id: "mechanic", labelKey: "mechanic", icon: "tool" as const },
+    { id: "electrician", labelKey: "electrician", icon: "zap" as const },
+    { id: "lawyer", labelKey: "lawyer", icon: "briefcase" as const },
+    { id: "inspection_center", labelKey: "inspectionCenter", icon: "clipboard" as const },
   ];
 
   const handleSendOtp = async () => {
     const cleanNumber = phoneNumber.replace(/\s/g, "");
     if (cleanNumber.length < selectedCountry.minLength || cleanNumber.length > selectedCountry.maxLength) {
-      setError(`Please enter a valid ${selectedCountry.name} phone number (${selectedCountry.minLength} digits)`);
+      setError(t("invalidPhoneNumber"));
       return;
     }
     setError("");
@@ -84,7 +86,7 @@ export default function LoginScreen() {
 
   const handleVerifyOtp = async () => {
     if (otp.length !== 6) {
-      setError("Please enter the 6-digit code");
+      setError(t("enter6DigitCode"));
       return;
     }
     setError("");
@@ -95,18 +97,18 @@ export default function LoginScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setStep("role");
     } else {
-      setError("Invalid code. Try 123456");
+      setError(t("invalidCode"));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   };
 
   const handleCompleteSignup = async () => {
     if (!name.trim()) {
-      setError("Please enter your name");
+      setError(t("enterName"));
       return;
     }
     if (!selectedRole) {
-      setError("Please select a role");
+      setError(t("selectRole"));
       return;
     }
     setError("");
@@ -130,10 +132,10 @@ export default function LoginScreen() {
             style={styles.logo}
             contentFit="contain"
           />
-          <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }]}>
-            {step === "phone" && "Enter your phone number to get started"}
-            {step === "otp" && "Enter the verification code"}
-            {step === "role" && "Complete your profile"}
+          <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+            {step === "phone" && t("enterPhoneToStart")}
+            {step === "otp" && t("enterVerificationCode")}
+            {step === "role" && t("completeProfile")}
           </ThemedText>
         </View>
 
@@ -145,8 +147,8 @@ export default function LoginScreen() {
 
         {step === "phone" ? (
           <View style={styles.form}>
-            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
-              Phone Number
+            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+              {t("phoneNumber")}
             </ThemedText>
             <View style={[styles.inputContainer, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}>
               <Pressable
@@ -159,7 +161,7 @@ export default function LoginScreen() {
               </Pressable>
               <View style={[styles.inputDivider, { backgroundColor: theme.border }]} />
               <TextInput
-                style={[styles.input, { color: theme.text }]}
+                style={[styles.input, { color: theme.text, textAlign: isRTL ? "right" : "left" }]}
                 placeholder={selectedCountry.placeholder}
                 placeholderTextColor={theme.textSecondary}
                 value={phoneNumber}
@@ -170,7 +172,7 @@ export default function LoginScreen() {
               />
             </View>
             <Button onPress={handleSendOtp} disabled={isLoading} style={styles.button}>
-              {isLoading ? "Sending..." : "Send Verification Code"}
+              {isLoading ? t("sending") : t("sendVerificationCode")}
             </Button>
           </View>
         ) : null}
@@ -184,7 +186,7 @@ export default function LoginScreen() {
           <View style={styles.modalOverlay}>
             <View style={[styles.modalContent, { backgroundColor: theme.backgroundDefault }]}>
               <View style={styles.modalHeader}>
-                <ThemedText type="h4">Select Country</ThemedText>
+                <ThemedText type="h4">{t("selectCountry")}</ThemedText>
                 <Pressable onPress={() => setShowCountryPicker(false)}>
                   <Feather name="x" size={24} color={theme.text} />
                 </Pressable>
@@ -218,8 +220,8 @@ export default function LoginScreen() {
 
         {step === "otp" ? (
           <View style={styles.form}>
-            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
-              Verification Code
+            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+              {t("verificationCode")}
             </ThemedText>
             <TextInput
               style={[styles.otpInput, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }]}
@@ -231,33 +233,33 @@ export default function LoginScreen() {
               maxLength={6}
               autoFocus
             />
-            <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }]}>
-              Demo: Use code 123456
+            <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+              {t("demoCode")}
             </ThemedText>
             <Button onPress={handleVerifyOtp} disabled={isLoading} style={styles.button}>
-              {isLoading ? "Verifying..." : "Verify Code"}
+              {isLoading ? t("verifying") : t("verifyCode")}
             </Button>
             <Pressable onPress={() => setStep("phone")} style={styles.backLink}>
-              <ThemedText type="link">Change phone number</ThemedText>
+              <ThemedText type="link">{t("changePhoneNumber")}</ThemedText>
             </Pressable>
           </View>
         ) : null}
 
         {step === "role" ? (
           <View style={styles.form}>
-            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
-              Your Name
+            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+              {t("yourName")}
             </ThemedText>
             <TextInput
-              style={[styles.nameInput, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }]}
-              placeholder="Enter your name"
+              style={[styles.nameInput, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border, textAlign: isRTL ? "right" : "left" }]}
+              placeholder={t("enterYourName")}
               placeholderTextColor={theme.textSecondary}
               value={name}
               onChangeText={setName}
               autoFocus
             />
-            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary, marginTop: Spacing.xl }]}>
-              Select Your Role
+            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary, marginTop: Spacing.xl }, isRTL && styles.rtlText]}>
+              {t("selectYourRole")}
             </ThemedText>
             <View style={styles.rolesGrid}>
               {roles.map((role) => (
@@ -285,13 +287,13 @@ export default function LoginScreen() {
                       selectedRole === role.id && { color: theme.primary },
                     ]}
                   >
-                    {role.label}
+                    {t(role.labelKey)}
                   </ThemedText>
                 </Pressable>
               ))}
             </View>
             <Button onPress={handleCompleteSignup} disabled={isLoading} style={styles.button}>
-              {isLoading ? "Creating Account..." : "Get Started"}
+              {isLoading ? t("creatingAccount") : t("getStarted")}
             </Button>
           </View>
         ) : null}
@@ -444,5 +446,8 @@ const styles = StyleSheet.create({
   backLink: {
     alignItems: "center",
     marginTop: Spacing.lg,
+  },
+  rtlText: {
+    writingDirection: "rtl",
   },
 });
