@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { View, StyleSheet, ScrollView, Pressable, Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -7,7 +7,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withDelay, Easing } from "react-native-reanimated";
+import { Image } from "expo-image";
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -60,55 +60,6 @@ const SLIDER_IMAGES = [
   { id: "5", imageUrl: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80" },
 ];
 
-const PARTNERS = [
-  { id: "1", nameKey: "partner1", icon: "truck" as const },
-  { id: "2", nameKey: "partner2", icon: "compass" as const },
-  { id: "3", nameKey: "partner3", icon: "star" as const },
-  { id: "4", nameKey: "partner4", icon: "award" as const },
-  { id: "5", nameKey: "partner5", icon: "shield" as const },
-];
-
-const ORANGE_COLORS = ["#F97316", "#FB923C", "#EA580C", "#FDBA74", "#F59E0B"];
-
-function AnimatedPartnerItem({ partner, index, t, isRTL }: { partner: typeof PARTNERS[0], index: number, t: any, isRTL: boolean }) {
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(0.8);
-  
-  useEffect(() => {
-    scale.value = withDelay(
-      index * 200,
-      withRepeat(
-        withTiming(1.05, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
-        -1,
-        true
-      )
-    );
-    opacity.value = withDelay(
-      index * 200,
-      withRepeat(
-        withTiming(1, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
-        -1,
-        true
-      )
-    );
-  }, []);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
-  }));
-
-  return (
-    <Animated.View style={[styles.partnerItem, animatedStyle]}>
-      <View style={[styles.partnerIcon, { backgroundColor: ORANGE_COLORS[index % ORANGE_COLORS.length] }]}>
-        <Feather name={partner.icon} size={22} color="#FFFFFF" />
-      </View>
-      <ThemedText style={[styles.partnerName, isRTL && styles.rtlText]} numberOfLines={1}>
-        {t(partner.nameKey)}
-      </ThemedText>
-    </Animated.View>
-  );
-}
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -160,25 +111,29 @@ export default function HomeScreen() {
         </View>
       </Pressable>
 
-      <View style={styles.partnersSection}>
-        <ThemedText type="h4" style={[styles.partnersTitle, isRTL && styles.rtlText]}>
-          {t("successPartners")}
-        </ThemedText>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.partnersContainer}
+      <View style={styles.sponsorSection}>
+        <LinearGradient
+          colors={["#F97316", "#FB923C"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.sponsorCard}
         >
-          {PARTNERS.map((partner, index) => (
-            <AnimatedPartnerItem
-              key={partner.id}
-              partner={partner}
-              index={index}
-              t={t}
-              isRTL={isRTL}
-            />
-          ))}
-        </ScrollView>
+          <View style={[styles.sponsorContent, isRTL && styles.sponsorContentRTL]}>
+            <View style={styles.sponsorLogoContainer}>
+              <View style={styles.sponsorLogo}>
+                <Feather name="award" size={32} color="#F97316" />
+              </View>
+            </View>
+            <View style={styles.sponsorTextContainer}>
+              <ThemedText style={[styles.sponsorLabel, isRTL && styles.rtlText]}>
+                {t("officialSponsor")}
+              </ThemedText>
+              <ThemedText type="h3" style={[styles.sponsorName, isRTL && styles.rtlText]}>
+                {t("sponsorName")}
+              </ThemedText>
+            </View>
+          </View>
+        </LinearGradient>
       </View>
 
       <ScrollView
@@ -412,37 +367,50 @@ const styles = StyleSheet.create({
   rtlText: {
     writingDirection: "rtl",
   },
-  partnersSection: {
-    marginBottom: Spacing.md,
+  sponsorSection: {
+    marginBottom: Spacing.lg,
     paddingHorizontal: Spacing.lg,
   },
-  partnersTitle: {
-    marginBottom: Spacing.md,
-  },
-  partnersContainer: {
-    gap: Spacing.md,
-    paddingRight: Spacing.lg,
-  },
-  partnerItem: {
-    alignItems: "center",
-    width: 80,
-  },
-  partnerIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: Spacing.xs,
+  sponsorCard: {
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
     shadowColor: "#F97316",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
     elevation: 6,
   },
-  partnerName: {
-    fontSize: 11,
-    textAlign: "center",
-    fontWeight: "500",
+  sponsorContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.lg,
+  },
+  sponsorContentRTL: {
+    flexDirection: "row-reverse",
+  },
+  sponsorLogoContainer: {
+    padding: 4,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: "rgba(255,255,255,0.2)",
+  },
+  sponsorLogo: {
+    width: 64,
+    height: 64,
+    borderRadius: BorderRadius.md,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sponsorTextContainer: {
+    flex: 1,
+  },
+  sponsorLabel: {
+    color: "rgba(255,255,255,0.9)",
+    fontSize: 13,
+    marginBottom: Spacing.xs,
+  },
+  sponsorName: {
+    color: "#FFFFFF",
+    fontWeight: "700",
   },
 });
