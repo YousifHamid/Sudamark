@@ -47,7 +47,7 @@ export default function LoginScreen() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");
   const [name, setName] = useState("");
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<Array<"buyer" | "seller" | "mechanic" | "electrician" | "lawyer" | "inspectionCenter">>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<Country>(SUPPORTED_COUNTRIES[0]);
@@ -113,7 +113,7 @@ export default function LoginScreen() {
     }
     setError("");
     setIsLoading(true);
-    await setUserRoles(selectedRoles as any, name);
+    await setUserRoles(selectedRoles, name);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setIsLoading(false);
   };
