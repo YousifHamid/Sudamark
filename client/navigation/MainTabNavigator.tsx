@@ -39,7 +39,7 @@ function PostButton() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
-  const TAB_BAR_HEIGHT = 65;
+  const TAB_BAR_HEIGHT = 80;
 
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -49,13 +49,13 @@ function PostButton() {
   const isSeller = user?.roles?.includes("seller");
 
   return (
-    <View style={[styles.fabContainer, { bottom: TAB_BAR_HEIGHT + insets.bottom + Spacing["5xl"] }]}>
+    <View style={[styles.fabContainer, { bottom: TAB_BAR_HEIGHT + insets.bottom + Spacing["4xl"] }]}>
       <Pressable
         onPress={handlePress}
         style={[styles.fab, { backgroundColor: theme.primary }]}
       >
-        <Feather name={isSeller ? "plus" : "file-text"} size={26} color="#FFFFFF" />
-        <Text style={styles.fabText}>{isSeller ? t("sell") : t("request")}</Text>
+        <Feather name={isSeller ? "plus-circle" : "file-text"} size={24} color="#FFFFFF" />
+        <Text style={styles.fabText}>{isSeller ? t("listYourCar") : t("request")}</Text>
       </Pressable>
     </View>
   );
@@ -80,9 +80,9 @@ export default function MainTabNavigator() {
             }),
             borderTopWidth: 1,
             borderTopColor: theme.border,
-            height: 65,
-            paddingTop: 8,
-            paddingBottom: Platform.OS === "ios" ? 0 : 8,
+            height: 80,
+            paddingTop: 12,
+            paddingBottom: Platform.OS === "ios" ? 0 : 20,
           },
           tabBarLabelStyle: {
             fontSize: 11,
