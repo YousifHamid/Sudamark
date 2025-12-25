@@ -65,10 +65,10 @@ export default function MainTabNavigator() {
       <View style={[styles.floatingNavContainer, { bottom: insets.bottom + Spacing.md }]}>
         <Pressable
           onPress={handlePostPress}
-          style={[styles.fabButton, { backgroundColor: theme.primary }]}
+          style={[styles.fabButton, { backgroundColor: "#F97316" }]}
         >
-          <Feather name={isSeller ? "plus-circle" : "file-text"} size={20} color="#FFFFFF" />
-          <Text style={styles.fabText}>{isSeller ? t("listYourCar") : t("request")}</Text>
+          <Feather name="plus-circle" size={22} color="#FFFFFF" />
+          <Text style={styles.fabText}>{t("listYourCar")}</Text>
         </Pressable>
 
         <View style={[styles.navButtonsRow, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
