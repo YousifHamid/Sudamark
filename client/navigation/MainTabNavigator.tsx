@@ -46,7 +46,7 @@ function PostButton() {
     navigation.navigate("PostCar");
   };
 
-  const isSeller = user?.role === "seller";
+  const isSeller = user?.roles?.includes("seller");
 
   return (
     <View style={[styles.fabContainer, { bottom: TAB_BAR_HEIGHT + insets.bottom }]}>

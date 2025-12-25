@@ -52,7 +52,7 @@ export const translations: Translations = {
   changePhoneNumber: { ar: "تغيير رقم الهاتف", en: "Change phone number" },
   yourName: { ar: "اسمك", en: "Your Name" },
   enterYourName: { ar: "أدخل اسمك", en: "Enter your name" },
-  selectYourRole: { ar: "اختر دورك", en: "Select Your Role" },
+  selectYourRole: { ar: "اختر أدوارك (يمكنك اختيار أكثر من واحد)", en: "Select Your Roles (you can choose multiple)" },
   creatingAccount: { ar: "جاري إنشاء الحساب...", en: "Creating Account..." },
   selectCountry: { ar: "اختر البلد", en: "Select Country" },
   

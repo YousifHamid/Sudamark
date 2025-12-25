@@ -41,13 +41,13 @@ export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
-  const { login, verifyOtp, setUserRole } = useAuth();
+  const { login, verifyOtp, setUserRoles } = useAuth();
 
   const [step, setStep] = useState<LoginStep>("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");
   const [name, setName] = useState("");
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<Country>(SUPPORTED_COUNTRIES[0]);
@@ -107,15 +107,25 @@ export default function LoginScreen() {
       setError(t("enterName"));
       return;
     }
-    if (!selectedRole) {
+    if (selectedRoles.length === 0) {
       setError(t("selectRole"));
       return;
     }
     setError("");
     setIsLoading(true);
-    await setUserRole(selectedRole as any, name);
+    await setUserRoles(selectedRoles as any, name);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setIsLoading(false);
+  };
+
+  const toggleRole = (roleId: string) => {
+    setSelectedRoles((prev) => {
+      if (prev.includes(roleId)) {
+        return prev.filter((id) => id !== roleId);
+      }
+      return [...prev, roleId];
+    });
+    Haptics.selectionAsync();
   };
 
   return (
@@ -262,35 +272,42 @@ export default function LoginScreen() {
               {t("selectYourRole")}
             </ThemedText>
             <View style={styles.rolesGrid}>
-              {roles.map((role) => (
-                <Pressable
-                  key={role.id}
-                  onPress={() => {
-                    setSelectedRole(role.id);
-                    Haptics.selectionAsync();
-                  }}
-                  style={[
-                    styles.roleCard,
-                    { backgroundColor: theme.backgroundSecondary, borderColor: theme.border },
-                    selectedRole === role.id && { borderColor: theme.primary, backgroundColor: theme.primary + "15" },
-                  ]}
-                >
-                  <Feather
-                    name={role.icon}
-                    size={24}
-                    color={selectedRole === role.id ? theme.primary : theme.textSecondary}
-                  />
-                  <ThemedText
-                    type="small"
+              {roles.map((role) => {
+                const isSelected = selectedRoles.includes(role.id);
+                return (
+                  <Pressable
+                    key={role.id}
+                    onPress={() => toggleRole(role.id)}
                     style={[
-                      styles.roleLabel,
-                      selectedRole === role.id && { color: theme.primary },
+                      styles.roleCard,
+                      { backgroundColor: theme.backgroundSecondary, borderColor: theme.border },
+                      isSelected && { borderColor: theme.primary, backgroundColor: theme.primary + "15" },
                     ]}
                   >
-                    {t(role.labelKey)}
-                  </ThemedText>
-                </Pressable>
-              ))}
+                    <View style={[styles.roleIconCircle, isSelected && { backgroundColor: theme.primary }]}>
+                      <Feather
+                        name={role.icon}
+                        size={20}
+                        color={isSelected ? "#FFFFFF" : theme.primary}
+                      />
+                    </View>
+                    <ThemedText
+                      type="small"
+                      style={[
+                        styles.roleLabel,
+                        isSelected && { color: theme.primary },
+                      ]}
+                    >
+                      {t(role.labelKey)}
+                    </ThemedText>
+                    {isSelected ? (
+                      <View style={[styles.checkMark, { backgroundColor: "#FF6B35" }]}>
+                        <Feather name="check" size={12} color="#FFFFFF" />
+                      </View>
+                    ) : null}
+                  </Pressable>
+                );
+              })}
             </View>
             <Button onPress={handleCompleteSignup} disabled={isLoading} style={styles.button}>
               {isLoading ? t("creatingAccount") : t("getStarted")}
@@ -435,10 +452,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: BorderRadius.md,
     borderWidth: 2,
+    position: "relative",
+  },
+  roleIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(138, 92, 226, 0.15)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   roleLabel: {
     marginTop: Spacing.sm,
     textAlign: "center",
+  },
+  checkMark: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
   },
   button: {
     marginTop: Spacing.lg,

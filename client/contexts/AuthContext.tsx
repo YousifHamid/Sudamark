@@ -7,7 +7,7 @@ export interface User {
   id: string;
   phoneNumber: string;
   name: string;
-  role: UserRole;
+  roles: UserRole[];
   avatar?: string;
 }
 
@@ -18,7 +18,7 @@ interface AuthContextType {
   hasSeenOnboarding: boolean;
   login: (phoneNumber: string) => Promise<void>;
   verifyOtp: (otp: string) => Promise<boolean>;
-  setUserRole: (role: UserRole, name: string) => Promise<void>;
+  setUserRoles: (roles: UserRole[], name: string) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<User>) => Promise<void>;
   completeOnboarding: () => Promise<void>;
@@ -75,14 +75,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
-  const setUserRole = async (role: UserRole, name: string) => {
+  const setUserRoles = async (roles: UserRole[], name: string) => {
     if (!pendingPhoneNumber) return;
 
     const newUser: User = {
       id: Date.now().toString(),
       phoneNumber: pendingPhoneNumber,
       name,
-      role,
+      roles,
     };
 
     await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(newUser));
@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hasSeenOnboarding,
         login,
         verifyOtp,
-        setUserRole,
+        setUserRoles,
         logout,
         updateProfile,
         completeOnboarding,
