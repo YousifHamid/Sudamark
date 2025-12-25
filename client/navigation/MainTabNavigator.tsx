@@ -39,7 +39,7 @@ function PostButton() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
-  const TAB_BAR_HEIGHT = 80;
+  const TAB_BAR_HEIGHT = 95;
 
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -80,17 +80,18 @@ export default function MainTabNavigator() {
             }),
             borderTopWidth: 1,
             borderTopColor: theme.border,
-            height: 80,
-            paddingTop: 12,
-            paddingBottom: Platform.OS === "ios" ? 0 : 20,
+            height: 95,
+            paddingTop: 14,
+            paddingBottom: Platform.OS === "ios" ? 10 : 30,
+            marginBottom: Platform.OS === "android" ? 10 : 0,
           },
           tabBarLabelStyle: {
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: "600",
-            marginTop: 4,
+            marginTop: 6,
           },
           tabBarIconStyle: {
-            marginBottom: -2,
+            marginBottom: 0,
           },
           tabBarBackground: () =>
             Platform.OS === "ios" ? (
@@ -199,9 +200,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   tabIconContainer: {
-    width: 40,
-    height: 32,
-    borderRadius: 16,
+    width: 48,
+    height: 40,
+    borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
   },
