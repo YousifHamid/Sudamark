@@ -2,9 +2,7 @@ import React from "react";
 import { View, Pressable, StyleSheet, Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
-import { Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -13,10 +11,8 @@ import ProfileStackNavigator from "@/navigation/ProfileStackNavigator";
 import SearchScreen from "@/screens/SearchScreen";
 import ServicesScreen from "@/screens/ServicesScreen";
 import { useTheme } from "@/hooks/useTheme";
-import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
-import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 export type MainTabParamList = {
   HomeTab: undefined;
@@ -35,16 +31,7 @@ function EmptyScreen() {
 export default function MainTabNavigator() {
   const { theme } = useTheme();
   const { t } = useLanguage();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { user } = useAuth();
   const insets = useSafeAreaInsets();
-
-  const handlePostPress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    navigation.navigate("PostCar");
-  };
-
-  const isSeller = user?.roles?.includes("seller");
 
   return (
     <View style={{ flex: 1 }}>
@@ -63,14 +50,6 @@ export default function MainTabNavigator() {
       </Tab.Navigator>
 
       <View style={[styles.floatingNavContainer, { bottom: insets.bottom + Spacing.md }]}>
-        <Pressable
-          onPress={handlePostPress}
-          style={[styles.fabButton, { backgroundColor: "#F97316" }]}
-        >
-          <Feather name="plus-circle" size={22} color="#FFFFFF" />
-          <Text style={styles.fabText}>{t("listYourCar")}</Text>
-        </Pressable>
-
         <View style={[styles.navButtonsRow, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
           <NavButton
             icon="home"
@@ -139,25 +118,6 @@ const styles = StyleSheet.create({
     right: Spacing.lg,
     alignItems: "center",
     gap: Spacing.sm,
-  },
-  fabButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 28,
-    paddingVertical: 14,
-    borderRadius: 30,
-    gap: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  fabText: {
-    color: "#FFFFFF",
-    fontSize: 17,
-    fontWeight: "800",
   },
   navButtonsRow: {
     flexDirection: "row",
