@@ -39,7 +39,8 @@ function PostButton() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
-  const TAB_BAR_HEIGHT = 70;
+  const BASE_TAB_HEIGHT = 60;
+  const TAB_BAR_HEIGHT = BASE_TAB_HEIGHT + insets.bottom;
 
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -49,10 +50,10 @@ function PostButton() {
   const isSeller = user?.roles?.includes("seller");
 
   return (
-    <View style={[styles.fabContainer, { bottom: TAB_BAR_HEIGHT + insets.bottom + Spacing.lg }]}>
+    <View style={[styles.fabContainer, { bottom: TAB_BAR_HEIGHT + Spacing.md }]}>
       <Pressable
         onPress={handlePress}
-        style={[styles.fab, { backgroundColor: theme.secondary }]}
+        style={[styles.fab, { backgroundColor: theme.primary }]}
       >
         <Feather name={isSeller ? "plus-circle" : "file-text"} size={22} color="#FFFFFF" />
         <Text style={styles.fabText}>{isSeller ? t("listYourCar") : t("request")}</Text>
@@ -64,33 +65,30 @@ function PostButton() {
 export default function MainTabNavigator() {
   const { theme, isDark } = useTheme();
   const { t } = useLanguage();
+  const insets = useSafeAreaInsets();
+  
+  const BASE_TAB_HEIGHT = 60;
+  const tabBarHeight = BASE_TAB_HEIGHT + insets.bottom;
 
   return (
     <View style={{ flex: 1 }}>
       <Tab.Navigator
         initialRouteName="HomeTab"
         screenOptions={{
-          tabBarActiveTintColor: "#FFFFFF",
-          tabBarInactiveTintColor: "rgba(255,255,255,0.6)",
+          tabBarActiveTintColor: theme.primary,
+          tabBarInactiveTintColor: theme.tabIconDefault,
           tabBarStyle: {
-            position: "absolute",
-            backgroundColor: theme.primary,
-            borderTopWidth: 0,
-            height: 70,
-            paddingTop: 10,
-            paddingBottom: Platform.OS === "ios" ? 8 : 12,
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: -4 },
-            shadowOpacity: 0.15,
-            shadowRadius: 8,
-            elevation: 10,
+            backgroundColor: theme.backgroundDefault,
+            borderTopWidth: 1,
+            borderTopColor: theme.border,
+            height: tabBarHeight,
+            paddingTop: 8,
+            paddingBottom: insets.bottom > 0 ? insets.bottom : Spacing.sm,
           },
           tabBarLabelStyle: {
             fontSize: 11,
             fontWeight: "600",
-            marginTop: 4,
+            marginTop: 2,
           },
           tabBarIconStyle: {
             marginBottom: 0,
@@ -104,7 +102,7 @@ export default function MainTabNavigator() {
           options={{
             title: t("home"),
             tabBarIcon: ({ color, focused }) => (
-              <View style={[styles.tabIconContainer, focused && { backgroundColor: "rgba(255,255,255,0.2)" }]}>
+              <View style={[styles.tabIconContainer, focused && { backgroundColor: color + "15" }]}>
                 <Feather name="home" size={22} color={color} />
               </View>
             ),
@@ -116,7 +114,7 @@ export default function MainTabNavigator() {
           options={{
             title: t("search"),
             tabBarIcon: ({ color, focused }) => (
-              <View style={[styles.tabIconContainer, focused && { backgroundColor: "rgba(255,255,255,0.2)" }]}>
+              <View style={[styles.tabIconContainer, focused && { backgroundColor: color + "15" }]}>
                 <Feather name="search" size={22} color={color} />
               </View>
             ),
@@ -142,7 +140,7 @@ export default function MainTabNavigator() {
           options={{
             title: t("services"),
             tabBarIcon: ({ color, focused }) => (
-              <View style={[styles.tabIconContainer, focused && { backgroundColor: "rgba(255,255,255,0.2)" }]}>
+              <View style={[styles.tabIconContainer, focused && { backgroundColor: color + "15" }]}>
                 <Feather name="tool" size={22} color={color} />
               </View>
             ),
@@ -154,7 +152,7 @@ export default function MainTabNavigator() {
           options={{
             title: t("profile"),
             tabBarIcon: ({ color, focused }) => (
-              <View style={[styles.tabIconContainer, focused && { backgroundColor: "rgba(255,255,255,0.2)" }]}>
+              <View style={[styles.tabIconContainer, focused && { backgroundColor: color + "15" }]}>
                 <Feather name="user" size={22} color={color} />
               </View>
             ),
