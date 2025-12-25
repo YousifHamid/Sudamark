@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, StyleSheet, ScrollView, Pressable, Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -6,11 +6,11 @@ import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
-import { Image } from "expo-image";
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
-import { Spacing, BorderRadius, Shadow } from "@/constants/theme";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Spacing, BorderRadius } from "@/constants/theme";
 import { CarCard } from "@/components/CarCard";
 import { ImageSlider } from "@/components/ImageSlider";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
@@ -23,15 +23,16 @@ export default function HomeScreen() {
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
   const { theme } = useTheme();
+  const { t, isRTL } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { cars, featuredCars, sliderImages } = useCars();
 
   const categories = [
-    { id: "sedan", label: "Sedan", icon: "box" as const },
-    { id: "suv", label: "SUV", icon: "truck" as const },
-    { id: "sports", label: "Sports", icon: "zap" as const },
-    { id: "luxury", label: "Luxury", icon: "star" as const },
-    { id: "electric", label: "Electric", icon: "battery-charging" as const },
+    { id: "sedan", labelKey: "sedan", icon: "box" as const },
+    { id: "suv", labelKey: "suv", icon: "truck" as const },
+    { id: "sports", labelKey: "sports", icon: "zap" as const },
+    { id: "luxury", labelKey: "luxury", icon: "star" as const },
+    { id: "electric", labelKey: "electric", icon: "battery-charging" as const },
   ];
 
   return (
@@ -47,7 +48,7 @@ export default function HomeScreen() {
       <ImageSlider images={sliderImages} />
 
       <View style={styles.section}>
-        <ThemedText type="h4" style={styles.sectionTitle}>Categories</ThemedText>
+        <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t("categories")}</ThemedText>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -60,17 +61,17 @@ export default function HomeScreen() {
               onPress={() => navigation.navigate("Search", { category: category.id })}
             >
               <Feather name={category.icon} size={18} color={theme.primary} />
-              <ThemedText type="small" style={styles.categoryLabel}>{category.label}</ThemedText>
+              <ThemedText type="small" style={[styles.categoryLabel, isRTL && styles.rtlText]}>{t(category.labelKey)}</ThemedText>
             </Pressable>
           ))}
         </ScrollView>
       </View>
 
       <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <ThemedText type="h4">Featured Cars</ThemedText>
+        <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRTL]}>
+          <ThemedText type="h4" style={isRTL ? styles.rtlText : undefined}>{t("featuredCars")}</ThemedText>
           <Pressable onPress={() => navigation.navigate("Search", {})}>
-            <ThemedText type="link">See All</ThemedText>
+            <ThemedText type="link">{t("seeAll")}</ThemedText>
           </Pressable>
         </View>
         <ScrollView
@@ -90,8 +91,8 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <ThemedText type="h4">Recent Listings</ThemedText>
+        <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRTL]}>
+          <ThemedText type="h4" style={isRTL ? styles.rtlText : undefined}>{t("recentListings")}</ThemedText>
         </View>
         <View style={styles.carsGrid}>
           {cars.slice(0, 4).map((car) => (
@@ -124,6 +125,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: Spacing.md,
   },
+  sectionHeaderRTL: {
+    flexDirection: "row-reverse",
+  },
   categoriesContainer: {
     paddingRight: Spacing.lg,
     gap: Spacing.sm,
@@ -147,5 +151,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     marginHorizontal: -Spacing.xs,
+  },
+  rtlText: {
+    writingDirection: "rtl",
   },
 });

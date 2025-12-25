@@ -12,6 +12,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { Button } from "@/components/Button";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { useTheme } from "@/hooks/useTheme";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCars } from "@/hooks/useCars";
@@ -19,6 +20,7 @@ import { useCars } from "@/hooks/useCars";
 export default function PostCarScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const { t, isRTL } = useLanguage();
   const navigation = useNavigation();
   const { user } = useAuth();
   const { addCar } = useCars();
@@ -33,6 +35,14 @@ export default function PostCarScreen() {
   const [description, setDescription] = useState("");
   const [city, setCity] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const cities = [
+    { id: "khartoum", labelKey: "khartoum" },
+    { id: "omdurman", labelKey: "omdurman" },
+    { id: "bahri", labelKey: "bahri" },
+    { id: "portSudan", labelKey: "portSudan" },
+    { id: "kassala", labelKey: "kassala" },
+  ];
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -54,7 +64,7 @@ export default function PostCarScreen() {
 
   const handleSubmit = async () => {
     if (!title || !make || !model || !year || !price || !city) {
-      Alert.alert("Error", "Please fill in all required fields");
+      Alert.alert(t("error"), t("fillRequiredFields"));
       return;
     }
 
@@ -82,8 +92,6 @@ export default function PostCarScreen() {
     navigation.goBack();
   };
 
-  const cities = ["Riyadh", "Jeddah", "Dammam", "Mecca", "Medina"];
-
   return (
     <ThemedView style={styles.container}>
       <KeyboardAwareScrollViewCompat
@@ -92,8 +100,8 @@ export default function PostCarScreen() {
           { paddingBottom: insets.bottom + Spacing["2xl"] },
         ]}
       >
-        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
-          Photos (up to 6)
+        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+          {t("photosUpTo6")}
         </ThemedText>
         <ScrollView
           horizontal
@@ -118,127 +126,134 @@ export default function PostCarScreen() {
               onPress={pickImage}
             >
               <Feather name="plus" size={24} color={theme.textSecondary} />
-              <ThemedText type="small" style={{ color: theme.textSecondary }}>Add</ThemedText>
+              <ThemedText type="small" style={[{ color: theme.textSecondary }, isRTL && styles.rtlText]}>{t("add")}</ThemedText>
             </Pressable>
           ) : null}
         </ScrollView>
 
-        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
-          Title *
+        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+          {t("carTitle")} *
         </ThemedText>
         <TextInput
-          style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }]}
-          placeholder="e.g. Toyota Camry 2022 - Excellent Condition"
+          style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+          placeholder={t("titlePlaceholder")}
           placeholderTextColor={theme.textSecondary}
           value={title}
           onChangeText={setTitle}
+          textAlign={isRTL ? "right" : "left"}
         />
 
-        <View style={styles.row}>
+        <View style={[styles.row, isRTL && styles.rowRTL]}>
           <View style={styles.halfInput}>
-            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
-              Make *
+            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+              {t("make")} *
             </ThemedText>
             <TextInput
-              style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }]}
-              placeholder="Toyota"
+              style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+              placeholder={isRTL ? "تويوتا" : "Toyota"}
               placeholderTextColor={theme.textSecondary}
               value={make}
               onChangeText={setMake}
+              textAlign={isRTL ? "right" : "left"}
             />
           </View>
           <View style={styles.halfInput}>
-            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
-              Model *
+            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+              {t("model")} *
             </ThemedText>
             <TextInput
-              style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }]}
-              placeholder="Camry"
+              style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+              placeholder={isRTL ? "كامري" : "Camry"}
               placeholderTextColor={theme.textSecondary}
               value={model}
               onChangeText={setModel}
+              textAlign={isRTL ? "right" : "left"}
             />
           </View>
         </View>
 
-        <View style={styles.row}>
+        <View style={[styles.row, isRTL && styles.rowRTL]}>
           <View style={styles.halfInput}>
-            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
-              Year *
+            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+              {t("year")} *
             </ThemedText>
             <TextInput
-              style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }]}
+              style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
               placeholder="2022"
               placeholderTextColor={theme.textSecondary}
               value={year}
               onChangeText={setYear}
               keyboardType="number-pad"
+              textAlign={isRTL ? "right" : "left"}
             />
           </View>
           <View style={styles.halfInput}>
-            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
-              Price (SAR) *
+            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+              {t("priceSdg")} *
             </ThemedText>
             <TextInput
-              style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }]}
+              style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
               placeholder="85000"
               placeholderTextColor={theme.textSecondary}
               value={price}
               onChangeText={setPrice}
               keyboardType="number-pad"
+              textAlign={isRTL ? "right" : "left"}
             />
           </View>
         </View>
 
-        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
-          Mileage (km)
+        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+          {t("mileage")} ({t("km")})
         </ThemedText>
         <TextInput
-          style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }]}
+          style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
           placeholder="50000"
           placeholderTextColor={theme.textSecondary}
           value={mileage}
           onChangeText={setMileage}
           keyboardType="number-pad"
+          textAlign={isRTL ? "right" : "left"}
         />
 
-        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
-          City *
+        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+          {t("city")} *
         </ThemedText>
-        <View style={styles.citiesRow}>
+        <View style={[styles.citiesRow, isRTL && styles.citiesRowRTL]}>
           {cities.map((c) => (
             <Pressable
-              key={c}
-              onPress={() => setCity(c)}
+              key={c.id}
+              onPress={() => setCity(c.id)}
               style={[
                 styles.cityChip,
                 { backgroundColor: theme.backgroundSecondary, borderColor: theme.border },
-                city === c && { backgroundColor: theme.primary, borderColor: theme.primary },
+                city === c.id && { backgroundColor: theme.primary, borderColor: theme.primary },
               ]}
             >
-              <ThemedText type="small" style={city === c ? { color: "#FFFFFF" } : undefined}>
-                {c}
+              <ThemedText type="small" style={[city === c.id ? { color: "#FFFFFF" } : undefined, isRTL && styles.rtlText]}>
+                {t(c.labelKey)}
               </ThemedText>
             </Pressable>
           ))}
         </View>
 
-        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
-          Description
+        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+          {t("description")}
         </ThemedText>
         <TextInput
-          style={[styles.textArea, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }]}
-          placeholder="Describe your car..."
+          style={[styles.textArea, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+          placeholder={t("describeYourCar")}
           placeholderTextColor={theme.textSecondary}
           value={description}
           onChangeText={setDescription}
           multiline
           numberOfLines={4}
           textAlignVertical="top"
+          textAlign={isRTL ? "right" : "left"}
         />
 
         <Button onPress={handleSubmit} disabled={isLoading} style={styles.submitButton}>
-          {isLoading ? "Posting..." : "Post Listing"}
+          {isLoading ? t("posting") : t("postListing")}
         </Button>
       </KeyboardAwareScrollViewCompat>
     </ThemedView>
@@ -296,9 +311,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     fontSize: 16,
   },
+  rtlInput: {
+    textAlign: "right",
+  },
   row: {
     flexDirection: "row",
     gap: Spacing.md,
+  },
+  rowRTL: {
+    flexDirection: "row-reverse",
   },
   halfInput: {
     flex: 1,
@@ -307,6 +328,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: Spacing.sm,
+  },
+  citiesRowRTL: {
+    flexDirection: "row-reverse",
   },
   cityChip: {
     paddingHorizontal: Spacing.md,
@@ -324,5 +348,8 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: Spacing["2xl"],
+  },
+  rtlText: {
+    writingDirection: "rtl",
   },
 });

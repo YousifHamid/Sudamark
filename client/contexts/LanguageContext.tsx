@@ -60,8 +60,17 @@ export const translations: Translations = {
   
   // Home
   featuredCars: { ar: "سيارات مميزة", en: "Featured Cars" },
+  recentListings: { ar: "إعلانات حديثة", en: "Recent Listings" },
   categories: { ar: "التصنيفات", en: "Categories" },
+  seeAll: { ar: "عرض الكل", en: "See All" },
   viewAll: { ar: "عرض الكل", en: "View All" },
+  
+  // Categories
+  sedan: { ar: "سيدان", en: "Sedan" },
+  suv: { ar: "دفع رباعي", en: "SUV" },
+  sports: { ar: "رياضية", en: "Sports" },
+  luxury: { ar: "فاخرة", en: "Luxury" },
+  electric: { ar: "كهربائية", en: "Electric" },
   
   // Search
   searchCars: { ar: "ابحث عن سيارات...", en: "Search cars..." },
@@ -83,6 +92,8 @@ export const translations: Translations = {
   settings: { ar: "الإعدادات", en: "Settings" },
   language: { ar: "اللغة", en: "Language" },
   logout: { ar: "تسجيل الخروج", en: "Logout" },
+  activity: { ar: "النشاط", en: "Activity" },
+  version: { ar: "الإصدار", en: "Version" },
   
   // Car Details
   contactSeller: { ar: "تواصل مع البائع", en: "Contact Seller" },
@@ -92,17 +103,35 @@ export const translations: Translations = {
   mileage: { ar: "المسافة المقطوعة", en: "Mileage" },
   transmission: { ar: "ناقل الحركة", en: "Transmission" },
   fuelType: { ar: "نوع الوقود", en: "Fuel Type" },
+  category: { ar: "الفئة", en: "Category" },
+  sellerInfo: { ar: "معلومات البائع", en: "Seller Info" },
+  reviews: { ar: "تقييمات", en: "reviews" },
+  carNotFound: { ar: "السيارة غير موجودة", en: "Car not found" },
   
   // Post Car
   newListing: { ar: "إعلان جديد", en: "New Listing" },
   carTitle: { ar: "عنوان السيارة", en: "Car Title" },
+  titlePlaceholder: { ar: "مثال: تويوتا كامري 2022 - حالة ممتازة", en: "e.g. Toyota Camry 2022 - Excellent Condition" },
   make: { ar: "الشركة المصنعة", en: "Make" },
   model: { ar: "الموديل", en: "Model" },
   price: { ar: "السعر", en: "Price" },
+  priceSdg: { ar: "السعر (جنيه)", en: "Price (SDG)" },
   city: { ar: "المدينة", en: "City" },
   description: { ar: "الوصف", en: "Description" },
+  describeYourCar: { ar: "وصف سيارتك...", en: "Describe your car..." },
+  photos: { ar: "الصور", en: "Photos" },
+  photosUpTo6: { ar: "الصور (حتى 6)", en: "Photos (up to 6)" },
   addPhotos: { ar: "إضافة صور", en: "Add Photos" },
+  add: { ar: "إضافة", en: "Add" },
   postListing: { ar: "نشر الإعلان", en: "Post Listing" },
+  posting: { ar: "جاري النشر...", en: "Posting..." },
+  
+  // Cities (Sudan)
+  khartoum: { ar: "الخرطوم", en: "Khartoum" },
+  omdurman: { ar: "أم درمان", en: "Omdurman" },
+  bahri: { ar: "بحري", en: "Bahri" },
+  portSudan: { ar: "بورتسودان", en: "Port Sudan" },
+  kassala: { ar: "كسلا", en: "Kassala" },
   
   // Errors
   invalidPhoneNumber: { ar: "يرجى إدخال رقم هاتف صحيح", en: "Please enter a valid phone number" },
@@ -110,6 +139,12 @@ export const translations: Translations = {
   enterName: { ar: "يرجى إدخال اسمك", en: "Please enter your name" },
   selectRole: { ar: "يرجى اختيار دور", en: "Please select a role" },
   enter6DigitCode: { ar: "يرجى إدخال الرمز المكون من 6 أرقام", en: "Please enter the 6-digit code" },
+  fillRequiredFields: { ar: "يرجى ملء جميع الحقول المطلوبة", en: "Please fill in all required fields" },
+  error: { ar: "خطأ", en: "Error" },
+  
+  // Currency
+  sdg: { ar: "جنيه", en: "SDG" },
+  km: { ar: "كم", en: "km" },
 };
 
 interface LanguageContextType {

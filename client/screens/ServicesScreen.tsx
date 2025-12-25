@@ -8,26 +8,28 @@ import { Feather } from "@expo/vector-icons";
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { ServiceProviderCard } from "@/components/ServiceProviderCard";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { useServiceProviders } from "@/hooks/useServiceProviders";
 
-const TABS = [
-  { id: "all", label: "All", icon: "grid" as const },
-  { id: "mechanic", label: "Mechanics", icon: "tool" as const },
-  { id: "electrician", label: "Electricians", icon: "zap" as const },
-  { id: "lawyer", label: "Lawyers", icon: "briefcase" as const },
-  { id: "inspection_center", label: "Inspection", icon: "clipboard" as const },
-];
-
 export default function ServicesScreen() {
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
   const { theme } = useTheme();
+  const { t, isRTL } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { providers } = useServiceProviders();
   const [activeTab, setActiveTab] = useState("all");
+
+  const TABS = [
+    { id: "all", labelKey: "all", icon: "grid" as const },
+    { id: "mechanic", labelKey: "mechanics", icon: "tool" as const },
+    { id: "electrician", labelKey: "electricians", icon: "zap" as const },
+    { id: "lawyer", labelKey: "lawyers", icon: "briefcase" as const },
+    { id: "inspection_center", labelKey: "inspection", icon: "clipboard" as const },
+  ];
 
   const filteredProviders = activeTab === "all"
     ? providers
@@ -42,6 +44,7 @@ export default function ServicesScreen() {
           data={TABS}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.tabsContent}
+          inverted={isRTL}
           renderItem={({ item }) => (
             <Pressable
               onPress={() => setActiveTab(item.id)}
@@ -58,9 +61,12 @@ export default function ServicesScreen() {
               />
               <ThemedText
                 type="small"
-                style={activeTab === item.id ? { color: "#FFFFFF" } : undefined}
+                style={[
+                  activeTab === item.id ? { color: "#FFFFFF" } : undefined,
+                  isRTL && styles.rtlText,
+                ]}
               >
-                {item.label}
+                {t(item.labelKey)}
               </ThemedText>
             </Pressable>
           )}
@@ -86,9 +92,9 @@ export default function ServicesScreen() {
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Feather name="users" size={48} color={theme.textSecondary} />
-            <ThemedText type="h4" style={styles.emptyTitle}>No providers found</ThemedText>
-            <ThemedText style={{ color: theme.textSecondary, textAlign: "center" }}>
-              Check back later for service providers in this category
+            <ThemedText type="h4" style={[styles.emptyTitle, isRTL && styles.rtlText]}>{t("noProvidersFound")}</ThemedText>
+            <ThemedText style={[{ color: theme.textSecondary, textAlign: "center" }, isRTL && styles.rtlText]}>
+              {t("checkBackLater")}
             </ThemedText>
           </View>
         }
@@ -124,5 +130,8 @@ const styles = StyleSheet.create({
   emptyTitle: {
     marginTop: Spacing.lg,
     marginBottom: Spacing.sm,
+  },
+  rtlText: {
+    writingDirection: "rtl",
   },
 });

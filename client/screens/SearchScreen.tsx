@@ -8,6 +8,7 @@ import { Feather } from "@expo/vector-icons";
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { CarCard } from "@/components/CarCard";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
@@ -19,6 +20,7 @@ export default function SearchScreen() {
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
   const { theme } = useTheme();
+  const { t, isRTL } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<SearchScreenRouteProp>();
   const { cars } = useCars();
@@ -27,7 +29,13 @@ export default function SearchScreen() {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000]);
 
-  const cities = ["Riyadh", "Jeddah", "Dammam", "Mecca", "Medina"];
+  const cities = [
+    { id: "khartoum", labelKey: "khartoum" },
+    { id: "omdurman", labelKey: "omdurman" },
+    { id: "bahri", labelKey: "bahri" },
+    { id: "portSudan", labelKey: "portSudan" },
+    { id: "kassala", labelKey: "kassala" },
+  ];
 
   const filteredCars = useMemo(() => {
     return cars.filter((car) => {
@@ -44,14 +52,15 @@ export default function SearchScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
       <View style={[styles.searchContainer, { backgroundColor: theme.backgroundDefault, paddingTop: insets.top + Spacing.sm }]}>
-        <View style={[styles.searchBar, { backgroundColor: theme.backgroundSecondary }]}>
+        <View style={[styles.searchBar, { backgroundColor: theme.backgroundSecondary }, isRTL && styles.searchBarRTL]}>
           <Feather name="search" size={20} color={theme.textSecondary} />
           <TextInput
-            style={[styles.searchInput, { color: theme.text }]}
-            placeholder="Search cars..."
+            style={[styles.searchInput, { color: theme.text }, isRTL && styles.searchInputRTL]}
+            placeholder={t("searchCars")}
             placeholderTextColor={theme.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
+            textAlign={isRTL ? "right" : "left"}
           />
           {searchQuery ? (
             <Pressable onPress={() => setSearchQuery("")}>
@@ -59,22 +68,25 @@ export default function SearchScreen() {
             </Pressable>
           ) : null}
         </View>
-        <View style={styles.filtersRow}>
+        <View style={[styles.filtersRow, isRTL && styles.filtersRowRTL]}>
           {cities.map((city) => (
             <Pressable
-              key={city}
-              onPress={() => setSelectedCity(selectedCity === city ? null : city)}
+              key={city.id}
+              onPress={() => setSelectedCity(selectedCity === city.id ? null : city.id)}
               style={[
                 styles.filterChip,
                 { backgroundColor: theme.backgroundSecondary },
-                selectedCity === city && { backgroundColor: theme.primary },
+                selectedCity === city.id && { backgroundColor: theme.primary },
               ]}
             >
               <ThemedText
                 type="small"
-                style={selectedCity === city ? { color: "#FFFFFF" } : undefined}
+                style={[
+                  selectedCity === city.id ? { color: "#FFFFFF" } : undefined,
+                  isRTL && styles.rtlText,
+                ]}
               >
-                {city}
+                {t(city.labelKey)}
               </ThemedText>
             </Pressable>
           ))}
@@ -101,9 +113,9 @@ export default function SearchScreen() {
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Feather name="search" size={48} color={theme.textSecondary} />
-            <ThemedText type="h4" style={styles.emptyTitle}>No cars found</ThemedText>
-            <ThemedText style={{ color: theme.textSecondary, textAlign: "center" }}>
-              Try adjusting your filters or search query
+            <ThemedText type="h4" style={[styles.emptyTitle, isRTL && styles.rtlText]}>{t("noCarsFound")}</ThemedText>
+            <ThemedText style={[{ color: theme.textSecondary, textAlign: "center" }, isRTL && styles.rtlText]}>
+              {t("adjustFilters")}
             </ThemedText>
           </View>
         }
@@ -128,15 +140,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     gap: Spacing.sm,
   },
+  searchBarRTL: {
+    flexDirection: "row-reverse",
+  },
   searchInput: {
     flex: 1,
     fontSize: 16,
+  },
+  searchInputRTL: {
+    textAlign: "right",
   },
   filtersRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     marginTop: Spacing.md,
     gap: Spacing.sm,
+  },
+  filtersRowRTL: {
+    flexDirection: "row-reverse",
   },
   filterChip: {
     paddingHorizontal: Spacing.md,
@@ -155,5 +176,8 @@ const styles = StyleSheet.create({
   emptyTitle: {
     marginTop: Spacing.lg,
     marginBottom: Spacing.sm,
+  },
+  rtlText: {
+    writingDirection: "rtl",
   },
 });

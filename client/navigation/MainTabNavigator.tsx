@@ -15,6 +15,7 @@ import SearchScreen from "@/screens/SearchScreen";
 import ServicesScreen from "@/screens/ServicesScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
@@ -60,6 +61,7 @@ function PostButton() {
 
 export default function MainTabNavigator() {
   const { theme, isDark } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <View style={{ flex: 1 }}>
@@ -92,7 +94,7 @@ export default function MainTabNavigator() {
           name="HomeTab"
           component={HomeStackNavigator}
           options={{
-            title: "Home",
+            title: t("home"),
             tabBarIcon: ({ color, size }) => (
               <Feather name="home" size={size} color={color} />
             ),
@@ -102,7 +104,7 @@ export default function MainTabNavigator() {
           name="SearchTab"
           component={SearchScreen}
           options={{
-            title: "Search",
+            title: t("search"),
             tabBarIcon: ({ color, size }) => (
               <Feather name="search" size={size} color={color} />
             ),
@@ -126,7 +128,7 @@ export default function MainTabNavigator() {
           name="ServicesTab"
           component={ServicesScreen}
           options={{
-            title: "Services",
+            title: t("services"),
             tabBarIcon: ({ color, size }) => (
               <Feather name="briefcase" size={size} color={color} />
             ),
@@ -136,7 +138,7 @@ export default function MainTabNavigator() {
           name="ProfileTab"
           component={ProfileStackNavigator}
           options={{
-            title: "Profile",
+            title: t("profile"),
             tabBarIcon: ({ color, size }) => (
               <Feather name="user" size={size} color={color} />
             ),

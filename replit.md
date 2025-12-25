@@ -14,9 +14,13 @@ A multi-role car marketplace mobile application built with React Native and Expo
 - Generated app icon and updated splash screen
 - Applied iOS 26 Liquid Glass-inspired design guidelines
 - **Added Arabic as default language with RTL layout support**
-- **Created LanguageContext with full translations for onboarding, login, and profile screens**
+- **Created LanguageContext with comprehensive translations for ALL screens**
 - **Language switcher in Profile screen to toggle between Arabic and English**
 - **3-screen onboarding flow with Arabaty logo and bilingual content**
+- **All screens translated: Home, Search, Services, CarDetail, PostCar, Profile, Login, Onboarding**
+- **Tab navigation labels in Arabic (الرئيسية, بحث, الخدمات, الملف)**
+- **Sudanese cities for location filters (الخرطوم, أم درمان, بحري, بورتسودان, كسلا)**
+- **Currency shown in Sudanese Pounds (SDG/جنيه)**
 
 ## User Preferences
 

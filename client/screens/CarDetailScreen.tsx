@@ -11,6 +11,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { useCars } from "@/hooks/useCars";
@@ -22,6 +23,7 @@ type CarDetailRouteProp = RouteProp<RootStackParamList, "CarDetail">;
 export default function CarDetailScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const { t, isRTL } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<CarDetailRouteProp>();
   const { cars, toggleFavorite, isFavorite } = useCars();
@@ -33,7 +35,7 @@ export default function CarDetailScreen() {
   if (!car) {
     return (
       <ThemedView style={styles.container}>
-        <ThemedText>Car not found</ThemedText>
+        <ThemedText style={isRTL ? styles.rtlText : undefined}>{t("carNotFound")}</ThemedText>
       </ThemedView>
     );
   }
@@ -46,7 +48,10 @@ export default function CarDetailScreen() {
 
   const handleContact = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    Alert.alert("Contact Seller", "This would open a chat or call with the seller.");
+    Alert.alert(
+      t("contactSeller"),
+      isRTL ? "سيتم فتح محادثة أو مكالمة مع البائع." : "This would open a chat or call with the seller."
+    );
   };
 
   const handleRequestInspection = () => {
@@ -54,10 +59,10 @@ export default function CarDetailScreen() {
   };
 
   const specs = [
-    { label: "Year", value: car.year.toString(), icon: "calendar" as const },
-    { label: "Mileage", value: `${car.mileage?.toLocaleString() || "N/A"} km`, icon: "activity" as const },
-    { label: "City", value: car.city, icon: "map-pin" as const },
-    { label: "Category", value: car.category, icon: "tag" as const },
+    { labelKey: "year", value: car.year.toString(), icon: "calendar" as const },
+    { labelKey: "mileage", value: `${car.mileage?.toLocaleString() || "N/A"} ${t("km")}`, icon: "activity" as const },
+    { labelKey: "city", value: car.city, icon: "map-pin" as const },
+    { labelKey: "category", value: t(car.category), icon: "tag" as const },
   ];
 
   return (
@@ -122,29 +127,29 @@ export default function CarDetailScreen() {
         </View>
 
         <View style={styles.content}>
-          <View style={styles.priceRow}>
+          <View style={[styles.priceRow, isRTL && styles.priceRowRTL]}>
             <ThemedText type="h2" style={{ color: theme.primary }}>
-              SAR {car.price.toLocaleString()}
+              {car.price.toLocaleString()} {t("sdg")}
             </ThemedText>
           </View>
 
-          <ThemedText type="h3" style={styles.title}>{car.title}</ThemedText>
+          <ThemedText type="h3" style={[styles.title, isRTL && styles.rtlText]}>{car.title}</ThemedText>
 
-          <View style={styles.locationRow}>
+          <View style={[styles.locationRow, isRTL && styles.locationRowRTL]}>
             <Feather name="map-pin" size={16} color={theme.textSecondary} />
-            <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: Spacing.xs }}>
+            <ThemedText type="small" style={[{ color: theme.textSecondary, marginLeft: isRTL ? 0 : Spacing.xs, marginRight: isRTL ? Spacing.xs : 0 }, isRTL && styles.rtlText]}>
               {car.city}
             </ThemedText>
           </View>
 
           <View style={[styles.specsGrid, { backgroundColor: theme.backgroundDefault }]}>
             {specs.map((spec) => (
-              <View key={spec.label} style={styles.specItem}>
+              <View key={spec.labelKey} style={styles.specItem}>
                 <Feather name={spec.icon} size={20} color={theme.primary} />
-                <ThemedText type="small" style={{ color: theme.textSecondary, marginTop: Spacing.xs }}>
-                  {spec.label}
+                <ThemedText type="small" style={[{ color: theme.textSecondary, marginTop: Spacing.xs }, isRTL && styles.rtlText]}>
+                  {t(spec.labelKey)}
                 </ThemedText>
-                <ThemedText type="body" style={{ fontWeight: "600" }}>
+                <ThemedText type="body" style={[{ fontWeight: "600" }, isRTL && styles.rtlText]}>
                   {spec.value}
                 </ThemedText>
               </View>
@@ -153,22 +158,22 @@ export default function CarDetailScreen() {
 
           {car.description ? (
             <View style={styles.section}>
-              <ThemedText type="h4" style={styles.sectionTitle}>Description</ThemedText>
-              <ThemedText style={{ color: theme.textSecondary }}>{car.description}</ThemedText>
+              <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t("description")}</ThemedText>
+              <ThemedText style={[{ color: theme.textSecondary }, isRTL && styles.rtlText]}>{car.description}</ThemedText>
             </View>
           ) : null}
 
           <View style={styles.section}>
-            <ThemedText type="h4" style={styles.sectionTitle}>Seller Info</ThemedText>
-            <View style={[styles.sellerCard, { backgroundColor: theme.backgroundDefault }]}>
+            <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t("sellerInfo")}</ThemedText>
+            <View style={[styles.sellerCard, { backgroundColor: theme.backgroundDefault }, isRTL && styles.sellerCardRTL]}>
               <View style={[styles.sellerAvatar, { backgroundColor: theme.primary }]}>
                 <ThemedText type="h4" style={{ color: "#FFFFFF" }}>S</ThemedText>
               </View>
-              <View style={styles.sellerInfo}>
-                <ThemedText type="body" style={{ fontWeight: "600" }}>Seller</ThemedText>
-                <View style={styles.ratingRow}>
+              <View style={[styles.sellerInfo, isRTL && styles.sellerInfoRTL]}>
+                <ThemedText type="body" style={[{ fontWeight: "600" }, isRTL && styles.rtlText]}>{isRTL ? "البائع" : "Seller"}</ThemedText>
+                <View style={[styles.ratingRow, isRTL && styles.ratingRowRTL]}>
                   <Feather name="star" size={14} color={theme.secondary} />
-                  <ThemedText type="small" style={{ marginLeft: Spacing.xs }}>4.8 (24 reviews)</ThemedText>
+                  <ThemedText type="small" style={[{ marginLeft: isRTL ? 0 : Spacing.xs, marginRight: isRTL ? Spacing.xs : 0 }, isRTL && styles.rtlText]}>4.8 (24 {t("reviews")})</ThemedText>
                 </View>
               </View>
               <Pressable
@@ -182,16 +187,16 @@ export default function CarDetailScreen() {
         </View>
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.md, backgroundColor: theme.backgroundRoot }]}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.md, backgroundColor: theme.backgroundRoot }, isRTL && styles.footerRTL]}>
         <Button onPress={handleContact} style={styles.contactButton}>
-          Contact Seller
+          {t("contactSeller")}
         </Button>
         <Pressable
           style={[styles.inspectionButton, { backgroundColor: theme.backgroundSecondary }]}
           onPress={handleRequestInspection}
         >
           <Feather name="clipboard" size={20} color={theme.primary} />
-          <ThemedText style={{ color: theme.primary, marginLeft: Spacing.sm }}>Request Inspection</ThemedText>
+          <ThemedText style={[{ color: theme.primary, marginLeft: isRTL ? 0 : Spacing.sm, marginRight: isRTL ? Spacing.sm : 0 }, isRTL && styles.rtlText]}>{t("requestInspection")}</ThemedText>
         </Pressable>
       </View>
     </ThemedView>
@@ -258,6 +263,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  priceRowRTL: {
+    flexDirection: "row-reverse",
+  },
   title: {
     marginTop: Spacing.sm,
   },
@@ -265,6 +273,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginTop: Spacing.sm,
+  },
+  locationRowRTL: {
+    flexDirection: "row-reverse",
   },
   specsGrid: {
     flexDirection: "row",
@@ -290,6 +301,9 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     borderRadius: BorderRadius.lg,
   },
+  sellerCardRTL: {
+    flexDirection: "row-reverse",
+  },
   sellerAvatar: {
     width: 48,
     height: 48,
@@ -301,10 +315,17 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: Spacing.md,
   },
+  sellerInfoRTL: {
+    marginLeft: 0,
+    marginRight: Spacing.md,
+  },
   ratingRow: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: Spacing.xs,
+  },
+  ratingRowRTL: {
+    flexDirection: "row-reverse",
   },
   callButton: {
     width: 44,
@@ -323,6 +344,9 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.md,
     gap: Spacing.md,
   },
+  footerRTL: {
+    flexDirection: "row-reverse",
+  },
   contactButton: {
     flex: 1,
   },
@@ -333,5 +357,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     borderRadius: BorderRadius.full,
     height: Spacing.buttonHeight,
+  },
+  rtlText: {
+    writingDirection: "rtl",
   },
 });
