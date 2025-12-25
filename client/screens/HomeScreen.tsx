@@ -88,20 +88,12 @@ export default function HomeScreen() {
           style={styles.sponsorCard}
         >
           <View style={[styles.sponsorContent, isRTL && styles.sponsorContentRTL]}>
-            <View style={styles.sponsorLogoContainer}>
-              <View style={styles.sponsorLogo}>
-                <Feather name="award" size={32} color="#F97316" />
-              </View>
+            <View style={styles.sponsorLogo}>
+              <Feather name="award" size={20} color="#F97316" />
             </View>
             <View style={styles.sponsorTextContainer}>
               <ThemedText style={[styles.sponsorLabel, isRTL && styles.rtlText]}>
-                {t("officialSponsor")}
-              </ThemedText>
-              <ThemedText type="h4" style={[styles.sponsorNameText, isRTL && styles.rtlText]}>
-                {t("sponsorName")}
-              </ThemedText>
-              <ThemedText style={[styles.sponsorDescText, isRTL && styles.rtlText]} numberOfLines={2}>
-                {t("sponsorDesc")}
+                {t("officialSponsor")} - {t("sponsorName")}
               </ThemedText>
             </View>
           </View>
@@ -242,35 +234,26 @@ const styles = StyleSheet.create({
     writingDirection: "rtl",
   },
   sponsorSection: {
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.md,
     paddingHorizontal: Spacing.lg,
   },
   sponsorCard: {
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    shadowColor: "#F97316",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    borderRadius: BorderRadius.md,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
   },
   sponsorContent: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.lg,
+    gap: Spacing.sm,
   },
   sponsorContentRTL: {
     flexDirection: "row-reverse",
   },
-  sponsorLogoContainer: {
-    padding: 4,
-    borderRadius: BorderRadius.lg,
-    backgroundColor: "rgba(255,255,255,0.2)",
-  },
   sponsorLogo: {
-    width: 64,
-    height: 64,
-    borderRadius: BorderRadius.md,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
@@ -279,18 +262,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sponsorLabel: {
-    color: "rgba(255,255,255,0.9)",
-    fontSize: 13,
-    marginBottom: Spacing.xs,
-  },
-  sponsorNameText: {
     color: "#FFFFFF",
-    fontWeight: "700",
-    marginBottom: Spacing.xs,
-  },
-  sponsorDescText: {
-    color: "rgba(255,255,255,0.85)",
     fontSize: 12,
-    lineHeight: 16,
+    fontWeight: "500",
   },
 });
