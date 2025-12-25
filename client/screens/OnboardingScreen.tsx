@@ -1,10 +1,9 @@
-import React, { useState, useRef } from "react";
-import { View, StyleSheet, Pressable, Dimensions, FlatList, ViewToken } from "react-native";
+import React from "react";
+import { View, StyleSheet, Dimensions, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -15,31 +14,55 @@ import { Spacing, BorderRadius } from "@/constants/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-interface OnboardingSlide {
+interface FeatureItem {
   id: string;
   icon: keyof typeof Feather.glyphMap;
   titleKey: string;
   descKey: string;
 }
 
-const SLIDES: OnboardingSlide[] = [
+const FEATURES: FeatureItem[] = [
   {
     id: "1",
     icon: "search",
-    titleKey: "slide1Title",
-    descKey: "slide1Desc",
+    titleKey: "feature1Title",
+    descKey: "feature1Desc",
   },
   {
     id: "2",
     icon: "shield",
-    titleKey: "slide2Title",
-    descKey: "slide2Desc",
+    titleKey: "feature2Title",
+    descKey: "feature2Desc",
   },
   {
     id: "3",
+    icon: "truck",
+    titleKey: "feature3Title",
+    descKey: "feature3Desc",
+  },
+  {
+    id: "4",
+    icon: "tool",
+    titleKey: "feature4Title",
+    descKey: "feature4Desc",
+  },
+  {
+    id: "5",
     icon: "check-circle",
-    titleKey: "slide3Title",
-    descKey: "slide3Desc",
+    titleKey: "feature5Title",
+    descKey: "feature5Desc",
+  },
+  {
+    id: "6",
+    icon: "heart",
+    titleKey: "feature6Title",
+    descKey: "feature6Desc",
+  },
+  {
+    id: "7",
+    icon: "star",
+    titleKey: "feature7Title",
+    descKey: "feature7Desc",
   },
 ];
 
@@ -51,92 +74,67 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const flatListRef = useRef<FlatList>(null);
-  const progress = useSharedValue(0);
 
-  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
-    if (viewableItems.length > 0 && viewableItems[0].index !== null) {
-      setCurrentIndex(viewableItems[0].index);
-      progress.value = withSpring(viewableItems[0].index);
-    }
-  }).current;
-
-  const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
-
-  const handleNext = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (currentIndex < SLIDES.length - 1) {
-      flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
-    } else {
-      onComplete();
-    }
-  };
-
-  const handleSkip = () => {
+  const handleGetStarted = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onComplete();
   };
 
-  const renderSlide = ({ item }: { item: OnboardingSlide }) => (
-    <View style={[styles.slide, { width: SCREEN_WIDTH }]}>
-      <View style={[styles.iconCircle, { backgroundColor: theme.primary + "15" }]}>
-        <Feather name={item.icon} size={48} color={theme.primary} />
-      </View>
-      <ThemedText type="h2" style={[styles.slideTitle, isRTL && styles.rtlText]}>
-        {t(item.titleKey)}
-      </ThemedText>
-      <ThemedText style={[styles.slideDescription, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
-        {t(item.descKey)}
-      </ThemedText>
-    </View>
-  );
-
   return (
     <ThemedView style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + Spacing.lg }]}>
-        <Pressable onPress={handleSkip} style={styles.skipButton}>
-          <ThemedText type="link">{t("skip")}</ThemedText>
-        </Pressable>
-      </View>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          { 
+            paddingTop: insets.top + Spacing.xl,
+            paddingBottom: insets.bottom + Spacing.xl,
+          }
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../attached_assets/ARABATY2_1766665788809.png")}
+            style={styles.logo}
+            contentFit="contain"
+          />
+        </View>
 
-      <View style={styles.logoContainer}>
-        <Image
-          source={require("../../attached_assets/ARABATY2_1766665630799.png")}
-          style={styles.logo}
-          contentFit="contain"
-        />
-      </View>
+        <ThemedText type="h1" style={[styles.welcomeTitle, isRTL && styles.rtlText]}>
+          {t("welcomeTitle")}
+        </ThemedText>
+        <ThemedText style={[styles.welcomeSubtitle, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+          {t("welcomeSubtitle")}
+        </ThemedText>
 
-      <FlatList
-        ref={flatListRef}
-        data={SLIDES}
-        renderItem={renderSlide}
-        keyExtractor={(item) => item.id}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
-        style={styles.slideList}
-      />
-
-      <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.xl }]}>
-        <View style={styles.pagination}>
-          {SLIDES.map((_, index) => (
-            <View
-              key={index}
+        <View style={styles.featuresGrid}>
+          {FEATURES.map((feature, index) => (
+            <View 
+              key={feature.id} 
               style={[
-                styles.dot,
-                { backgroundColor: index === currentIndex ? theme.primary : theme.border },
+                styles.featureCard,
+                { backgroundColor: theme.cardBackground }
               ]}
-            />
+            >
+              <View style={[styles.featureIconCircle, { backgroundColor: theme.primary + "15" }]}>
+                <Feather name={feature.icon} size={24} color={theme.primary} />
+              </View>
+              <View style={styles.featureContent}>
+                <ThemedText type="h4" style={[styles.featureTitle, isRTL && styles.rtlText]}>
+                  {t(feature.titleKey)}
+                </ThemedText>
+                <ThemedText style={[styles.featureDesc, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+                  {t(feature.descKey)}
+                </ThemedText>
+              </View>
+            </View>
           ))}
         </View>
-        <Button onPress={handleNext} style={styles.button}>
-          {currentIndex === SLIDES.length - 1 ? t("getStarted") : t("next")}
+
+        <Button onPress={handleGetStarted} style={styles.button}>
+          {t("getStarted")}
         </Button>
-      </View>
+      </ScrollView>
     </ThemedView>
   );
 }
@@ -145,65 +143,59 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
+  scrollContent: {
     paddingHorizontal: Spacing.lg,
-    alignItems: "flex-end",
-  },
-  skipButton: {
-    padding: Spacing.sm,
   },
   logoContainer: {
     alignItems: "center",
-    marginTop: Spacing.xl,
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.xl,
   },
   logo: {
-    width: SCREEN_WIDTH * 0.6,
-    height: 80,
+    width: SCREEN_WIDTH * 0.5,
+    height: 70,
   },
-  slideList: {
-    flex: 1,
+  welcomeTitle: {
+    textAlign: "center",
+    marginBottom: Spacing.sm,
   },
-  slide: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: Spacing.xl,
+  welcomeSubtitle: {
+    textAlign: "center",
+    marginBottom: Spacing.xl,
+    lineHeight: 22,
   },
-  iconCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    alignItems: "center",
-    justifyContent: "center",
+  featuresGrid: {
+    gap: Spacing.md,
     marginBottom: Spacing.xl,
   },
-  slideTitle: {
-    textAlign: "center",
-    marginBottom: Spacing.md,
-  },
-  slideDescription: {
-    textAlign: "center",
-    lineHeight: 24,
-  },
-  footer: {
-    paddingHorizontal: Spacing.lg,
-  },
-  pagination: {
+  featureCard: {
     flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: Spacing.xl,
-    gap: Spacing.sm,
+    alignItems: "center",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    gap: Spacing.md,
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  featureIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  featureContent: {
+    flex: 1,
+  },
+  featureTitle: {
+    marginBottom: 2,
+  },
+  featureDesc: {
+    fontSize: 13,
+    lineHeight: 18,
   },
   button: {
     width: "100%",
   },
   rtlText: {
     writingDirection: "rtl",
+    textAlign: "right",
   },
 });
