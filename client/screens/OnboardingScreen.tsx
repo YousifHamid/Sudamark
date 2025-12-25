@@ -17,52 +17,19 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 interface FeatureItem {
   id: string;
   icon: keyof typeof Feather.glyphMap;
-  titleKey: string;
-  descKey: string;
+  textKey: string;
 }
 
 const FEATURES: FeatureItem[] = [
   {
     id: "1",
-    icon: "search",
-    titleKey: "feature1Title",
-    descKey: "feature1Desc",
+    icon: "list",
+    textKey: "welcomeFeature1",
   },
   {
     id: "2",
-    icon: "shield",
-    titleKey: "feature2Title",
-    descKey: "feature2Desc",
-  },
-  {
-    id: "3",
-    icon: "truck",
-    titleKey: "feature3Title",
-    descKey: "feature3Desc",
-  },
-  {
-    id: "4",
-    icon: "tool",
-    titleKey: "feature4Title",
-    descKey: "feature4Desc",
-  },
-  {
-    id: "5",
-    icon: "check-circle",
-    titleKey: "feature5Title",
-    descKey: "feature5Desc",
-  },
-  {
-    id: "6",
-    icon: "heart",
-    titleKey: "feature6Title",
-    descKey: "feature6Desc",
-  },
-  {
-    id: "7",
-    icon: "star",
-    titleKey: "feature7Title",
-    descKey: "feature7Desc",
+    icon: "message-circle",
+    textKey: "welcomeFeature2",
   },
 ];
 
@@ -108,25 +75,20 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         </ThemedText>
 
         <View style={styles.featuresGrid}>
-          {FEATURES.map((feature, index) => (
+          {FEATURES.map((feature) => (
             <View 
               key={feature.id} 
               style={[
                 styles.featureCard,
-                { backgroundColor: theme.cardBackground }
+                { backgroundColor: theme.primary + "10" }
               ]}
             >
-              <View style={[styles.featureIconCircle, { backgroundColor: theme.primary + "15" }]}>
-                <Feather name={feature.icon} size={24} color={theme.primary} />
+              <View style={[styles.featureIconCircle, { backgroundColor: theme.primary }]}>
+                <Feather name={feature.icon} size={20} color="#FFFFFF" />
               </View>
-              <View style={styles.featureContent}>
-                <ThemedText type="h4" style={[styles.featureTitle, isRTL && styles.rtlText]}>
-                  {t(feature.titleKey)}
-                </ThemedText>
-                <ThemedText style={[styles.featureDesc, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
-                  {t(feature.descKey)}
-                </ThemedText>
-              </View>
+              <ThemedText style={[styles.featureText, isRTL && styles.rtlText]}>
+                {t(feature.textKey)}
+              </ThemedText>
             </View>
           ))}
         </View>
@@ -170,26 +132,22 @@ const styles = StyleSheet.create({
   featureCard: {
     flexDirection: "row",
     alignItems: "center",
-    padding: Spacing.md,
+    padding: Spacing.lg,
     borderRadius: BorderRadius.lg,
     gap: Spacing.md,
   },
   featureIconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
   },
-  featureContent: {
+  featureText: {
     flex: 1,
-  },
-  featureTitle: {
-    marginBottom: 2,
-  },
-  featureDesc: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: "500",
   },
   button: {
     width: "100%",

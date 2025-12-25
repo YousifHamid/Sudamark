@@ -19,8 +19,10 @@ export const translations: Translations = {
   skip: { ar: "تخطي", en: "Skip" },
   next: { ar: "التالي", en: "Next" },
   getStarted: { ar: "ابدأ الآن", en: "Get Started" },
-  welcomeTitle: { ar: "مرحباً بك في عربتي", en: "Welcome to Arabaty" },
-  welcomeSubtitle: { ar: "سوق السيارات الأول في السودان - اشترِ، بِع، واحصل على خدمات موثوقة", en: "Sudan's #1 car marketplace - Buy, sell, and get trusted services" },
+  welcomeTitle: { ar: "اقل عمولة في تاريخ السودان", en: "Lowest Commission in Sudan's History" },
+  welcomeSubtitle: { ar: "بيع وشراء عربيتك بكل سهولة وأمان!", en: "Buy and sell your car easily and safely!" },
+  welcomeFeature1: { ar: "تصفح آلاف الإعلانات العربية الموثوقة", en: "Browse thousands of verified Arabic ads" },
+  welcomeFeature2: { ar: "تواصل مع البائع مباشرة عبر التطبيق", en: "Contact the seller directly through the app" },
   
   // Onboarding Features
   feature1Title: { ar: "اعثر على سيارتك المثالية", en: "Find Your Perfect Car" },
