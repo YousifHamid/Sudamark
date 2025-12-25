@@ -1,28 +1,31 @@
 import { Platform, I18nManager } from "react-native";
 
-const primaryColor = "#1E3A8A";
-const primaryColorDark = "#3B82F6";
-const secondaryColor = "#F59E0B";
+const primaryColor = "#7C3AED";
+const primaryColorDark = "#A78BFA";
+const secondaryColor = "#60A5FA";
+const accentColor = "#3B82F6";
 
 export const Colors = {
   light: {
     text: "#1F2937",
     textSecondary: "#6B7280",
     buttonText: "#FFFFFF",
-    tabIconDefault: "#6B7280",
+    tabIconDefault: "#9CA3AF",
     tabIconSelected: primaryColor,
     link: primaryColor,
-    backgroundRoot: "#F9FAFB",
+    backgroundRoot: "#F8FAFC",
     backgroundDefault: "#FFFFFF",
-    backgroundSecondary: "#F3F4F6",
-    backgroundTertiary: "#E5E7EB",
+    backgroundSecondary: "#F1F5F9",
+    backgroundTertiary: "#E2E8F0",
     primary: primaryColor,
     secondary: secondaryColor,
+    accent: accentColor,
     success: "#10B981",
     warning: "#F97316",
     error: "#EF4444",
-    border: "#E5E7EB",
+    border: "#E2E8F0",
     cardBackground: "#FFFFFF",
+    tabBarBackground: "#7C3AED",
   },
   dark: {
     text: "#F9FAFB",
@@ -37,11 +40,13 @@ export const Colors = {
     backgroundTertiary: "#475569",
     primary: primaryColorDark,
     secondary: secondaryColor,
+    accent: accentColor,
     success: "#10B981",
     warning: "#F97316",
     error: "#EF4444",
     border: "#334155",
     cardBackground: "#1E293B",
+    tabBarBackground: "#581C87",
   },
 };
 
