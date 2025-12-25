@@ -15,21 +15,25 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  hasSeenOnboarding: boolean;
   login: (phoneNumber: string) => Promise<void>;
   verifyOtp: (otp: string) => Promise<boolean>;
   setUserRole: (role: UserRole, name: string) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<User>) => Promise<void>;
+  completeOnboarding: () => Promise<void>;
   pendingPhoneNumber: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AUTH_STORAGE_KEY = "@car_marketplace_user";
+const ONBOARDING_STORAGE_KEY = "@car_marketplace_onboarding";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
   const [pendingPhoneNumber, setPendingPhoneNumber] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,15 +42,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadUser = async () => {
     try {
-      const userData = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
+      const [userData, onboardingData] = await Promise.all([
+        AsyncStorage.getItem(AUTH_STORAGE_KEY),
+        AsyncStorage.getItem(ONBOARDING_STORAGE_KEY),
+      ]);
       if (userData) {
         setUser(JSON.parse(userData));
+      }
+      if (onboardingData === "true") {
+        setHasSeenOnboarding(true);
       }
     } catch (error) {
       console.error("Error loading user:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const completeOnboarding = async () => {
+    await AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, "true");
+    setHasSeenOnboarding(true);
   };
 
   const login = async (phoneNumber: string) => {
@@ -93,11 +108,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isLoading,
         isAuthenticated: !!user,
+        hasSeenOnboarding,
         login,
         verifyOtp,
         setUserRole,
         logout,
         updateProfile,
+        completeOnboarding,
         pendingPhoneNumber,
       }}
     >

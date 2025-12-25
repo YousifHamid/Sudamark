@@ -2,6 +2,7 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MainTabNavigator from "@/navigation/MainTabNavigator";
 import LoginScreen from "@/screens/LoginScreen";
+import OnboardingScreen from "@/screens/OnboardingScreen";
 import CarDetailScreen from "@/screens/CarDetailScreen";
 import RequestInspectionScreen from "@/screens/RequestInspectionScreen";
 import PostCarScreen from "@/screens/PostCarScreen";
@@ -10,6 +11,7 @@ import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useAuth } from "@/contexts/AuthContext";
 
 export type RootStackParamList = {
+  Onboarding: undefined;
   Login: undefined;
   Main: undefined;
   CarDetail: { carId: string };
@@ -24,7 +26,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootStackNavigator() {
   const screenOptions = useScreenOptions({ transparent: false });
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, hasSeenOnboarding, completeOnboarding } = useAuth();
 
   if (isLoading) {
     return null;
@@ -33,11 +35,20 @@ export default function RootStackNavigator() {
   return (
     <Stack.Navigator screenOptions={screenOptions}>
       {!isAuthenticated ? (
-        <Stack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{ headerShown: false }}
-        />
+        !hasSeenOnboarding ? (
+          <Stack.Screen
+            name="Onboarding"
+            options={{ headerShown: false }}
+          >
+            {() => <OnboardingScreen onComplete={completeOnboarding} />}
+          </Stack.Screen>
+        ) : (
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{ headerShown: false }}
+          />
+        )
       ) : (
         <>
           <Stack.Screen

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, StyleSheet, TextInput, Pressable, Modal, FlatList } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 
 import { ThemedText } from "@/components/ThemedText";
@@ -124,10 +125,11 @@ export default function LoginScreen() {
         ]}
       >
         <View style={styles.header}>
-          <View style={[styles.iconContainer, { backgroundColor: theme.primary }]}>
-            <Feather name="truck" size={40} color="#FFFFFF" />
-          </View>
-          <ThemedText type="h1" style={styles.title}>Car Marketplace</ThemedText>
+          <Image
+            source={require("../../attached_assets/ARABATY2_1766663501110.png")}
+            style={styles.logo}
+            contentFit="contain"
+          />
           <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }]}>
             {step === "phone" && "Enter your phone number to get started"}
             {step === "otp" && "Enter the verification code"}
@@ -310,17 +312,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: Spacing["3xl"],
   },
-  iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: BorderRadius.lg,
-    alignItems: "center",
-    justifyContent: "center",
+  logo: {
+    width: 180,
+    height: 100,
     marginBottom: Spacing.lg,
-  },
-  title: {
-    textAlign: "center",
-    marginBottom: Spacing.sm,
   },
   subtitle: {
     textAlign: "center",
