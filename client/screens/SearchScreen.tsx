@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { View, StyleSheet, FlatList, TextInput, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
@@ -18,7 +17,7 @@ type SearchScreenRouteProp = RouteProp<RootStackParamList, "Search">;
 
 export default function SearchScreen() {
   const insets = useSafeAreaInsets();
-  const tabBarHeight = useBottomTabBarHeight();
+  const tabBarHeight = 65;
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();

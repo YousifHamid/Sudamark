@@ -13,6 +13,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { CarCard } from "@/components/CarCard";
+import { ImageSlider } from "@/components/ImageSlider";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { useCars } from "@/hooks/useCars";
 
@@ -50,6 +51,14 @@ const ADS: AdBanner[] = [
   },
 ];
 
+const SLIDER_IMAGES = [
+  { id: "1", imageUrl: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80" },
+  { id: "2", imageUrl: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=800&q=80" },
+  { id: "3", imageUrl: "https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=800&q=80" },
+  { id: "4", imageUrl: "https://images.unsplash.com/photo-1617531653332-bd46c24f2068?w=800&q=80" },
+  { id: "5", imageUrl: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80" },
+];
+
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
@@ -81,6 +90,8 @@ export default function HomeScreen() {
       scrollIndicatorInsets={{ bottom: insets.bottom }}
       showsVerticalScrollIndicator={false}
     >
+      <ImageSlider images={SLIDER_IMAGES} autoPlayInterval={4000} />
+
       <Pressable
         onPress={handleSearchPress}
         style={[
