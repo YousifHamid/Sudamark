@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, TextInput, Pressable } from "react-native";
+import { View, StyleSheet, TextInput, Pressable, Modal, FlatList } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -14,6 +14,27 @@ import { useAuth } from "@/contexts/AuthContext";
 
 type LoginStep = "phone" | "otp" | "role";
 
+interface Country {
+  id: string;
+  name: string;
+  dialCode: string;
+  flag: string;
+  placeholder: string;
+  minLength: number;
+  maxLength: number;
+}
+
+const SUPPORTED_COUNTRIES: Country[] = [
+  { id: "sd", name: "Sudan", dialCode: "+249", flag: "SD", placeholder: "9X XXX XXXX", minLength: 9, maxLength: 9 },
+  { id: "sa", name: "Saudi Arabia", dialCode: "+966", flag: "SA", placeholder: "5X XXX XXXX", minLength: 9, maxLength: 9 },
+  { id: "om", name: "Oman", dialCode: "+968", flag: "OM", placeholder: "9XXX XXXX", minLength: 8, maxLength: 8 },
+  { id: "qa", name: "Qatar", dialCode: "+974", flag: "QA", placeholder: "XXXX XXXX", minLength: 8, maxLength: 8 },
+  { id: "us", name: "USA", dialCode: "+1", flag: "US", placeholder: "XXX XXX XXXX", minLength: 10, maxLength: 10 },
+  { id: "gb", name: "UK", dialCode: "+44", flag: "GB", placeholder: "XXXX XXXXXX", minLength: 10, maxLength: 11 },
+  { id: "ca", name: "Canada", dialCode: "+1", flag: "CA", placeholder: "XXX XXX XXXX", minLength: 10, maxLength: 10 },
+  { id: "eg", name: "Egypt", dialCode: "+20", flag: "EG", placeholder: "1X XXXX XXXX", minLength: 10, maxLength: 11 },
+];
+
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
@@ -26,6 +47,8 @@ export default function LoginScreen() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState<Country>(SUPPORTED_COUNTRIES[0]);
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
 
   const roles = [
     { id: "buyer", label: "Buyer", icon: "shopping-cart" as const },
@@ -37,16 +60,25 @@ export default function LoginScreen() {
   ];
 
   const handleSendOtp = async () => {
-    if (phoneNumber.length < 9) {
-      setError("Please enter a valid phone number");
+    const cleanNumber = phoneNumber.replace(/\s/g, "");
+    if (cleanNumber.length < selectedCountry.minLength || cleanNumber.length > selectedCountry.maxLength) {
+      setError(`Please enter a valid ${selectedCountry.name} phone number (${selectedCountry.minLength} digits)`);
       return;
     }
     setError("");
     setIsLoading(true);
-    await login(phoneNumber);
+    const fullNumber = selectedCountry.dialCode + cleanNumber;
+    await login(fullNumber);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setIsLoading(false);
     setStep("otp");
+  };
+
+  const handleSelectCountry = (country: Country) => {
+    setSelectedCountry(country);
+    setShowCountryPicker(false);
+    setPhoneNumber("");
+    Haptics.selectionAsync();
   };
 
   const handleVerifyOtp = async () => {
@@ -115,14 +147,23 @@ export default function LoginScreen() {
               Phone Number
             </ThemedText>
             <View style={[styles.inputContainer, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}>
-              <ThemedText style={styles.countryCode}>+966</ThemedText>
+              <Pressable
+                onPress={() => setShowCountryPicker(true)}
+                style={styles.countrySelector}
+              >
+                <ThemedText style={styles.countryFlag}>{selectedCountry.flag}</ThemedText>
+                <ThemedText style={styles.countryCode}>{selectedCountry.dialCode}</ThemedText>
+                <Feather name="chevron-down" size={16} color={theme.textSecondary} />
+              </Pressable>
+              <View style={[styles.inputDivider, { backgroundColor: theme.border }]} />
               <TextInput
                 style={[styles.input, { color: theme.text }]}
-                placeholder="5XX XXX XXXX"
+                placeholder={selectedCountry.placeholder}
                 placeholderTextColor={theme.textSecondary}
                 value={phoneNumber}
                 onChangeText={setPhoneNumber}
                 keyboardType="phone-pad"
+                maxLength={selectedCountry.maxLength + 2}
                 autoFocus
               />
             </View>
@@ -131,6 +172,47 @@ export default function LoginScreen() {
             </Button>
           </View>
         ) : null}
+
+        <Modal
+          visible={showCountryPicker}
+          animationType="slide"
+          transparent
+          onRequestClose={() => setShowCountryPicker(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { backgroundColor: theme.backgroundDefault }]}>
+              <View style={styles.modalHeader}>
+                <ThemedText type="h4">Select Country</ThemedText>
+                <Pressable onPress={() => setShowCountryPicker(false)}>
+                  <Feather name="x" size={24} color={theme.text} />
+                </Pressable>
+              </View>
+              <FlatList
+                data={SUPPORTED_COUNTRIES}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <Pressable
+                    onPress={() => handleSelectCountry(item)}
+                    style={[
+                      styles.countryItem,
+                      { borderBottomColor: theme.border },
+                      selectedCountry.id === item.id && { backgroundColor: theme.primary + "15" },
+                    ]}
+                  >
+                    <ThemedText style={styles.countryItemFlag}>{item.flag}</ThemedText>
+                    <ThemedText style={styles.countryItemName}>{item.name}</ThemedText>
+                    <ThemedText style={[styles.countryItemCode, { color: theme.textSecondary }]}>
+                      {item.dialCode}
+                    </ThemedText>
+                    {selectedCountry.id === item.id ? (
+                      <Feather name="check" size={20} color={theme.primary} />
+                    ) : null}
+                  </Pressable>
+                )}
+              />
+            </View>
+          </View>
+        </Modal>
 
         {step === "otp" ? (
           <View style={styles.form}>
@@ -263,13 +345,63 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     marginBottom: Spacing.xl,
   },
+  countrySelector: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.xs,
+  },
+  countryFlag: {
+    fontSize: 18,
+  },
   countryCode: {
-    marginRight: Spacing.sm,
     fontSize: 16,
+  },
+  inputDivider: {
+    width: 1,
+    height: 24,
+    marginHorizontal: Spacing.sm,
   },
   input: {
     flex: 1,
     fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    borderTopLeftRadius: BorderRadius.xl,
+    borderTopRightRadius: BorderRadius.xl,
+    maxHeight: "60%",
+    paddingBottom: Spacing.xl,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0,0,0,0.1)",
+  },
+  countryItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderBottomWidth: 1,
+  },
+  countryItemFlag: {
+    fontSize: 20,
+    marginRight: Spacing.md,
+  },
+  countryItemName: {
+    flex: 1,
+    fontSize: 16,
+  },
+  countryItemCode: {
+    fontSize: 14,
+    marginRight: Spacing.sm,
   },
   otpInput: {
     height: Spacing.inputHeight,
