@@ -102,7 +102,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
 
       <View style={styles.logoContainer}>
         <Image
-          source={require("../../attached_assets/ARABATY2_1766663501110.png")}
+          source={require("../../attached_assets/ARABATY2_1766665630799.png")}
           style={styles.logo}
           contentFit="contain"
         />
@@ -128,14 +128,12 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
               key={index}
               style={[
                 styles.dot,
-                { backgroundColor: theme.border },
-                currentIndex === index && { backgroundColor: theme.primary, width: 24 },
+                { backgroundColor: index === currentIndex ? theme.primary : theme.border },
               ]}
             />
           ))}
         </View>
-
-        <Button onPress={handleNext} style={styles.nextButton}>
+        <Button onPress={handleNext} style={styles.button}>
           {currentIndex === SLIDES.length - 1 ? t("getStarted") : t("next")}
         </Button>
       </View>
@@ -148,20 +146,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
     paddingHorizontal: Spacing.lg,
+    alignItems: "flex-end",
   },
   skipButton: {
     padding: Spacing.sm,
   },
   logoContainer: {
     alignItems: "center",
-    paddingVertical: Spacing.xl,
+    marginTop: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   logo: {
-    width: 200,
-    height: 120,
+    width: SCREEN_WIDTH * 0.6,
+    height: 80,
   },
   slideList: {
     flex: 1,
@@ -169,8 +167,8 @@ const styles = StyleSheet.create({
   slide: {
     flex: 1,
     alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: Spacing.xl,
-    paddingTop: Spacing.xl,
   },
   iconCircle: {
     width: 100,
@@ -182,22 +180,18 @@ const styles = StyleSheet.create({
   },
   slideTitle: {
     textAlign: "center",
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.md,
   },
   slideDescription: {
     textAlign: "center",
-    marginBottom: Spacing.sm,
-  },
-  rtlText: {
-    writingDirection: "rtl",
+    lineHeight: 24,
   },
   footer: {
-    paddingHorizontal: Spacing.xl,
+    paddingHorizontal: Spacing.lg,
   },
   pagination: {
     flexDirection: "row",
     justifyContent: "center",
-    alignItems: "center",
     marginBottom: Spacing.xl,
     gap: Spacing.sm,
   },
@@ -206,7 +200,10 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
   },
-  nextButton: {
-    marginBottom: Spacing.md,
+  button: {
+    width: "100%",
+  },
+  rtlText: {
+    writingDirection: "rtl",
   },
 });

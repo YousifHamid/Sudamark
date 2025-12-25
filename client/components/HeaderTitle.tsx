@@ -1,7 +1,7 @@
 import React from "react";
-import { View, StyleSheet, Image } from "react-native";
+import { View, StyleSheet } from "react-native";
+import { Image } from "expo-image";
 
-import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing } from "@/constants/theme";
 
@@ -11,13 +11,10 @@ export function HeaderTitle() {
   return (
     <View style={styles.container}>
       <Image
-        source={require("../../assets/images/icon.png")}
-        style={styles.icon}
-        resizeMode="contain"
+        source={require("../../attached_assets/ARABATY2_1766665630799.png")}
+        style={styles.logo}
+        contentFit="contain"
       />
-      <ThemedText style={[styles.title, { color: theme.primary }]}>
-        Car Marketplace
-      </ThemedText>
     </View>
   );
 }
@@ -28,14 +25,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-start",
   },
-  icon: {
-    width: 28,
-    height: 28,
-    marginRight: Spacing.sm,
-    borderRadius: 6,
-  },
-  title: {
-    fontSize: 17,
-    fontWeight: "700",
+  logo: {
+    width: 100,
+    height: 36,
   },
 });

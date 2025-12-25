@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, ScrollView, Pressable, Dimensions } from "react-native";
+import { View, StyleSheet, ScrollView, Pressable, Dimensions, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -12,7 +12,6 @@ import { useTheme } from "@/hooks/useTheme";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { CarCard } from "@/components/CarCard";
-import { ImageSlider } from "@/components/ImageSlider";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { useCars } from "@/hooks/useCars";
 
@@ -25,7 +24,7 @@ export default function HomeScreen() {
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { cars, featuredCars, sliderImages } = useCars();
+  const { cars, featuredCars } = useCars();
 
   const categories = [
     { id: "sedan", labelKey: "sedan", icon: "box" as const },
@@ -34,6 +33,10 @@ export default function HomeScreen() {
     { id: "luxury", labelKey: "luxury", icon: "star" as const },
     { id: "electric", labelKey: "electric", icon: "battery-charging" as const },
   ];
+
+  const handleSearchPress = () => {
+    navigation.navigate("Search", {});
+  };
 
   return (
     <ScrollView
@@ -45,7 +48,22 @@ export default function HomeScreen() {
       scrollIndicatorInsets={{ bottom: insets.bottom }}
       showsVerticalScrollIndicator={false}
     >
-      <ImageSlider images={sliderImages} />
+      <Pressable
+        onPress={handleSearchPress}
+        style={[
+          styles.searchBar,
+          { backgroundColor: theme.backgroundSecondary },
+          isRTL && styles.searchBarRTL,
+        ]}
+      >
+        <Feather name="search" size={20} color={theme.textSecondary} />
+        <ThemedText style={[styles.searchPlaceholder, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+          {t("searchCars")}
+        </ThemedText>
+        <View style={[styles.searchHint, { backgroundColor: theme.primary + "15" }]}>
+          <Feather name="sliders" size={16} color={theme.primary} />
+        </View>
+      </Pressable>
 
       <View style={styles.section}>
         <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t("categories")}</ThemedText>
@@ -111,6 +129,30 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    height: 52,
+    borderRadius: BorderRadius.lg,
+    gap: Spacing.md,
+  },
+  searchBarRTL: {
+    flexDirection: "row-reverse",
+  },
+  searchPlaceholder: {
+    flex: 1,
+    fontSize: 16,
+  },
+  searchHint: {
+    width: 36,
+    height: 36,
+    borderRadius: BorderRadius.sm,
+    alignItems: "center",
+    justifyContent: "center",
   },
   section: {
     marginTop: Spacing.xl,
