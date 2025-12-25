@@ -161,7 +161,7 @@ export const translations: Translations = {
   // FAB Button
   sell: { ar: "بيع", en: "Sell" },
   listYourCar: { ar: "اعرض عربيتك الان", en: "List Your Car Now" },
-  request: { ar: "طلب", en: "Request" },
+  request: { ar: "اعلان سريع", en: "Quick Ad" },
   
   // Advertisements
   adTitle1: { ar: "أسعار لا تُضاهى!", en: "Unbeatable Prices!" },

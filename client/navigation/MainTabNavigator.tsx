@@ -39,7 +39,7 @@ function PostButton() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
-  const BASE_TAB_HEIGHT = 60;
+  const BASE_TAB_HEIGHT = 75;
   const TAB_BAR_HEIGHT = BASE_TAB_HEIGHT + insets.bottom;
 
   const handlePress = () => {
@@ -67,7 +67,7 @@ export default function MainTabNavigator() {
   const { t } = useLanguage();
   const insets = useSafeAreaInsets();
   
-  const BASE_TAB_HEIGHT = 60;
+  const BASE_TAB_HEIGHT = 75;
   const tabBarHeight = BASE_TAB_HEIGHT + insets.bottom;
 
   return (
@@ -82,13 +82,13 @@ export default function MainTabNavigator() {
             borderTopWidth: 1,
             borderTopColor: theme.border,
             height: tabBarHeight,
-            paddingTop: 8,
-            paddingBottom: insets.bottom > 0 ? insets.bottom : Spacing.sm,
+            paddingTop: 12,
+            paddingBottom: insets.bottom > 0 ? insets.bottom : Spacing.md,
           },
           tabBarLabelStyle: {
-            fontSize: 11,
+            fontSize: 13,
             fontWeight: "600",
-            marginTop: 2,
+            marginTop: 4,
           },
           tabBarIconStyle: {
             marginBottom: 0,
@@ -103,7 +103,7 @@ export default function MainTabNavigator() {
             title: t("home"),
             tabBarIcon: ({ color, focused }) => (
               <View style={[styles.tabIconContainer, focused && { backgroundColor: color + "15" }]}>
-                <Feather name="home" size={22} color={color} />
+                <Feather name="home" size={26} color={color} />
               </View>
             ),
           }}
@@ -115,7 +115,7 @@ export default function MainTabNavigator() {
             title: t("search"),
             tabBarIcon: ({ color, focused }) => (
               <View style={[styles.tabIconContainer, focused && { backgroundColor: color + "15" }]}>
-                <Feather name="search" size={22} color={color} />
+                <Feather name="search" size={26} color={color} />
               </View>
             ),
           }}
@@ -141,7 +141,7 @@ export default function MainTabNavigator() {
             title: t("services"),
             tabBarIcon: ({ color, focused }) => (
               <View style={[styles.tabIconContainer, focused && { backgroundColor: color + "15" }]}>
-                <Feather name="tool" size={22} color={color} />
+                <Feather name="tool" size={26} color={color} />
               </View>
             ),
           }}
@@ -153,7 +153,7 @@ export default function MainTabNavigator() {
             title: t("profile"),
             tabBarIcon: ({ color, focused }) => (
               <View style={[styles.tabIconContainer, focused && { backgroundColor: color + "15" }]}>
-                <Feather name="user" size={22} color={color} />
+                <Feather name="user" size={26} color={color} />
               </View>
             ),
           }}
@@ -192,9 +192,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   tabIconContainer: {
-    width: 44,
-    height: 36,
-    borderRadius: 18,
+    width: 50,
+    height: 42,
+    borderRadius: 21,
     alignItems: "center",
     justifyContent: "center",
   },
