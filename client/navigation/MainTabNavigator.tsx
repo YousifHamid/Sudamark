@@ -49,12 +49,12 @@ function PostButton() {
   const isSeller = user?.roles?.includes("seller");
 
   return (
-    <View style={[styles.fabContainer, { bottom: TAB_BAR_HEIGHT + insets.bottom + Spacing["3xl"] }]}>
+    <View style={[styles.fabContainer, { top: insets.top + Spacing["4xl"] }]}>
       <Pressable
         onPress={handlePress}
         style={[styles.fab, { backgroundColor: theme.primary }]}
       >
-        <Feather name={isSeller ? "plus" : "file-text"} size={26} color="#FFFFFF" />
+        <Feather name={isSeller ? "plus" : "file-text"} size={22} color="#FFFFFF" />
         <Text style={styles.fabText}>{isSeller ? t("sell") : t("request")}</Text>
       </Pressable>
     </View>
@@ -174,9 +174,8 @@ export default function MainTabNavigator() {
 const styles = StyleSheet.create({
   fabContainer: {
     position: "absolute",
-    left: 0,
-    right: 0,
-    alignItems: "center",
+    right: Spacing.lg,
+    zIndex: 100,
   },
   fab: {
     flexDirection: "row",

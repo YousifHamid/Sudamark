@@ -335,6 +335,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     marginHorizontal: -Spacing.xs,
+    gap: Spacing.md,
   },
   rtlText: {
     writingDirection: "rtl",
