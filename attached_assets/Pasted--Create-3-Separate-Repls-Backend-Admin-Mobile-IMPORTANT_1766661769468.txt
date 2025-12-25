@@ -1,0 +1,262 @@
+(Create 3 Separate Repls – Backend, Admin, Mobile)
+
+IMPORTANT INSTRUCTION
+You must create THREE SEPARATE REPLS, not one project.
+Each Repl must be independent, production-ready, and connected via APIs.
+
+🔹 REPL #1 — car-marketplace-backend
+ROLE
+
+You are a Senior Backend Engineer building a production-grade backend.
+
+TECH STACK
+
+Node.js
+
+NestJS
+
+PostgreSQL (Supabase or Neon compatible)
+
+JWT Authentication
+
+RBAC (Role-Based Access Control)
+
+CORE RULES
+
+❌ NO mock data
+
+❌ NO fake logic
+
+✅ Real APIs only
+
+✅ Environment variables for secrets
+
+✅ Clean architecture (Modules, Controllers, Services, DTOs)
+
+AUTH & USERS
+
+Registration ONLY via mobile number
+
+OTP verification via WhatsApp
+
+Abstract WhatsApp OTP service (Twilio-ready)
+
+SMS fallback supported
+
+JWT access + refresh tokens
+
+USER ROLES
+
+Buyer
+
+Seller
+
+Mechanic
+
+Auto Electrician
+
+Lawyer
+
+Inspection Center
+
+Admin
+
+DATABASE TABLES (MANDATORY)
+
+You MUST generate and use these tables:
+
+users
+
+roles
+
+user_roles
+
+cars
+
+car_images
+
+service_providers
+
+service_requests
+
+inspection_reports
+
+reviews
+
+slider_ads
+
+cities
+
+admin_logs
+
+FEATURES
+
+Car listings (images, specs, price, city, lat/lng)
+
+Service providers linked to roles
+
+Service requests per car
+
+Inspection workflow:
+
+Pending
+
+Passed
+
+Needs Repair
+
+Rejected
+
+Ratings & reviews
+
+Admin moderation APIs
+
+Basic analytics (counts, trends)
+
+Secure admin endpoints
+
+OUTPUT
+
+Fully working NestJS backend
+
+PostgreSQL schema
+
+REST APIs documented
+
+Ready for production deployment
+
+🔹 REPL #2 — car-marketplace-admin
+ROLE
+
+You are a Senior Frontend Engineer building a professional admin dashboard.
+
+TECH STACK
+
+Next.js
+
+Tailwind CSS
+
+Secure JWT-based admin authentication
+
+CORE RULES
+
+❌ NO mock APIs
+
+✅ Connect to existing backend
+
+✅ Arabic-friendly UI (RTL support)
+
+✅ Clean, professional admin UX
+
+ADMIN FEATURES
+
+Secure admin login
+
+Manage users by role
+
+Approve / reject service providers
+
+Verify inspection centers
+
+Moderate car listings
+
+Upload & manage homepage slider ads
+
+Manage cities & categories
+
+View inspection reports
+
+Analytics dashboard:
+
+Users
+
+Listings
+
+Services
+
+Admin activity logs
+
+OUTPUT
+
+Production-ready Next.js admin panel
+
+Clean folder structure
+
+API service layer
+
+Ready to deploy
+
+🔹 REPL #3 — car-marketplace-mobile
+ROLE
+
+You are a Senior Mobile App Developer.
+
+TECH STACK (CHOOSE ONE)
+
+✅ Flutter (preferred)
+OR
+React Native (Expo)
+
+CORE RULES
+
+❌ NO mock data
+
+✅ Real backend API integration
+
+✅ App Store & Play Store ready
+
+✅ Clean architecture (BLoC or Provider)
+
+MOBILE FEATURES
+
+Arabic-first (RTL default)
+
+Optional English language
+
+Login via mobile number + WhatsApp OTP
+
+Buyer / Seller / Service Provider roles
+
+Car listings with:
+
+Images
+
+Specs
+
+Price
+
+Location
+
+Advanced search & filters
+
+Maps & GPS integration
+
+Service providers directory
+
+Inspection request flow
+
+Ratings & reviews
+
+Full-width homepage slider
+
+Modern UI/UX
+
+OUTPUT
+
+Production-ready mobile app
+
+Proper state management
+
+API integration layer
+
+Ready for Play Store & App Store
+
+✅ FINAL INSTRUCTIONS
+
+Treat each Repl as a real startup-grade project
+
+Keep code clean, scalable, and secure
+
+Follow best practices
+
+No shortcuts
