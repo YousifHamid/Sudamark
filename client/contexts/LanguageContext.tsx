@@ -26,7 +26,16 @@ export const translations: Translations = {
   
   // Official Sponsor
   officialSponsor: { ar: "الراعي الرسمي لهذا الشهر", en: "Official Sponsor of the Month" },
-  sponsorName: { ar: "تويوتا السودان", en: "Toyota Sudan" },
+  sponsorName: { ar: "ارشمود الهندسية", en: "Arshmood Engineering" },
+  sponsorDesc: { ar: "نبني مشاريع هندسية بشكل ذكي، متكامل، ومستدام يلبي طموحاتك", en: "We build smart, integrated, and sustainable engineering projects that meet your ambitions" },
+  
+  // Search Filters
+  filterPrice: { ar: "السعر", en: "Price" },
+  filterLocation: { ar: "الموقع", en: "Location" },
+  filterType: { ar: "النوع", en: "Type" },
+  filterCondition: { ar: "الحالة", en: "Condition" },
+  newCar: { ar: "جديدة", en: "New" },
+  usedCar: { ar: "مستعملة", en: "Used" },
   
   // Onboarding Features
   feature1Title: { ar: "اعثر على سيارتك المثالية", en: "Find Your Perfect Car" },

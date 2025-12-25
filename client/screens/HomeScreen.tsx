@@ -80,6 +80,51 @@ export default function HomeScreen() {
         </View>
       </Pressable>
 
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filtersContainer}
+      >
+        <Pressable 
+          style={[styles.filterChip, { backgroundColor: theme.backgroundSecondary }]}
+          onPress={() => navigation.navigate("Search", {})}
+        >
+          <Feather name="dollar-sign" size={16} color={theme.primary} />
+          <ThemedText style={[styles.filterLabel, { color: theme.text }]}>{t("filterPrice")}</ThemedText>
+          <Feather name="chevron-down" size={14} color={theme.textSecondary} />
+        </Pressable>
+        <Pressable 
+          style={[styles.filterChip, { backgroundColor: theme.backgroundSecondary }]}
+          onPress={() => navigation.navigate("Search", {})}
+        >
+          <Feather name="map-pin" size={16} color={theme.primary} />
+          <ThemedText style={[styles.filterLabel, { color: theme.text }]}>{t("filterLocation")}</ThemedText>
+          <Feather name="chevron-down" size={14} color={theme.textSecondary} />
+        </Pressable>
+        <Pressable 
+          style={[styles.filterChip, { backgroundColor: theme.backgroundSecondary }]}
+          onPress={() => navigation.navigate("Search", {})}
+        >
+          <Feather name="grid" size={16} color={theme.primary} />
+          <ThemedText style={[styles.filterLabel, { color: theme.text }]}>{t("filterType")}</ThemedText>
+          <Feather name="chevron-down" size={14} color={theme.textSecondary} />
+        </Pressable>
+        <Pressable 
+          style={[styles.filterChip, { backgroundColor: theme.backgroundSecondary }]}
+          onPress={() => navigation.navigate("Search", {})}
+        >
+          <Feather name="check-circle" size={16} color="#10B981" />
+          <ThemedText style={[styles.filterLabel, { color: theme.text }]}>{t("newCar")}</ThemedText>
+        </Pressable>
+        <Pressable 
+          style={[styles.filterChip, { backgroundColor: theme.backgroundSecondary }]}
+          onPress={() => navigation.navigate("Search", {})}
+        >
+          <Feather name="refresh-cw" size={16} color="#F59E0B" />
+          <ThemedText style={[styles.filterLabel, { color: theme.text }]}>{t("usedCar")}</ThemedText>
+        </Pressable>
+      </ScrollView>
+
       <View style={styles.sponsorSection}>
         <LinearGradient
           colors={["#F97316", "#FB923C"]}
@@ -97,8 +142,11 @@ export default function HomeScreen() {
               <ThemedText style={[styles.sponsorLabel, isRTL && styles.rtlText]}>
                 {t("officialSponsor")}
               </ThemedText>
-              <ThemedText type="h3" style={[styles.sponsorName, isRTL && styles.rtlText]}>
+              <ThemedText type="h4" style={[styles.sponsorNameText, isRTL && styles.rtlText]}>
                 {t("sponsorName")}
+              </ThemedText>
+              <ThemedText style={[styles.sponsorDescText, isRTL && styles.rtlText]} numberOfLines={2}>
+                {t("sponsorDesc")}
               </ThemedText>
             </View>
           </View>
@@ -280,8 +328,31 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginBottom: Spacing.xs,
   },
-  sponsorName: {
+  sponsorNameText: {
     color: "#FFFFFF",
     fontWeight: "700",
+    marginBottom: Spacing.xs,
+  },
+  sponsorDescText: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  filtersContainer: {
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  filterChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    gap: Spacing.xs,
+  },
+  filterLabel: {
+    fontSize: 13,
+    fontWeight: "500",
   },
 });
