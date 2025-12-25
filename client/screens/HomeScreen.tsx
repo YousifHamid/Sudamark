@@ -40,11 +40,11 @@ export default function HomeScreen() {
   const { cars, featuredCars } = useCars();
 
   const categories = [
-    { id: "sedan", labelKey: "sedan", icon: "box" as const },
-    { id: "suv", labelKey: "suv", icon: "truck" as const },
-    { id: "sports", labelKey: "sports", icon: "zap" as const },
-    { id: "luxury", labelKey: "luxury", icon: "star" as const },
-    { id: "electric", labelKey: "electric", icon: "battery-charging" as const },
+    { id: "new", labelKey: "newCar", icon: "check-circle" as const, color: "#10B981" },
+    { id: "used", labelKey: "usedCar", icon: "refresh-cw" as const, color: "#F59E0B" },
+    { id: "orneek", labelKey: "orneek", icon: "file-text" as const, color: "#3B82F6" },
+    { id: "customs", labelKey: "customs", icon: "package" as const, color: "#8B5CF6" },
+    { id: "body", labelKey: "body", icon: "truck" as const, color: "#EF4444" },
   ];
 
   const handleSearchPress = () => {
@@ -79,51 +79,6 @@ export default function HomeScreen() {
           <Feather name="sliders" size={18} color={theme.primary} />
         </View>
       </Pressable>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filtersContainer}
-      >
-        <Pressable 
-          style={[styles.filterChip, { backgroundColor: theme.backgroundSecondary }]}
-          onPress={() => navigation.navigate("Search", {})}
-        >
-          <Feather name="dollar-sign" size={16} color={theme.primary} />
-          <ThemedText style={[styles.filterLabel, { color: theme.text }]}>{t("filterPrice")}</ThemedText>
-          <Feather name="chevron-down" size={14} color={theme.textSecondary} />
-        </Pressable>
-        <Pressable 
-          style={[styles.filterChip, { backgroundColor: theme.backgroundSecondary }]}
-          onPress={() => navigation.navigate("Search", {})}
-        >
-          <Feather name="map-pin" size={16} color={theme.primary} />
-          <ThemedText style={[styles.filterLabel, { color: theme.text }]}>{t("filterLocation")}</ThemedText>
-          <Feather name="chevron-down" size={14} color={theme.textSecondary} />
-        </Pressable>
-        <Pressable 
-          style={[styles.filterChip, { backgroundColor: theme.backgroundSecondary }]}
-          onPress={() => navigation.navigate("Search", {})}
-        >
-          <Feather name="grid" size={16} color={theme.primary} />
-          <ThemedText style={[styles.filterLabel, { color: theme.text }]}>{t("filterType")}</ThemedText>
-          <Feather name="chevron-down" size={14} color={theme.textSecondary} />
-        </Pressable>
-        <Pressable 
-          style={[styles.filterChip, { backgroundColor: theme.backgroundSecondary }]}
-          onPress={() => navigation.navigate("Search", {})}
-        >
-          <Feather name="check-circle" size={16} color="#10B981" />
-          <ThemedText style={[styles.filterLabel, { color: theme.text }]}>{t("newCar")}</ThemedText>
-        </Pressable>
-        <Pressable 
-          style={[styles.filterChip, { backgroundColor: theme.backgroundSecondary }]}
-          onPress={() => navigation.navigate("Search", {})}
-        >
-          <Feather name="refresh-cw" size={16} color="#F59E0B" />
-          <ThemedText style={[styles.filterLabel, { color: theme.text }]}>{t("usedCar")}</ThemedText>
-        </Pressable>
-      </ScrollView>
 
       <View style={styles.sponsorSection}>
         <LinearGradient
@@ -163,11 +118,11 @@ export default function HomeScreen() {
           {categories.map((category) => (
             <Pressable
               key={category.id}
-              style={[styles.categoryChip, { backgroundColor: theme.backgroundSecondary }]}
+              style={[styles.categoryChip, { backgroundColor: category.color + "15" }]}
               onPress={() => navigation.navigate("Search", { category: category.id })}
             >
-              <Feather name={category.icon} size={20} color={theme.primary} />
-              <ThemedText type="small" style={[styles.categoryLabel, isRTL && styles.rtlText]}>{t(category.labelKey)}</ThemedText>
+              <Feather name={category.icon} size={18} color={category.color} />
+              <ThemedText type="small" style={[styles.categoryLabel, { color: category.color }, isRTL && styles.rtlText]}>{t(category.labelKey)}</ThemedText>
             </Pressable>
           ))}
         </ScrollView>
@@ -337,22 +292,5 @@ const styles = StyleSheet.create({
     color: "rgba(255,255,255,0.85)",
     fontSize: 12,
     lineHeight: 16,
-  },
-  filtersContainer: {
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.sm,
-    marginBottom: Spacing.md,
-  },
-  filterChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.full,
-    gap: Spacing.xs,
-  },
-  filterLabel: {
-    fontSize: 13,
-    fontWeight: "500",
   },
 });

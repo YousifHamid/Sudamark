@@ -34,8 +34,13 @@ export const translations: Translations = {
   filterLocation: { ar: "الموقع", en: "Location" },
   filterType: { ar: "النوع", en: "Type" },
   filterCondition: { ar: "الحالة", en: "Condition" },
+  
+  // Car Categories
   newCar: { ar: "جديدة", en: "New" },
   usedCar: { ar: "مستعملة", en: "Used" },
+  orneek: { ar: "اورنيك", en: "Orneek" },
+  customs: { ar: "جمارك", en: "Customs" },
+  body: { ar: "هيكل", en: "Body" },
   
   // Onboarding Features
   feature1Title: { ar: "اعثر على سيارتك المثالية", en: "Find Your Perfect Car" },
