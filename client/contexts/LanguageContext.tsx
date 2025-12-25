@@ -24,6 +24,14 @@ export const translations: Translations = {
   welcomeFeature1: { ar: "تصفح آلاف الإعلانات العربية الموثوقة", en: "Browse thousands of verified Arabic ads" },
   welcomeFeature2: { ar: "تواصل مع البائع مباشرة عبر التطبيق", en: "Contact the seller directly through the app" },
   
+  // Success Partners
+  successPartners: { ar: "شركاء النجاح", en: "Success Partners" },
+  partner1: { ar: "تويوتا السودان", en: "Toyota Sudan" },
+  partner2: { ar: "هيونداي الخرطوم", en: "Hyundai Khartoum" },
+  partner3: { ar: "مرسيدس بنز", en: "Mercedes Benz" },
+  partner4: { ar: "نيسان السودان", en: "Nissan Sudan" },
+  partner5: { ar: "كيا موتورز", en: "Kia Motors" },
+  
   // Onboarding Features
   feature1Title: { ar: "اعثر على سيارتك المثالية", en: "Find Your Perfect Car" },
   feature1Desc: { ar: "تصفح آلاف السيارات من بائعين موثوقين", en: "Browse thousands of cars from trusted sellers" },

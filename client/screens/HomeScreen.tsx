@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { View, StyleSheet, ScrollView, Pressable, Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -7,6 +7,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withDelay, Easing } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -59,6 +60,56 @@ const SLIDER_IMAGES = [
   { id: "5", imageUrl: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80" },
 ];
 
+const PARTNERS = [
+  { id: "1", nameKey: "partner1", icon: "truck" as const },
+  { id: "2", nameKey: "partner2", icon: "compass" as const },
+  { id: "3", nameKey: "partner3", icon: "star" as const },
+  { id: "4", nameKey: "partner4", icon: "award" as const },
+  { id: "5", nameKey: "partner5", icon: "shield" as const },
+];
+
+const ORANGE_COLORS = ["#F97316", "#FB923C", "#EA580C", "#FDBA74", "#F59E0B"];
+
+function AnimatedPartnerItem({ partner, index, t, isRTL }: { partner: typeof PARTNERS[0], index: number, t: any, isRTL: boolean }) {
+  const scale = useSharedValue(1);
+  const opacity = useSharedValue(0.8);
+  
+  useEffect(() => {
+    scale.value = withDelay(
+      index * 200,
+      withRepeat(
+        withTiming(1.05, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+        -1,
+        true
+      )
+    );
+    opacity.value = withDelay(
+      index * 200,
+      withRepeat(
+        withTiming(1, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+        -1,
+        true
+      )
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }));
+
+  return (
+    <Animated.View style={[styles.partnerItem, animatedStyle]}>
+      <View style={[styles.partnerIcon, { backgroundColor: ORANGE_COLORS[index % ORANGE_COLORS.length] }]}>
+        <Feather name={partner.icon} size={22} color="#FFFFFF" />
+      </View>
+      <ThemedText style={[styles.partnerName, isRTL && styles.rtlText]} numberOfLines={1}>
+        {t(partner.nameKey)}
+      </ThemedText>
+    </Animated.View>
+  );
+}
+
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
@@ -100,14 +151,35 @@ export default function HomeScreen() {
           isRTL && styles.searchBarRTL,
         ]}
       >
-        <Feather name="search" size={20} color={theme.textSecondary} />
+        <Feather name="search" size={22} color={theme.textSecondary} />
         <ThemedText style={[styles.searchPlaceholder, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
           {t("searchCars")}
         </ThemedText>
         <View style={[styles.searchHint, { backgroundColor: theme.primary + "15" }]}>
-          <Feather name="sliders" size={16} color={theme.primary} />
+          <Feather name="sliders" size={18} color={theme.primary} />
         </View>
       </Pressable>
+
+      <View style={styles.partnersSection}>
+        <ThemedText type="h4" style={[styles.partnersTitle, isRTL && styles.rtlText]}>
+          {t("successPartners")}
+        </ThemedText>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.partnersContainer}
+        >
+          {PARTNERS.map((partner, index) => (
+            <AnimatedPartnerItem
+              key={partner.id}
+              partner={partner}
+              index={index}
+              t={t}
+              isRTL={isRTL}
+            />
+          ))}
+        </ScrollView>
+      </View>
 
       <ScrollView
         horizontal
@@ -127,7 +199,7 @@ export default function HomeScreen() {
             >
               <View style={[styles.adContent, isRTL && styles.adContentRTL]}>
                 <View style={styles.adIcon}>
-                  <Feather name={ad.icon} size={28} color="#FFFFFF" />
+                  <Feather name={ad.icon} size={30} color="#FFFFFF" />
                 </View>
                 <View style={styles.adTextContainer}>
                   <ThemedText type="h4" style={[styles.adTitle, isRTL && styles.rtlText]}>
@@ -159,7 +231,7 @@ export default function HomeScreen() {
               style={[styles.categoryChip, { backgroundColor: theme.backgroundSecondary }]}
               onPress={() => navigation.navigate("Search", { category: category.id })}
             >
-              <Feather name={category.icon} size={18} color={theme.primary} />
+              <Feather name={category.icon} size={20} color={theme.primary} />
               <ThemedText type="small" style={[styles.categoryLabel, isRTL && styles.rtlText]}>{t(category.labelKey)}</ThemedText>
             </Pressable>
           ))}
@@ -339,5 +411,38 @@ const styles = StyleSheet.create({
   },
   rtlText: {
     writingDirection: "rtl",
+  },
+  partnersSection: {
+    marginBottom: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+  },
+  partnersTitle: {
+    marginBottom: Spacing.md,
+  },
+  partnersContainer: {
+    gap: Spacing.md,
+    paddingRight: Spacing.lg,
+  },
+  partnerItem: {
+    alignItems: "center",
+    width: 80,
+  },
+  partnerIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.xs,
+    shadowColor: "#F97316",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  partnerName: {
+    fontSize: 11,
+    textAlign: "center",
+    fontWeight: "500",
   },
 });
