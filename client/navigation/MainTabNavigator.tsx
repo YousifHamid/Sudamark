@@ -49,7 +49,7 @@ function PostButton() {
   const isSeller = user?.roles?.includes("seller");
 
   return (
-    <View style={[styles.fabContainer, { bottom: TAB_BAR_HEIGHT + insets.bottom + Spacing.lg }]}>
+    <View style={[styles.fabContainer, { bottom: TAB_BAR_HEIGHT + insets.bottom + Spacing["3xl"] }]}>
       <Pressable
         onPress={handlePress}
         style={[styles.fab, { backgroundColor: theme.primary }]}

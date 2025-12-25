@@ -112,6 +112,7 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: BorderRadius.md,
     overflow: "hidden",
+    marginBottom: Spacing.md,
   },
   image: {
     height: 120,
