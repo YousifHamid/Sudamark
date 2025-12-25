@@ -21,15 +21,15 @@ export function HeaderTitle() {
 
   return (
     <View style={[styles.container, isRTL && styles.containerRTL]}>
-      <Pressable onPress={handleSellPress} style={styles.sellButton}>
-        <Feather name="plus-circle" size={16} color="#FFFFFF" />
-        <Text style={styles.sellText}>{t("listYourCar")}</Text>
-      </Pressable>
       <Image
         source={require("../../attached_assets/ARABATY2_1766665788809.png")}
         style={styles.logo}
         contentFit="contain"
       />
+      <Pressable onPress={handleSellPress} style={styles.sellButton}>
+        <Feather name="plus-circle" size={16} color="#FFFFFF" />
+        <Text style={styles.sellText}>{t("listYourCar")}</Text>
+      </Pressable>
     </View>
   );
 }
