@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Pressable, StyleSheet } from "react-native";
+import { View, Pressable, StyleSheet, Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
@@ -35,10 +35,11 @@ function EmptyScreen() {
 
 function PostButton() {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
-  const TAB_BAR_HEIGHT = 49;
+  const TAB_BAR_HEIGHT = 65;
 
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -48,12 +49,13 @@ function PostButton() {
   const isSeller = user?.role === "seller";
 
   return (
-    <View style={[styles.fabContainer, { bottom: TAB_BAR_HEIGHT + insets.bottom + Spacing.xl }]}>
+    <View style={[styles.fabContainer, { bottom: TAB_BAR_HEIGHT + insets.bottom }]}>
       <Pressable
         onPress={handlePress}
         style={[styles.fab, { backgroundColor: theme.primary }]}
       >
-        <Feather name={isSeller ? "plus" : "file-text"} size={28} color="#FFFFFF" />
+        <Feather name={isSeller ? "plus" : "file-text"} size={26} color="#FFFFFF" />
+        <Text style={styles.fabText}>{isSeller ? t("sell") : t("request")}</Text>
       </Pressable>
     </View>
   );
@@ -69,20 +71,31 @@ export default function MainTabNavigator() {
         initialRouteName="HomeTab"
         screenOptions={{
           tabBarActiveTintColor: theme.primary,
-          tabBarInactiveTintColor: theme.tabIconDefault,
+          tabBarInactiveTintColor: theme.textSecondary,
           tabBarStyle: {
             position: "absolute",
             backgroundColor: Platform.select({
               ios: "transparent",
-              android: theme.backgroundRoot,
+              android: theme.backgroundDefault,
             }),
-            borderTopWidth: 0,
-            elevation: 0,
+            borderTopWidth: 1,
+            borderTopColor: theme.border,
+            height: 65,
+            paddingTop: 8,
+            paddingBottom: Platform.OS === "ios" ? 0 : 8,
+          },
+          tabBarLabelStyle: {
+            fontSize: 11,
+            fontWeight: "600",
+            marginTop: 4,
+          },
+          tabBarIconStyle: {
+            marginBottom: -2,
           },
           tabBarBackground: () =>
             Platform.OS === "ios" ? (
               <BlurView
-                intensity={100}
+                intensity={95}
                 tint={isDark ? "dark" : "light"}
                 style={StyleSheet.absoluteFill}
               />
@@ -95,8 +108,10 @@ export default function MainTabNavigator() {
           component={HomeStackNavigator}
           options={{
             title: t("home"),
-            tabBarIcon: ({ color, size }) => (
-              <Feather name="home" size={size} color={color} />
+            tabBarIcon: ({ color, focused }) => (
+              <View style={[styles.tabIconContainer, focused && { backgroundColor: color + "15" }]}>
+                <Feather name="home" size={22} color={color} />
+              </View>
             ),
           }}
         />
@@ -105,8 +120,10 @@ export default function MainTabNavigator() {
           component={SearchScreen}
           options={{
             title: t("search"),
-            tabBarIcon: ({ color, size }) => (
-              <Feather name="search" size={size} color={color} />
+            tabBarIcon: ({ color, focused }) => (
+              <View style={[styles.tabIconContainer, focused && { backgroundColor: color + "15" }]}>
+                <Feather name="search" size={22} color={color} />
+              </View>
             ),
           }}
         />
@@ -129,8 +146,10 @@ export default function MainTabNavigator() {
           component={ServicesScreen}
           options={{
             title: t("services"),
-            tabBarIcon: ({ color, size }) => (
-              <Feather name="briefcase" size={size} color={color} />
+            tabBarIcon: ({ color, focused }) => (
+              <View style={[styles.tabIconContainer, focused && { backgroundColor: color + "15" }]}>
+                <Feather name="tool" size={22} color={color} />
+              </View>
             ),
           }}
         />
@@ -139,8 +158,10 @@ export default function MainTabNavigator() {
           component={ProfileStackNavigator}
           options={{
             title: t("profile"),
-            tabBarIcon: ({ color, size }) => (
-              <Feather name="user" size={size} color={color} />
+            tabBarIcon: ({ color, focused }) => (
+              <View style={[styles.tabIconContainer, focused && { backgroundColor: color + "15" }]}>
+                <Feather name="user" size={22} color={color} />
+              </View>
             ),
           }}
         />
@@ -158,15 +179,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 30,
+    gap: 8,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  fabText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  tabIconContainer: {
+    width: 40,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

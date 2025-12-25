@@ -21,8 +21,12 @@ A multi-role car marketplace mobile application built with React Native and Expo
 - **Tab navigation labels in Arabic (الرئيسية, بحث, الخدمات, الملف)**
 - **Sudanese cities for location filters (الخرطوم, أم درمان, بحري, بورتسودان, كسلا)**
 - **Currency shown in Sudanese Pounds (SDG/جنيه)**
-- **Updated app with new Arabaty logo (ARABATY2_1766665630799.png) in HeaderTitle, Onboarding**
+- **Updated app with new Arabaty logo (ARABATY2_1766665788809.png) in HeaderTitle, Onboarding, App Icon**
 - **Replaced car classified image slider with clean search bar on HomeScreen**
+- **Header logo enlarged 1.5x for better visibility**
+- **Improved bottom tab bar with larger icons, better styling, and highlighted active state**
+- **Added Arabic advertisement banners on HomeScreen with gradient cards**
+- **FAB button now shows "بيع" (Sell) or "طلب" (Request) label based on user role**
 
 ## User Preferences
 

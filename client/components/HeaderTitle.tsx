@@ -11,7 +11,7 @@ export function HeaderTitle() {
   return (
     <View style={styles.container}>
       <Image
-        source={require("../../attached_assets/ARABATY2_1766665630799.png")}
+        source={require("../../attached_assets/ARABATY2_1766665788809.png")}
         style={styles.logo}
         contentFit="contain"
       />
@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
   },
   logo: {
-    width: 100,
-    height: 36,
+    width: 150,
+    height: 54,
   },
 });

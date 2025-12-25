@@ -145,6 +145,20 @@ export const translations: Translations = {
   // Currency
   sdg: { ar: "جنيه", en: "SDG" },
   km: { ar: "كم", en: "km" },
+  
+  // FAB Button
+  sell: { ar: "بيع", en: "Sell" },
+  request: { ar: "طلب", en: "Request" },
+  
+  // Advertisements
+  adTitle1: { ar: "أسعار لا تُضاهى!", en: "Unbeatable Prices!" },
+  adDesc1: { ar: "اكتشف أفضل العروض على السيارات المستعملة في السودان", en: "Discover the best deals on used cars in Sudan" },
+  adTitle2: { ar: "بيع سيارتك بسرعة", en: "Sell Your Car Fast" },
+  adDesc2: { ar: "أعلن مجاناً واحصل على مشترين اليوم", en: "List for free and get buyers today" },
+  adTitle3: { ar: "فحص سيارات معتمد", en: "Certified Car Inspection" },
+  adDesc3: { ar: "تأكد من حالة سيارتك قبل الشراء مع مراكز الفحص الموثوقة", en: "Verify car condition before buying with trusted inspection centers" },
+  learnMore: { ar: "اعرف المزيد", en: "Learn More" },
+  advertisement: { ar: "إعلان", en: "Ad" },
 };
 
 interface LanguageContextType {
