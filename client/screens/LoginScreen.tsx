@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { View, StyleSheet, TextInput, Pressable, Modal, FlatList, Alert } from "react-native";
+import { View, StyleSheet, TextInput, Pressable, Modal, FlatList, Alert, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
-import * as Clipboard from "expo-clipboard";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -106,9 +105,8 @@ export default function LoginScreen() {
     Haptics.selectionAsync();
   };
 
-  const handleCopyToken = async () => {
+  const handleCopyToken = () => {
     if (demoToken) {
-      await Clipboard.setStringAsync(demoToken);
       setToken(demoToken);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
@@ -304,9 +302,9 @@ export default function LoginScreen() {
                 </ThemedText>
                 <View style={styles.tokenRow}>
                   <ThemedText type="small" style={[styles.tokenText, { color: theme.primary }]} numberOfLines={1}>
-                    {demoToken.substring(0, 20)}...
+                    {demoToken.substring(0, 24)}...
                   </ThemedText>
-                  <Feather name="copy" size={16} color={theme.primary} />
+                  <Feather name="arrow-down" size={16} color={theme.primary} />
                 </View>
               </Pressable>
             ) : null}

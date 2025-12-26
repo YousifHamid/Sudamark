@@ -101,14 +101,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const fullPhone = `${countryCode || "+249"}${phone.replace(/\s/g, "")}`;
       
-      if (!rateLimit(`magic:${email}`)) {
+      const combinedRateKey = `magic:${email}:${fullPhone}`;
+      if (!rateLimit(combinedRateKey)) {
         return res.status(429).json({ error: "Too many requests. Please try again later." });
       }
       
       const token = crypto.randomBytes(32).toString("hex");
       const expiresAt = new Date(Date.now() + MAGIC_LINK_EXPIRY_MINUTES * 60 * 1000);
       
-      await db.delete(magicTokens).where(eq(magicTokens.email, email));
+      await db.delete(magicTokens).where(and(
+        eq(magicTokens.email, email),
+        eq(magicTokens.phone, fullPhone),
+        eq(magicTokens.used, false)
+      ));
+      
       await db.insert(magicTokens).values({
         email,
         phone: fullPhone,

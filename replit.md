@@ -2,12 +2,12 @@
 
 ## Overview
 
-A multi-role car marketplace mobile application built with React Native and Expo for the Sudanese market. The app connects car buyers, sellers, and automotive service providers (mechanics, electricians, lawyers, and inspection centers) in a unified marketplace. The application features mobile-first authentication via phone number with OTP verification (demo code: 123456), car listing and browsing capabilities, and a service provider directory. **Arabic is the default language** with English available as an option.
+A multi-role car marketplace mobile application built with React Native and Expo for the Sudanese market. The app connects car buyers, sellers, and automotive service providers (mechanics, electricians, lawyers, and inspection centers) in a unified marketplace. The application features **email magic link authentication** with phone number collection (phone used for contact purposes, not verified), car listing and browsing capabilities, and a service provider directory. **Arabic is the default language** with English available as an option.
 
 ## Recent Changes (December 2025)
 
 - Built complete MVP with 5-tab navigation (Home, Search, Services, Profile + FAB)
-- Implemented phone + OTP authentication flow with role selection
+- Implemented email magic link authentication with phone collection and role selection
 - Created car listing screens (Home, Search, CarDetail, PostCar)
 - Added service providers directory with category filtering
 - Implemented favorites and AsyncStorage persistence
@@ -49,10 +49,11 @@ Preferred communication style: Simple, everyday language.
 - **Storage**: In-memory storage class (`MemStorage`) as default, designed for easy swap to database-backed implementation
 
 ### Authentication Flow
-- Phone number input → WhatsApp OTP verification → Role selection (first-time users)
+- Email + phone input → Magic link sent to email → Role selection (first-time users)
 - User roles: Buyer, Seller, Mechanic, Electrician, Lawyer, Inspection Center
 - JWT-based session management with AsyncStorage persistence on client
-- OTP service abstracted for Twilio integration with SMS fallback
+- Phone number collected for contact purposes (not verified)
+- Demo mode: Magic token displayed in UI for testing without email service
 
 ### Navigation Structure
 - **Tab Navigation**: 5 tabs (Home, Search, Post/Sell, Services, Profile)
@@ -93,13 +94,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Production Configuration
 
-### OTP Authentication
-- **Demo Mode**: Currently using demo OTP code "123456" for testing
-- **Production Mode**: To enable real SMS OTP:
-  1. Set up Twilio account and get credentials
-  2. Add secrets: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`
-  3. Set `OTP_DEMO_MODE=false` in production environment
-  4. The backend is ready to integrate with Twilio SMS API
+### Email Magic Link Authentication
+- **Demo Mode**: Magic token displayed in UI and logged to console for testing
+- **Production Mode**: To enable real email sending:
+  1. Integrate an email service (SendGrid, Mailgun, AWS SES, etc.)
+  2. Add email service credentials as secrets
+  3. Update `send-magic-link` endpoint to send actual emails
+  4. Magic links expire after 30 minutes and are single-use
 
 ### Admin Dashboard
 - Access at `/admin` route (e.g., https://your-domain.replit.app/admin)
@@ -108,11 +109,11 @@ Preferred communication style: Simple, everyday language.
 
 ### Database
 - PostgreSQL with Drizzle ORM
-- Tables: users, cars, service_providers, favorites, slider_images, admins, otp_codes
+- Tables: users, cars, service_providers, favorites, slider_images, admins, otp_codes, magic_tokens
 - Run `npm run db:push` to sync schema changes
 
 ### API Endpoints
-- `/api/auth/*` - Authentication (send-otp, verify-otp, register)
+- `/api/auth/*` - Authentication (send-magic-link, verify-magic-link, verify-token, register)
 - `/api/cars/*` - Car listings CRUD
 - `/api/service-providers/*` - Service providers
 - `/api/favorites/*` - User favorites
