@@ -1,8 +1,7 @@
 import React from "react";
 import { View, Pressable, StyleSheet, Text } from "react-native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createBottomTabNavigator, BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -28,86 +27,61 @@ function EmptyScreen() {
   return <View />;
 }
 
-export default function MainTabNavigator() {
+function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const { theme } = useTheme();
   const { t } = useLanguage();
   const insets = useSafeAreaInsets();
 
-  return (
-    <View style={{ flex: 1 }}>
-      <Tab.Navigator
-        initialRouteName="HomeTab"
-        screenOptions={{
-          tabBarStyle: { display: "none" },
-          headerShown: false,
-        }}
-      >
-        <Tab.Screen name="HomeTab" component={HomeStackNavigator} />
-        <Tab.Screen name="SearchTab" component={SearchScreen} />
-        <Tab.Screen name="PostTab" component={EmptyScreen} />
-        <Tab.Screen name="ServicesTab" component={ServicesScreen} />
-        <Tab.Screen name="ProfileTab" component={ProfileStackNavigator} />
-      </Tab.Navigator>
+  const tabs = [
+    { name: "HomeTab", icon: "home" as const, labelKey: "home" },
+    { name: "SearchTab", icon: "search" as const, labelKey: "search" },
+    { name: "ServicesTab", icon: "tool" as const, labelKey: "services" },
+    { name: "ProfileTab", icon: "user" as const, labelKey: "profile" },
+  ];
 
-      <View style={[styles.floatingNavContainer, { bottom: insets.bottom + Spacing.md }]}>
-        <View style={[styles.navButtonsRow, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
-          <NavButton
-            icon="home"
-            label={t("home")}
-            tabName="HomeTab"
-            theme={theme}
-          />
-          <NavButton
-            icon="search"
-            label={t("search")}
-            tabName="SearchTab"
-            theme={theme}
-          />
-          <NavButton
-            icon="tool"
-            label={t("services")}
-            tabName="ServicesTab"
-            theme={theme}
-          />
-          <NavButton
-            icon="user"
-            label={t("profile")}
-            tabName="ProfileTab"
-            theme={theme}
-          />
-        </View>
+  return (
+    <View style={[styles.floatingNavContainer, { bottom: insets.bottom + Spacing.md }]}>
+      <View style={[styles.navButtonsRow, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
+        {tabs.map((tab) => {
+          const currentRouteName = state.routes[state.index]?.name;
+          const isActive = currentRouteName === tab.name;
+
+          const handlePress = () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            navigation.navigate(tab.name);
+          };
+
+          return (
+            <Pressable key={tab.name} onPress={handlePress} style={styles.navButton}>
+              <View style={[styles.navIconContainer, isActive && { backgroundColor: theme.primary + "20" }]}>
+                <Feather name={tab.icon} size={26} color={isActive ? theme.primary : theme.text} />
+              </View>
+              <Text style={[styles.navLabel, { color: isActive ? theme.primary : theme.text, fontWeight: isActive ? "700" : "600" }]}>
+                {t(tab.labelKey)}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
 }
 
-interface NavButtonProps {
-  icon: keyof typeof Feather.glyphMap;
-  label: string;
-  tabName: keyof MainTabParamList;
-  theme: any;
-}
-
-function NavButton({ icon, label, tabName, theme }: NavButtonProps) {
-  const navigation = useNavigation<any>();
-  const state = navigation.getState();
-  const currentRoute = state?.routes[state?.index]?.name;
-  const isActive = currentRoute === tabName;
-
-  const handlePress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    navigation.navigate(tabName);
-  };
-
+export default function MainTabNavigator() {
   return (
-    <Pressable onPress={handlePress} style={styles.navButton}>
-      <View style={[styles.navIconContainer, isActive && { backgroundColor: theme.primary + "20" }]}>
-        <Feather name={icon} size={26} color={isActive ? theme.primary : theme.text} strokeWidth={isActive ? 2.5 : 2} />
-      </View>
-      <Text style={[styles.navLabel, { color: isActive ? theme.primary : theme.text, fontWeight: isActive ? "700" : "600" }]}>
-        {label}
-      </Text>
-    </Pressable>
+    <Tab.Navigator
+      initialRouteName="HomeTab"
+      tabBar={(props) => <CustomTabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Tab.Screen name="HomeTab" component={HomeStackNavigator} />
+      <Tab.Screen name="SearchTab" component={SearchScreen} />
+      <Tab.Screen name="PostTab" component={EmptyScreen} />
+      <Tab.Screen name="ServicesTab" component={ServicesScreen} />
+      <Tab.Screen name="ProfileTab" component={ProfileStackNavigator} />
+    </Tab.Navigator>
   );
 }
 
