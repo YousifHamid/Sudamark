@@ -32,6 +32,10 @@ A multi-role car marketplace mobile application built with React Native and Expo
 - **ServiceProviderDetailScreen**: Detailed view with WhatsApp, call, and map integration
 - **ProfileScreen navigation**: My Listings and Favorites now navigate to filtered search views
 - **Removed inspection_center role** from service provider categories (only mechanics, electricians, lawyers)
+- **Payment System for Car Listings**: First 1000 listings are free, listings #1001+ require 10,000 SDG payment via Bankak QR code
+- **3-Step Post Car Flow**: Form → QR Payment → Waiting for Approval (for paid listings)
+- **Admin Payments Dashboard**: New "المدفوعات" tab with approve/reject buttons and auto-approval toggle
+- **Unified Color Scheme**: 3 colors only - dark blue (#1E3A5F), warm orange (#E8A54B), and white - applied consistently in both light and dark modes
 
 ## User Preferences
 
@@ -126,4 +130,8 @@ Preferred communication style: Simple, everyday language.
 - `/api/favorites/*` - User favorites
 - `/api/offers/*` - Buyer offers (create, list my-offers, received, update status)
 - `/api/inspection-requests/*` - Inspection requests (create, received, respond)
+- `/api/listings/status` - Check if payment is required (totalListings vs freeLimit)
+- `/api/payments` - Submit payment for car listing
 - `/api/admin/*` - Admin dashboard APIs (requires admin auth)
+- `/api/admin/payments` - List all payments (GET), approve/reject payments (PUT)
+- `/api/admin/settings/auto-approve` - Get/set auto-approval setting
