@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
 import { db } from "./db";
-import { users, cars, serviceProviders, favorites, sliderImages, admins, otpCodes, magicTokens, buyerOffers, inspectionRequests } from "@shared/schema";
+import { users, cars, serviceProviders, favorites, sliderImages, admins, otpCodes, magicTokens, buyerOffers, inspectionRequests, payments, appSettings } from "@shared/schema";
 import crypto from "crypto";
 import { eq, desc, and, gt, like, or, sql } from "drizzle-orm";
 
@@ -1181,6 +1181,183 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedRequest);
     } catch (error) {
       res.status(500).json({ error: "Failed to update inspection request" });
+    }
+  });
+
+  // Payment System APIs
+  const FREE_LISTING_LIMIT = 1000;
+  const LISTING_FEE = 10000;
+
+  app.get("/api/listings/status", async (req: Request, res: Response) => {
+    try {
+      const [result] = await db.select({ count: sql<number>`count(*)` }).from(cars);
+      const totalListings = Number(result?.count || 0);
+      const requiresPayment = totalListings >= FREE_LISTING_LIMIT;
+      
+      res.json({
+        totalListings,
+        freeLimit: FREE_LISTING_LIMIT,
+        requiresPayment,
+        listingFee: LISTING_FEE,
+      });
+    } catch (error) {
+      console.error("Get listing status error:", error);
+      res.status(500).json({ error: "Failed to get listing status" });
+    }
+  });
+
+  app.post("/api/payments", authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { carId, trxNo, amount, paidAt } = req.body;
+      const userId = req.user!.id;
+      
+      if (!trxNo || !amount || !paidAt) {
+        return res.status(400).json({ error: "Transaction details required" });
+      }
+      
+      if (amount < LISTING_FEE) {
+        return res.status(400).json({ error: `Minimum payment is ${LISTING_FEE} SDG` });
+      }
+      
+      const [existingPayment] = await db.select().from(payments).where(eq(payments.trxNo, trxNo));
+      if (existingPayment) {
+        return res.status(400).json({ error: "Transaction ID already used" });
+      }
+      
+      const [newPayment] = await db.insert(payments).values({
+        userId,
+        carId,
+        trxNo,
+        amount,
+        paidAt,
+        status: "pending",
+      }).returning();
+      
+      const [autoApproveSetting] = await db.select().from(appSettings).where(eq(appSettings.key, "auto_approve_payments"));
+      if (autoApproveSetting?.value === "true") {
+        await db.update(payments)
+          .set({ status: "approved", approvedAt: new Date() })
+          .where(eq(payments.id, newPayment.id));
+        
+        if (carId) {
+          await db.update(cars)
+            .set({ isActive: true })
+            .where(eq(cars.id, carId));
+        }
+        
+        return res.json({ ...newPayment, status: "approved", message: "تم قبول الدفع تلقائياً" });
+      }
+      
+      res.json({ ...newPayment, message: "تم استلام طلب الدفع. يرجى الانتظار للموافقة" });
+    } catch (error) {
+      console.error("Create payment error:", error);
+      res.status(500).json({ error: "Failed to create payment" });
+    }
+  });
+
+  app.get("/api/payments/my", authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user!.id;
+      const userPayments = await db.select().from(payments)
+        .where(eq(payments.userId, userId))
+        .orderBy(desc(payments.createdAt));
+      
+      res.json(userPayments);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch payments" });
+    }
+  });
+
+  // Admin Payment Management
+  app.get("/api/admin/payments", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const allPayments = await db.select({
+        payment: payments,
+        user: users,
+        car: cars,
+      })
+        .from(payments)
+        .leftJoin(users, eq(payments.userId, users.id))
+        .leftJoin(cars, eq(payments.carId, cars.id))
+        .orderBy(desc(payments.createdAt));
+      
+      res.json(allPayments);
+    } catch (error) {
+      console.error("Fetch admin payments error:", error);
+      res.status(500).json({ error: "Failed to fetch payments" });
+    }
+  });
+
+  app.put("/api/admin/payments/:id/approve", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const adminId = req.admin!.id;
+      
+      const [payment] = await db.select().from(payments).where(eq(payments.id, id));
+      if (!payment) {
+        return res.status(404).json({ error: "Payment not found" });
+      }
+      
+      const [updatedPayment] = await db.update(payments)
+        .set({ status: "approved", approvedBy: adminId, approvedAt: new Date() })
+        .where(eq(payments.id, id))
+        .returning();
+      
+      if (payment.carId) {
+        await db.update(cars)
+          .set({ isActive: true })
+          .where(eq(cars.id, payment.carId));
+      }
+      
+      res.json(updatedPayment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to approve payment" });
+    }
+  });
+
+  app.put("/api/admin/payments/:id/reject", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const adminId = req.admin!.id;
+      
+      const [updatedPayment] = await db.update(payments)
+        .set({ status: "rejected", approvedBy: adminId, approvedAt: new Date() })
+        .where(eq(payments.id, id))
+        .returning();
+      
+      res.json(updatedPayment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to reject payment" });
+    }
+  });
+
+  app.get("/api/admin/settings/auto-approve", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const [setting] = await db.select().from(appSettings).where(eq(appSettings.key, "auto_approve_payments"));
+      res.json({ autoApprove: setting?.value === "true" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get setting" });
+    }
+  });
+
+  app.put("/api/admin/settings/auto-approve", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { autoApprove } = req.body;
+      const value = autoApprove ? "true" : "false";
+      
+      const [existing] = await db.select().from(appSettings).where(eq(appSettings.key, "auto_approve_payments"));
+      
+      if (existing) {
+        await db.update(appSettings)
+          .set({ value, updatedAt: new Date() })
+          .where(eq(appSettings.key, "auto_approve_payments"));
+      } else {
+        await db.insert(appSettings).values({ key: "auto_approve_payments", value });
+      }
+      
+      res.json({ autoApprove: value === "true" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update setting" });
     }
   });
 

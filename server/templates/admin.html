@@ -73,10 +73,11 @@
           </div>
         </div>
 
-        <div class="flex gap-4 mb-6">
+        <div class="flex gap-4 mb-6 flex-wrap">
           <button onclick="showTab('users')" class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">المستخدمين</button>
           <button onclick="showTab('cars')" class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">السيارات</button>
           <button onclick="showTab('providers')" class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">مزودي الخدمات</button>
+          <button onclick="showTab('payments')" class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">المدفوعات</button>
         </div>
 
         <div id="users-tab" class="tab-content hidden">
@@ -133,6 +134,37 @@
                 </tr>
               </thead>
               <tbody id="providers-table"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="payments-tab" class="tab-content hidden">
+          <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
+            <div class="flex items-center gap-3">
+              <span class="text-gray-400">الموافقة التلقائية:</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="auto-approve-toggle" class="sr-only peer" onchange="toggleAutoApprove()">
+                <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+              </label>
+            </div>
+            <div class="text-sm text-gray-400">
+              أول 1000 إعلان مجاني - بعدها 10,000 جنيه لكل إعلان
+            </div>
+          </div>
+          <div class="glass rounded-xl border border-gray-700 overflow-hidden">
+            <table class="w-full">
+              <thead class="bg-gray-800">
+                <tr>
+                  <th class="p-4 text-right">المستخدم</th>
+                  <th class="p-4 text-right">رقم العملية</th>
+                  <th class="p-4 text-right">المبلغ</th>
+                  <th class="p-4 text-right">تاريخ الدفع</th>
+                  <th class="p-4 text-right">الحالة</th>
+                  <th class="p-4 text-right">تاريخ الطلب</th>
+                  <th class="p-4 text-right">الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="payments-table"></tbody>
             </table>
           </div>
         </div>
@@ -295,6 +327,7 @@
       if (tab === 'users') loadUsers();
       if (tab === 'cars') loadCars();
       if (tab === 'providers') loadProviders();
+      if (tab === 'payments') loadPayments();
     }
 
     async function loadUsers() {
@@ -501,6 +534,76 @@
         loadStats();
       } catch (err) {
         alert(err.message);
+      }
+    }
+
+    async function loadPayments() {
+      try {
+        const payments = await api('/api/admin/payments');
+        const autoApproveSetting = await api('/api/admin/settings/auto-approve');
+        document.getElementById('auto-approve-toggle').checked = autoApproveSetting.autoApprove;
+        
+        const statusLabels = { pending: 'في الانتظار', approved: 'مقبول', rejected: 'مرفوض' };
+        const statusColors = { pending: 'bg-yellow-500', approved: 'bg-green-500', rejected: 'bg-red-500' };
+        
+        const tbody = document.getElementById('payments-table');
+        if (payments.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-400">لا توجد مدفوعات بعد</td></tr>';
+          return;
+        }
+        
+        tbody.innerHTML = payments.map(p => `
+          <tr class="border-t border-gray-700">
+            <td class="p-4">${p.user?.name || 'غير معروف'}<br><span class="text-gray-500 text-xs">${p.user?.phone || ''}</span></td>
+            <td class="p-4 font-mono text-sm">${p.payment.trxNo}</td>
+            <td class="p-4 text-green-400">${p.payment.amount?.toLocaleString()} SDG</td>
+            <td class="p-4">${p.payment.paidAt}</td>
+            <td class="p-4">
+              <span class="px-2 py-1 rounded text-xs ${statusColors[p.payment.status] || 'bg-gray-500'}">
+                ${statusLabels[p.payment.status] || p.payment.status}
+              </span>
+            </td>
+            <td class="p-4 text-gray-400 text-sm">${new Date(p.payment.createdAt).toLocaleString('ar')}</td>
+            <td class="p-4">
+              ${p.payment.status === 'pending' ? `
+                <button onclick="approvePayment('${p.payment.id}')" class="text-green-400 hover:underline ml-2">قبول</button>
+                <button onclick="rejectPayment('${p.payment.id}')" class="text-red-400 hover:underline">رفض</button>
+              ` : '<span class="text-gray-500">-</span>'}
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load payments:', err);
+      }
+    }
+
+    async function approvePayment(id) {
+      if (!confirm('هل تريد قبول هذا الدفع؟')) return;
+      try {
+        await api(`/api/admin/payments/${id}/approve`, { method: 'PUT' });
+        loadPayments();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function rejectPayment(id) {
+      if (!confirm('هل تريد رفض هذا الدفع؟')) return;
+      try {
+        await api(`/api/admin/payments/${id}/reject`, { method: 'PUT' });
+        loadPayments();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function toggleAutoApprove() {
+      try {
+        const autoApprove = document.getElementById('auto-approve-toggle').checked;
+        await api('/api/admin/settings/auto-approve', { method: 'PUT', body: JSON.stringify({ autoApprove }) });
+      } catch (err) {
+        alert(err.message);
+        document.getElementById('auto-approve-toggle').checked = !document.getElementById('auto-approve-toggle').checked;
       }
     }
 

@@ -1,49 +1,47 @@
 import { Platform, I18nManager } from "react-native";
 
-const primaryColor = "#1E3A8A";
-const secondaryColor = "#FFA43A";
-const successColor = "#10B981";
-const warningColor = "#FFA43A";
-const errorColor = "#EF4444";
+const primaryColor = "#1E3A5F";
+const secondaryColor = "#E8A54B";
+const neutralWhite = "#FFFFFF";
 
 export const Colors = {
   light: {
     text: "#1F2937",
     textSecondary: "#6B7280",
-    buttonText: "#FFFFFF",
-    tabIconDefault: "#6B7280",
+    buttonText: neutralWhite,
+    tabIconDefault: "#9CA3AF",
     tabIconSelected: primaryColor,
     link: primaryColor,
-    backgroundRoot: "#F5F7FA",
-    backgroundDefault: "#FFFFFF",
+    backgroundRoot: "#F8F9FA",
+    backgroundDefault: neutralWhite,
     backgroundSecondary: "#F3F4F6",
     backgroundTertiary: "#E5E7EB",
     primary: primaryColor,
     secondary: secondaryColor,
-    success: successColor,
-    warning: warningColor,
-    error: errorColor,
+    success: "#10B981",
+    warning: secondaryColor,
+    error: "#EF4444",
     border: "#E5E7EB",
-    cardBackground: "#FFFFFF",
+    cardBackground: neutralWhite,
   },
   dark: {
-    text: "#FFFFFF",
-    textSecondary: "#A1A1AA",
-    buttonText: "#FFFFFF",
-    tabIconDefault: "#71717A",
-    tabIconSelected: primaryColor,
-    link: primaryColor,
-    backgroundRoot: "#09090B",
-    backgroundDefault: "#18181B",
-    backgroundSecondary: "#27272A",
-    backgroundTertiary: "#3F3F46",
+    text: neutralWhite,
+    textSecondary: "#9CA3AF",
+    buttonText: neutralWhite,
+    tabIconDefault: "#6B7280",
+    tabIconSelected: secondaryColor,
+    link: secondaryColor,
+    backgroundRoot: "#0F1419",
+    backgroundDefault: "#1A1F26",
+    backgroundSecondary: "#252B33",
+    backgroundTertiary: "#323940",
     primary: primaryColor,
     secondary: secondaryColor,
-    success: successColor,
-    warning: warningColor,
-    error: errorColor,
-    border: "#3F3F46",
-    cardBackground: "#1C1C1E",
+    success: "#10B981",
+    warning: secondaryColor,
+    error: "#EF4444",
+    border: "#323940",
+    cardBackground: "#1A1F26",
   },
 };
 

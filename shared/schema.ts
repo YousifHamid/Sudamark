@@ -145,6 +145,30 @@ export const sliderImages = pgTable("slider_images", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const payments = pgTable("payments", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  carId: varchar("car_id").references(() => cars.id),
+  trxNo: text("trx_no").notNull(),
+  amount: integer("amount").notNull(),
+  paidAt: text("paid_at").notNull(),
+  status: text("status").default("pending"),
+  approvedBy: varchar("approved_by"),
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const appSettings = pgTable("app_settings", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  key: text("key").notNull().unique(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -227,3 +251,19 @@ export type BuyerOffer = typeof buyerOffers.$inferSelect;
 
 export type InsertInspectionRequest = z.infer<typeof insertInspectionRequestSchema>;
 export type InspectionRequest = typeof inspectionRequests.$inferSelect;
+
+export const insertPaymentSchema = createInsertSchema(payments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAppSettingSchema = createInsertSchema(appSettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+export type Payment = typeof payments.$inferSelect;
+
+export type InsertAppSetting = z.infer<typeof insertAppSettingSchema>;
+export type AppSetting = typeof appSettings.$inferSelect;

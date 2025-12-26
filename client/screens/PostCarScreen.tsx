@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, StyleSheet, TextInput, Pressable, ScrollView, Alert } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet, TextInput, Pressable, ScrollView, Alert, Modal } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
@@ -16,6 +16,16 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCars } from "@/hooks/useCars";
+import { getApiUrl, apiRequest } from "@/lib/query-client";
+
+type ScreenStep = "form" | "payment" | "waiting";
+
+interface ListingStatus {
+  totalListings: number;
+  freeLimit: number;
+  requiresPayment: boolean;
+  listingFee: number;
+}
 
 export default function PostCarScreen() {
   const insets = useSafeAreaInsets();
@@ -25,6 +35,8 @@ export default function PostCarScreen() {
   const { user } = useAuth();
   const { addCar } = useCars();
 
+  const [step, setStep] = useState<ScreenStep>("form");
+  const [listingStatus, setListingStatus] = useState<ListingStatus | null>(null);
   const [images, setImages] = useState<string[]>([]);
   const [title, setTitle] = useState("");
   const [make, setMake] = useState("");
@@ -36,6 +48,10 @@ export default function PostCarScreen() {
   const [city, setCity] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const [trxNo, setTrxNo] = useState("");
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentDate, setPaymentDate] = useState("");
+
   const cities = [
     { id: "khartoum", labelKey: "khartoum" },
     { id: "omdurman", labelKey: "omdurman" },
@@ -43,6 +59,20 @@ export default function PostCarScreen() {
     { id: "portSudan", labelKey: "portSudan" },
     { id: "kassala", labelKey: "kassala" },
   ];
+
+  useEffect(() => {
+    fetchListingStatus();
+  }, []);
+
+  const fetchListingStatus = async () => {
+    try {
+      const response = await fetch(new URL("/api/listings/status", getApiUrl()).toString());
+      const data = await response.json();
+      setListingStatus(data);
+    } catch (error) {
+      console.log("Could not fetch listing status");
+    }
+  };
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -68,6 +98,15 @@ export default function PostCarScreen() {
       return;
     }
 
+    if (listingStatus?.requiresPayment) {
+      setStep("payment");
+      return;
+    }
+
+    await submitCar();
+  };
+
+  const submitCar = async () => {
     setIsLoading(true);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
@@ -92,6 +131,185 @@ export default function PostCarScreen() {
     navigation.goBack();
   };
 
+  const handlePaymentSubmit = async () => {
+    if (!trxNo || !paymentAmount || !paymentDate) {
+      Alert.alert(t("error"), isRTL ? "يرجى ملء جميع بيانات الدفع" : "Please fill all payment details");
+      return;
+    }
+
+    const parsedAmount = parseInt(paymentAmount);
+    if (isNaN(parsedAmount) || parsedAmount < 10000) {
+      Alert.alert(t("error"), isRTL ? "المبلغ يجب أن يكون 10,000 جنيه أو أكثر" : "Amount must be 10,000 SDG or more");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const newCar = {
+        id: Date.now().toString(),
+        title,
+        make,
+        model,
+        year: parseInt(year),
+        price: parseInt(price),
+        mileage: mileage ? parseInt(mileage) : 0,
+        description,
+        city,
+        images: images.length > 0 ? images : ["https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800"],
+        sellerId: user?.id || "",
+        category: "sedan",
+        createdAt: new Date().toISOString(),
+        isActive: false,
+      };
+
+      const createdCar = await addCar(newCar);
+      const carId = createdCar?.id || newCar.id;
+
+      const paymentResponse = await apiRequest("POST", "/api/payments", {
+        carId,
+        trxNo,
+        amount: parsedAmount,
+        paidAt: paymentDate,
+      });
+
+      if (!paymentResponse.ok) {
+        const errorData = await paymentResponse.json();
+        throw new Error(errorData.error || "Payment submission failed");
+      }
+
+      setStep("waiting");
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (error: any) {
+      Alert.alert(t("error"), error.message || (isRTL ? "فشل في تقديم الدفع" : "Failed to submit payment"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (step === "waiting") {
+    return (
+      <ThemedView style={styles.container}>
+        <View style={[styles.waitingContainer, { paddingTop: insets.top + Spacing["4xl"], paddingBottom: insets.bottom + Spacing["2xl"] }]}>
+          <View style={[styles.waitingIcon, { backgroundColor: theme.secondary + "20" }]}>
+            <Feather name="clock" size={48} color={theme.secondary} />
+          </View>
+          <ThemedText type="h2" style={[styles.waitingTitle, isRTL && styles.rtlText]}>
+            {isRTL ? "في انتظار الموافقة" : "Waiting for Approval"}
+          </ThemedText>
+          <ThemedText style={[styles.waitingText, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+            {isRTL 
+              ? "تم استلام طلب الدفع الخاص بك. سيتم مراجعته والموافقة عليه خلال دقائق قليلة."
+              : "Your payment request has been received. It will be reviewed and approved within a few minutes."}
+          </ThemedText>
+          <View style={[styles.paymentSummary, { backgroundColor: theme.backgroundSecondary }]}>
+            <View style={[styles.summaryRow, isRTL && styles.rowRTL]}>
+              <ThemedText style={{ color: theme.textSecondary }}>{isRTL ? "رقم العملية:" : "Transaction ID:"}</ThemedText>
+              <ThemedText style={styles.summaryValue}>{trxNo}</ThemedText>
+            </View>
+            <View style={[styles.summaryRow, isRTL && styles.rowRTL]}>
+              <ThemedText style={{ color: theme.textSecondary }}>{isRTL ? "المبلغ:" : "Amount:"}</ThemedText>
+              <ThemedText style={styles.summaryValue}>{paymentAmount} {isRTL ? "جنيه" : "SDG"}</ThemedText>
+            </View>
+            <View style={[styles.summaryRow, isRTL && styles.rowRTL]}>
+              <ThemedText style={{ color: theme.textSecondary }}>{isRTL ? "التاريخ:" : "Date:"}</ThemedText>
+              <ThemedText style={styles.summaryValue}>{paymentDate}</ThemedText>
+            </View>
+          </View>
+          <Button onPress={() => navigation.goBack()} style={styles.doneButton}>
+            {isRTL ? "تم" : "Done"}
+          </Button>
+        </View>
+      </ThemedView>
+    );
+  }
+
+  if (step === "payment") {
+    return (
+      <ThemedView style={styles.container}>
+        <KeyboardAwareScrollViewCompat
+          contentContainerStyle={[
+            styles.content,
+            { paddingBottom: insets.bottom + Spacing["2xl"] },
+          ]}
+        >
+          <View style={styles.paymentHeader}>
+            <View style={[styles.feeIcon, { backgroundColor: theme.secondary + "20" }]}>
+              <Feather name="credit-card" size={32} color={theme.secondary} />
+            </View>
+            <ThemedText type="h3" style={[styles.paymentTitle, isRTL && styles.rtlText]}>
+              {isRTL ? "رسوم الإعلان" : "Listing Fee"}
+            </ThemedText>
+            <ThemedText style={[styles.paymentDesc, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+              {isRTL 
+                ? `يرجى تحويل مبلغ ${listingStatus?.listingFee?.toLocaleString() || "10,000"} جنيه سوداني عبر تطبيق بنكك بمسح الكود أدناه`
+                : `Please transfer ${listingStatus?.listingFee?.toLocaleString() || "10,000"} SDG via Bankak app by scanning the QR code below`}
+            </ThemedText>
+          </View>
+
+          <View style={[styles.qrContainer, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
+            <Image
+              source={require("../../attached_assets/WhatsApp_Image_2025-12-27_at_12.56.14_AM_1766789892928.jpeg")}
+              style={styles.qrImage}
+              contentFit="contain"
+            />
+          </View>
+
+          <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>
+            {isRTL ? "أدخل تفاصيل التحويل" : "Enter Transfer Details"}
+          </ThemedText>
+
+          <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+            {isRTL ? "رقم العملية (Trx. ID)" : "Transaction ID (Trx. ID)"} *
+          </ThemedText>
+          <TextInput
+            style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+            placeholder={isRTL ? "مثال: 20082275558" : "e.g. 20082275558"}
+            placeholderTextColor={theme.textSecondary}
+            value={trxNo}
+            onChangeText={setTrxNo}
+            keyboardType="number-pad"
+            textAlign={isRTL ? "right" : "left"}
+          />
+
+          <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+            {isRTL ? "المبلغ (Amount)" : "Amount"} *
+          </ThemedText>
+          <TextInput
+            style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+            placeholder={isRTL ? "10000" : "10000"}
+            placeholderTextColor={theme.textSecondary}
+            value={paymentAmount}
+            onChangeText={setPaymentAmount}
+            keyboardType="number-pad"
+            textAlign={isRTL ? "right" : "left"}
+          />
+
+          <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+            {isRTL ? "تاريخ التحويل" : "Transfer Date"} *
+          </ThemedText>
+          <TextInput
+            style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+            placeholder={isRTL ? "مثال: 27-Dec-2025" : "e.g. 27-Dec-2025"}
+            placeholderTextColor={theme.textSecondary}
+            value={paymentDate}
+            onChangeText={setPaymentDate}
+            textAlign={isRTL ? "right" : "left"}
+          />
+
+          <Button onPress={handlePaymentSubmit} disabled={isLoading} style={styles.submitButton}>
+            {isLoading ? (isRTL ? "جاري الإرسال..." : "Submitting...") : (isRTL ? "تأكيد الدفع" : "Confirm Payment")}
+          </Button>
+
+          <Pressable onPress={() => setStep("form")} style={styles.backLink}>
+            <ThemedText style={{ color: theme.primary }}>
+              {isRTL ? "العودة للتعديل" : "Go back to edit"}
+            </ThemedText>
+          </Pressable>
+        </KeyboardAwareScrollViewCompat>
+      </ThemedView>
+    );
+  }
+
   return (
     <ThemedView style={styles.container}>
       <KeyboardAwareScrollViewCompat
@@ -100,6 +318,17 @@ export default function PostCarScreen() {
           { paddingBottom: insets.bottom + Spacing["2xl"] },
         ]}
       >
+        {listingStatus?.requiresPayment ? (
+          <View style={[styles.feeNotice, { backgroundColor: theme.secondary + "15", borderColor: theme.secondary }]}>
+            <Feather name="info" size={20} color={theme.secondary} />
+            <ThemedText style={[styles.feeNoticeText, { color: theme.secondary }, isRTL && styles.rtlText]}>
+              {isRTL 
+                ? `رسوم الإعلان: ${listingStatus.listingFee.toLocaleString()} جنيه`
+                : `Listing fee: ${listingStatus.listingFee.toLocaleString()} SDG`}
+            </ThemedText>
+          </View>
+        ) : null}
+
         <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
           {t("photosUpTo6")}
         </ThemedText>
@@ -253,7 +482,7 @@ export default function PostCarScreen() {
         />
 
         <Button onPress={handleSubmit} disabled={isLoading} style={styles.submitButton}>
-          {isLoading ? t("posting") : t("postListing")}
+          {isLoading ? t("posting") : (listingStatus?.requiresPayment ? (isRTL ? "متابعة للدفع" : "Continue to Payment") : t("postListing"))}
         </Button>
       </KeyboardAwareScrollViewCompat>
     </ThemedView>
@@ -351,5 +580,97 @@ const styles = StyleSheet.create({
   },
   rtlText: {
     writingDirection: "rtl",
+  },
+  feeNotice: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  feeNoticeText: {
+    flex: 1,
+    fontWeight: "600",
+  },
+  paymentHeader: {
+    alignItems: "center",
+    marginBottom: Spacing.xl,
+  },
+  feeIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.md,
+  },
+  paymentTitle: {
+    textAlign: "center",
+    marginBottom: Spacing.sm,
+  },
+  paymentDesc: {
+    textAlign: "center",
+    lineHeight: 22,
+  },
+  qrContainer: {
+    alignItems: "center",
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    marginVertical: Spacing.xl,
+  },
+  qrImage: {
+    width: 200,
+    height: 200,
+  },
+  sectionTitle: {
+    marginBottom: Spacing.md,
+  },
+  backLink: {
+    alignItems: "center",
+    marginTop: Spacing.lg,
+    padding: Spacing.md,
+  },
+  waitingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Spacing.xl,
+  },
+  waitingIcon: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.xl,
+  },
+  waitingTitle: {
+    textAlign: "center",
+    marginBottom: Spacing.md,
+  },
+  waitingText: {
+    textAlign: "center",
+    lineHeight: 24,
+    marginBottom: Spacing.xl,
+  },
+  paymentSummary: {
+    width: "100%",
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.xl,
+  },
+  summaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: Spacing.sm,
+  },
+  summaryValue: {
+    fontWeight: "600",
+  },
+  doneButton: {
+    width: "100%",
   },
 });
