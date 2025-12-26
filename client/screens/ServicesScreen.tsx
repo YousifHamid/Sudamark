@@ -28,7 +28,6 @@ export default function ServicesScreen() {
     { id: "mechanic", labelKey: "mechanics", icon: "tool" as const },
     { id: "electrician", labelKey: "electricians", icon: "zap" as const },
     { id: "lawyer", labelKey: "lawyers", icon: "briefcase" as const },
-    { id: "inspection_center", labelKey: "inspection", icon: "clipboard" as const },
   ];
 
   const filteredProviders = activeTab === "all"
@@ -86,7 +85,7 @@ export default function ServicesScreen() {
         renderItem={({ item }) => (
           <ServiceProviderCard
             provider={item}
-            onPress={() => navigation.navigate("ProviderDetail", { providerId: item.id })}
+            onPress={() => navigation.navigate("ServiceProviderDetail", { provider: item })}
           />
         )}
         ListEmptyComponent={

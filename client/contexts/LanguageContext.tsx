@@ -19,7 +19,7 @@ export const translations: Translations = {
   skip: { ar: "تخطي", en: "Skip" },
   next: { ar: "التالي", en: "Next" },
   getStarted: { ar: "ابدأ الآن", en: "Get Started" },
-  welcomeTitle: { ar: "اقل عمولة في تاريخ السودان", en: "Lowest Commission in Sudan's History" },
+  welcomeTitle: { ar: "أول سوق سيارات إلكتروني في السودان", en: "Sudan's First Online Car Marketplace" },
   welcomeSubtitle: { ar: "بيع وشراء عربيتك بكل سهولة وأمان!", en: "Buy and sell your car easily and safely!" },
   welcomeFeature1: { ar: "تصفح آلاف الإعلانات العربية الموثوقة", en: "Browse thousands of verified Arabic ads" },
   welcomeFeature2: { ar: "تواصل مع البائع مباشرة عبر التطبيق", en: "Contact the seller directly through the app" },

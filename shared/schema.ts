@@ -84,13 +84,44 @@ export const serviceProviders = pgTable("service_providers", {
   name: text("name").notNull(),
   type: text("type").notNull(),
   phone: text("phone").notNull(),
+  whatsapp: text("whatsapp"),
   city: text("city").notNull(),
   address: text("address"),
+  latitude: text("latitude"),
+  longitude: text("longitude"),
   description: text("description"),
+  services: jsonb("services").$type<string[]>().default(sql`'[]'::jsonb`),
+  price: text("price"),
   rating: integer("rating").default(0),
   reviewCount: integer("review_count").default(0),
   isVerified: boolean("is_verified").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const buyerOffers = pgTable("buyer_offers", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  carId: varchar("car_id").references(() => cars.id).notNull(),
+  buyerId: varchar("buyer_id").references(() => users.id).notNull(),
+  offerPrice: integer("offer_price").notNull(),
+  message: text("message"),
+  status: text("status").default("pending"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const inspectionRequests = pgTable("inspection_requests", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  carId: varchar("car_id").references(() => cars.id).notNull(),
+  buyerId: varchar("buyer_id").references(() => users.id).notNull(),
+  sellerId: varchar("seller_id").references(() => users.id).notNull(),
+  status: text("status").default("pending"),
+  message: text("message"),
+  sellerResponse: text("seller_response"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const favorites = pgTable("favorites", {
@@ -179,3 +210,20 @@ export const insertMagicTokenSchema = createInsertSchema(magicTokens).omit({
 
 export type InsertMagicToken = z.infer<typeof insertMagicTokenSchema>;
 export type MagicToken = typeof magicTokens.$inferSelect;
+
+export const insertBuyerOfferSchema = createInsertSchema(buyerOffers).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertInspectionRequestSchema = createInsertSchema(inspectionRequests).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertBuyerOffer = z.infer<typeof insertBuyerOfferSchema>;
+export type BuyerOffer = typeof buyerOffers.$inferSelect;
+
+export type InsertInspectionRequest = z.infer<typeof insertInspectionRequestSchema>;
+export type InspectionRequest = typeof inspectionRequests.$inferSelect;

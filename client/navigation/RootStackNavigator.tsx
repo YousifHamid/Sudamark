@@ -7,6 +7,7 @@ import CarDetailScreen from "@/screens/CarDetailScreen";
 import RequestInspectionScreen from "@/screens/RequestInspectionScreen";
 import PostCarScreen from "@/screens/PostCarScreen";
 import SearchScreen from "@/screens/SearchScreen";
+import ServiceProviderDetailScreen from "@/screens/ServiceProviderDetailScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -18,7 +19,9 @@ export type RootStackParamList = {
   RequestInspection: { carId: string };
   PostCar: undefined;
   Search: { category?: string };
-  ProviderDetail: { providerId: string };
+  ServiceProviderDetail: { provider: any };
+  MyListings: undefined;
+  MyFavorites: undefined;
   EditProfile: undefined;
 };
 
@@ -85,6 +88,14 @@ export default function RootStackNavigator() {
             component={SearchScreen}
             options={{
               headerTitle: "Search",
+            }}
+          />
+          <Stack.Screen
+            name="ServiceProviderDetail"
+            component={ServiceProviderDetailScreen}
+            options={{
+              presentation: "modal",
+              headerTitle: "",
             }}
           />
         </>

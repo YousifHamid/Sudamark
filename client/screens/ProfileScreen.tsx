@@ -47,8 +47,17 @@ export default function ProfileScreen() {
     await setLanguage(language === "ar" ? "en" : "ar");
   };
 
+  const handleMenuPress = (id: string) => {
+    Haptics.selectionAsync();
+    if (id === "listings") {
+      navigation.navigate("Search", { category: "my-listings" });
+    } else if (id === "favorites") {
+      navigation.navigate("Search", { category: "favorites" });
+    }
+  };
+
   const menuItems = [
-    { id: "listings", labelKey: "myListings", icon: "list" as const, badge: "3" },
+    { id: "listings", labelKey: "myListings", icon: "list" as const, badge: undefined },
     { id: "favorites", labelKey: "favorites", icon: "heart" as const },
   ];
 
@@ -104,7 +113,7 @@ export default function ProfileScreen() {
                 styles.menuItem,
                 index < menuItems.length - 1 && { borderBottomWidth: 1, borderBottomColor: theme.border },
               ]}
-              onPress={() => Haptics.selectionAsync()}
+              onPress={() => handleMenuPress(item.id)}
             >
               <View style={[styles.menuItemLeft, isRTL && styles.menuItemLeftRTL]}>
                 <View style={[styles.iconContainer, { backgroundColor: theme.backgroundSecondary }]}>

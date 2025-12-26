@@ -15,6 +15,7 @@ import { Spacing, BorderRadius } from "@/constants/theme";
 import { CarCard } from "@/components/CarCard";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { useCars } from "@/hooks/useCars";
+import { useAuth } from "@/contexts/AuthContext";
 
 type SearchScreenRouteProp = RouteProp<RootStackParamList, "Search">;
 
@@ -25,7 +26,10 @@ export default function SearchScreen() {
   const { t, isRTL } = useLanguage();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<SearchScreenRouteProp>();
-  const { cars } = useCars();
+  const { cars, favorites } = useCars();
+  const { user } = useAuth();
+  
+  const isSpecialCategory = route.params?.category === "my-listings" || route.params?.category === "favorites";
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -65,18 +69,26 @@ export default function SearchScreen() {
   ];
 
   const filteredCars = useMemo(() => {
-    return cars.filter((car) => {
+    let baseCars = cars;
+    
+    if (route.params?.category === "my-listings") {
+      baseCars = cars.filter((car) => car.sellerId === user?.id);
+    } else if (route.params?.category === "favorites") {
+      baseCars = cars.filter((car) => favorites.includes(car.id));
+    }
+    
+    return baseCars.filter((car) => {
       const matchesSearch = car.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         car.make.toLowerCase().includes(searchQuery.toLowerCase()) ||
         car.model.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCity = !selectedCity || car.city === selectedCity;
-      const matchesCategory = !selectedCategory || car.category === selectedCategory;
+      const matchesCategory = !selectedCategory || isSpecialCategory || car.category === selectedCategory;
       const matchesCondition = !selectedCondition || car.condition === selectedCondition;
       const matchesMinPrice = !minPrice || car.price >= parseInt(minPrice);
       const matchesMaxPrice = !maxPrice || car.price <= parseInt(maxPrice);
       return matchesSearch && matchesCity && matchesCategory && matchesCondition && matchesMinPrice && matchesMaxPrice;
     });
-  }, [cars, searchQuery, selectedCity, selectedCategory, selectedCondition, minPrice, maxPrice]);
+  }, [cars, searchQuery, selectedCity, selectedCategory, selectedCondition, minPrice, maxPrice, favorites, user?.id, route.params?.category, isSpecialCategory]);
 
   const activeFiltersCount = [selectedCity, selectedCategory, selectedCondition, minPrice, maxPrice].filter(Boolean).length;
 
@@ -130,9 +142,32 @@ export default function SearchScreen() {
     </Pressable>
   );
 
+  const getScreenTitle = () => {
+    if (route.params?.category === "my-listings") {
+      return t("myListings");
+    } else if (route.params?.category === "favorites") {
+      return t("favorites");
+    }
+    return t("searchCars");
+  };
+
+  const getEmptyMessage = () => {
+    if (route.params?.category === "my-listings") {
+      return isRTL ? "لم تقم بإضافة أي إعلانات بعد" : "You haven't posted any listings yet";
+    } else if (route.params?.category === "favorites") {
+      return isRTL ? "لم تقم بإضافة أي سيارات للمفضلة" : "You haven't added any favorites yet";
+    }
+    return t("adjustFilters");
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
       <View style={[styles.searchContainer, { backgroundColor: theme.backgroundDefault, paddingTop: insets.top + Spacing.sm }]}>
+        {isSpecialCategory ? (
+          <ThemedText type="h3" style={[styles.screenTitle, isRTL && styles.rtlText]}>
+            {getScreenTitle()}
+          </ThemedText>
+        ) : null}
         <View style={[styles.searchBar, { backgroundColor: theme.backgroundSecondary }, isRTL && styles.searchBarRTL]}>
           <Pressable onPress={openFilterModal} style={[styles.filterButton, { backgroundColor: theme.primary + "15" }]}>
             <Feather name="sliders" size={20} color={theme.primary} />
@@ -178,10 +213,10 @@ export default function SearchScreen() {
         )}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Feather name="search" size={48} color={theme.textSecondary} />
+            <Feather name={isSpecialCategory ? (route.params?.category === "favorites" ? "heart" : "list") : "search"} size={48} color={theme.textSecondary} />
             <ThemedText type="h4" style={[styles.emptyTitle, isRTL && styles.rtlText]}>{t("noCarsFound")}</ThemedText>
             <ThemedText style={[{ color: theme.textSecondary, textAlign: "center" }, isRTL && styles.rtlText]}>
-              {t("adjustFilters")}
+              {getEmptyMessage()}
             </ThemedText>
           </View>
         }
@@ -368,6 +403,10 @@ const styles = StyleSheet.create({
   emptyTitle: {
     marginTop: Spacing.lg,
     marginBottom: Spacing.sm,
+  },
+  screenTitle: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
   },
   rtlText: {
     writingDirection: "rtl",
