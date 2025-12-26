@@ -27,6 +27,11 @@ A multi-role car marketplace mobile application built with React Native and Expo
 - **Improved bottom tab bar with larger icons, better styling, and highlighted active state**
 - **Added Arabic advertisement banners on HomeScreen with gradient cards**
 - **FAB button now shows "بيع" (Sell) or "طلب" (Request) label based on user role**
+- **Buyer Offers feature**: Modal in CarDetailScreen to submit price offers to sellers
+- **Inspection Requests API**: Full CRUD endpoints for requesting car inspections
+- **ServiceProviderDetailScreen**: Detailed view with WhatsApp, call, and map integration
+- **ProfileScreen navigation**: My Listings and Favorites now navigate to filtered search views
+- **Removed inspection_center role** from service provider categories (only mechanics, electricians, lawyers)
 
 ## User Preferences
 
@@ -119,4 +124,6 @@ Preferred communication style: Simple, everyday language.
 - `/api/cars/*` - Car listings CRUD
 - `/api/service-providers/*` - Service providers
 - `/api/favorites/*` - User favorites
+- `/api/offers/*` - Buyer offers (create, list my-offers, received, update status)
+- `/api/inspection-requests/*` - Inspection requests (create, received, respond)
 - `/api/admin/*` - Admin dashboard APIs (requires admin auth)

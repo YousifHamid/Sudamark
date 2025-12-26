@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, ScrollView, Pressable, Dimensions, Alert } from "react-native";
+import { View, StyleSheet, ScrollView, Pressable, Dimensions, Alert, Modal, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -10,11 +10,14 @@ import * as Haptics from "expo-haptics";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Button } from "@/components/Button";
+import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { useTheme } from "@/hooks/useTheme";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { useCars } from "@/hooks/useCars";
+import { apiRequest } from "@/lib/query-client";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -27,10 +30,16 @@ export default function CarDetailScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<CarDetailRouteProp>();
   const { cars, toggleFavorite, isFavorite } = useCars();
+  const { token, user } = useAuth();
 
   const car = cars.find((c) => c.id === route.params.carId);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLiked, setIsLiked] = useState(car ? isFavorite(car.id) : false);
+  
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [offerPrice, setOfferPrice] = useState("");
+  const [offerMessage, setOfferMessage] = useState("");
+  const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
 
   if (!car) {
     return (
@@ -39,6 +48,8 @@ export default function CarDetailScreen() {
       </ThemedView>
     );
   }
+
+  const isOwnCar = user?.id === car.sellerId;
 
   const handleFavorite = () => {
     toggleFavorite(car.id);
@@ -56,6 +67,54 @@ export default function CarDetailScreen() {
 
   const handleRequestInspection = () => {
     navigation.navigate("RequestInspection", { carId: car.id });
+  };
+
+  const handleMakeOffer = () => {
+    if (isOwnCar) {
+      Alert.alert(
+        isRTL ? "خطأ" : "Error",
+        isRTL ? "لا يمكنك تقديم عرض على سيارتك" : "You cannot make an offer on your own car"
+      );
+      return;
+    }
+    setOfferPrice(car.price.toString());
+    setOfferMessage("");
+    setShowOfferModal(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  const handleSubmitOffer = async () => {
+    if (!offerPrice || parseInt(offerPrice) <= 0) {
+      Alert.alert(
+        isRTL ? "خطأ" : "Error",
+        isRTL ? "يرجى إدخال سعر صحيح" : "Please enter a valid price"
+      );
+      return;
+    }
+
+    setIsSubmittingOffer(true);
+    try {
+      await apiRequest("POST", "/api/offers", {
+        carId: car.id,
+        offerPrice: parseInt(offerPrice),
+        message: offerMessage || null,
+      });
+      
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setShowOfferModal(false);
+      Alert.alert(
+        isRTL ? "تم إرسال العرض" : "Offer Sent",
+        isRTL ? "تم إرسال عرضك للبائع بنجاح" : "Your offer has been sent to the seller"
+      );
+    } catch (error) {
+      console.error("Submit offer error:", error);
+      Alert.alert(
+        isRTL ? "خطأ" : "Error",
+        isRTL ? "حدث خطأ أثناء إرسال العرض" : "Failed to submit offer"
+      );
+    } finally {
+      setIsSubmittingOffer(false);
+    }
   };
 
   const specs = [
@@ -131,6 +190,17 @@ export default function CarDetailScreen() {
             <ThemedText type="h2" style={{ color: theme.primary }}>
               {car.price.toLocaleString()} {t("sdg")}
             </ThemedText>
+            {!isOwnCar ? (
+              <Pressable
+                style={[styles.offerBadge, { backgroundColor: theme.secondary + "20" }]}
+                onPress={handleMakeOffer}
+              >
+                <Feather name="tag" size={14} color={theme.secondary} />
+                <ThemedText type="small" style={{ color: theme.secondary, marginLeft: 4 }}>
+                  {isRTL ? "تقديم عرض" : "Make Offer"}
+                </ThemedText>
+              </Pressable>
+            ) : null}
           </View>
 
           <ThemedText type="h3" style={[styles.title, isRTL && styles.rtlText]}>{car.title}</ThemedText>
@@ -188,17 +258,97 @@ export default function CarDetailScreen() {
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.md, backgroundColor: theme.backgroundRoot }, isRTL && styles.footerRTL]}>
-        <Button onPress={handleContact} style={styles.contactButton}>
-          {t("contactSeller")}
-        </Button>
-        <Pressable
-          style={[styles.inspectionButton, { backgroundColor: theme.backgroundSecondary }]}
-          onPress={handleRequestInspection}
-        >
-          <Feather name="clipboard" size={20} color={theme.primary} />
-          <ThemedText style={[{ color: theme.primary, marginLeft: isRTL ? 0 : Spacing.sm, marginRight: isRTL ? Spacing.sm : 0 }, isRTL && styles.rtlText]}>{t("requestInspection")}</ThemedText>
-        </Pressable>
+        {isOwnCar ? (
+          <Button onPress={() => {}} style={styles.contactButton}>
+            {isRTL ? "تعديل الإعلان" : "Edit Listing"}
+          </Button>
+        ) : (
+          <>
+            <Button onPress={handleMakeOffer} style={styles.contactButton}>
+              {isRTL ? "تقديم عرض" : "Make Offer"}
+            </Button>
+            <Pressable
+              style={[styles.inspectionButton, { backgroundColor: theme.backgroundSecondary }]}
+              onPress={handleRequestInspection}
+            >
+              <Feather name="clipboard" size={20} color={theme.primary} />
+              <ThemedText style={[{ color: theme.primary, marginLeft: isRTL ? 0 : Spacing.sm, marginRight: isRTL ? Spacing.sm : 0 }, isRTL && styles.rtlText]}>{t("requestInspection")}</ThemedText>
+            </Pressable>
+          </>
+        )}
       </View>
+
+      <Modal
+        visible={showOfferModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowOfferModal(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowOfferModal(false)}>
+          <Pressable style={[styles.modalContent, { backgroundColor: theme.backgroundRoot }]} onPress={(e) => e.stopPropagation()}>
+            <View style={[styles.modalHeader, { borderBottomColor: theme.border }, isRTL && styles.modalHeaderRTL]}>
+              <ThemedText type="h3" style={isRTL ? styles.rtlText : undefined}>
+                {isRTL ? "تقديم عرض" : "Make an Offer"}
+              </ThemedText>
+              <Pressable onPress={() => setShowOfferModal(false)}>
+                <Feather name="x" size={24} color={theme.text} />
+              </Pressable>
+            </View>
+            
+            <KeyboardAwareScrollViewCompat style={styles.modalBody}>
+              <View style={[styles.carSummary, { backgroundColor: theme.backgroundSecondary }]}>
+                <ThemedText type="body" style={[{ fontWeight: "600" }, isRTL && styles.rtlText]}>{car.title}</ThemedText>
+                <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                  {isRTL ? "السعر المطلوب:" : "Asking price:"} {car.price.toLocaleString()} {t("sdg")}
+                </ThemedText>
+              </View>
+              
+              <View style={styles.inputGroup}>
+                <ThemedText type="body" style={[styles.inputLabel, isRTL && styles.rtlText]}>
+                  {isRTL ? "عرضك (جنيه)" : "Your Offer (SDG)"}
+                </ThemedText>
+                <TextInput
+                  style={[styles.priceInput, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }]}
+                  value={offerPrice}
+                  onChangeText={setOfferPrice}
+                  keyboardType="numeric"
+                  placeholder={isRTL ? "أدخل السعر" : "Enter your offer"}
+                  placeholderTextColor={theme.textSecondary}
+                  textAlign={isRTL ? "right" : "left"}
+                />
+              </View>
+              
+              <View style={styles.inputGroup}>
+                <ThemedText type="body" style={[styles.inputLabel, isRTL && styles.rtlText]}>
+                  {isRTL ? "رسالة (اختياري)" : "Message (optional)"}
+                </ThemedText>
+                <TextInput
+                  style={[styles.messageInput, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlText]}
+                  value={offerMessage}
+                  onChangeText={setOfferMessage}
+                  multiline
+                  numberOfLines={3}
+                  placeholder={isRTL ? "أضف رسالة للبائع..." : "Add a message for the seller..."}
+                  placeholderTextColor={theme.textSecondary}
+                  textAlignVertical="top"
+                />
+              </View>
+            </KeyboardAwareScrollViewCompat>
+            
+            <View style={[styles.modalFooter, { paddingBottom: insets.bottom + Spacing.md }]}>
+              <Button 
+                onPress={handleSubmitOffer} 
+                disabled={isSubmittingOffer}
+                style={styles.submitButton}
+              >
+                {isSubmittingOffer 
+                  ? (isRTL ? "جاري الإرسال..." : "Sending...") 
+                  : (isRTL ? "إرسال العرض" : "Submit Offer")}
+              </Button>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </ThemedView>
   );
 }
@@ -265,6 +415,13 @@ const styles = StyleSheet.create({
   },
   priceRowRTL: {
     flexDirection: "row-reverse",
+  },
+  offerBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.full,
   },
   title: {
     marginTop: Spacing.sm,
@@ -360,5 +517,65 @@ const styles = StyleSheet.create({
   },
   rtlText: {
     writingDirection: "rtl",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    borderTopLeftRadius: BorderRadius.xl,
+    borderTopRightRadius: BorderRadius.xl,
+    maxHeight: "80%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.lg,
+    borderBottomWidth: 1,
+  },
+  modalHeaderRTL: {
+    flexDirection: "row-reverse",
+  },
+  modalBody: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.lg,
+  },
+  carSummary: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.lg,
+  },
+  inputGroup: {
+    marginBottom: Spacing.lg,
+  },
+  inputLabel: {
+    marginBottom: Spacing.sm,
+    fontWeight: "500",
+  },
+  priceInput: {
+    height: 56,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    paddingHorizontal: Spacing.md,
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  messageInput: {
+    minHeight: 100,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.md,
+    fontSize: 16,
+  },
+  modalFooter: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.lg,
+  },
+  submitButton: {
+    width: "100%",
   },
 });

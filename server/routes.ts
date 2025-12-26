@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
 import { db } from "./db";
-import { users, cars, serviceProviders, favorites, sliderImages, admins, otpCodes, magicTokens } from "@shared/schema";
+import { users, cars, serviceProviders, favorites, sliderImages, admins, otpCodes, magicTokens, buyerOffers, inspectionRequests } from "@shared/schema";
 import crypto from "crypto";
 import { eq, desc, and, gt, like, or, sql } from "drizzle-orm";
 
@@ -956,6 +956,177 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Admin setup error:", error);
       res.status(500).json({ error: "Failed to create admin" });
+    }
+  });
+
+  // Buyer Offers API
+  app.post("/api/offers", authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { carId, offerPrice, message } = req.body;
+      const buyerId = req.user!.id;
+      
+      // Get car to find seller
+      const [car] = await db.select().from(cars).where(eq(cars.id, carId));
+      if (!car) {
+        return res.status(404).json({ error: "Car not found" });
+      }
+      
+      // Check if buyer is not the seller
+      if (car.userId === buyerId) {
+        return res.status(400).json({ error: "Cannot make an offer on your own car" });
+      }
+      
+      const [newOffer] = await db.insert(buyerOffers).values({
+        carId,
+        buyerId,
+        offerPrice,
+        message,
+        status: "pending",
+      }).returning();
+      
+      res.json(newOffer);
+    } catch (error) {
+      console.error("Create offer error:", error);
+      res.status(500).json({ error: "Failed to create offer" });
+    }
+  });
+
+  app.get("/api/offers/my-offers", authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const buyerId = req.user!.id;
+      const offers = await db.select().from(buyerOffers)
+        .where(eq(buyerOffers.buyerId, buyerId))
+        .orderBy(desc(buyerOffers.createdAt));
+      res.json(offers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch offers" });
+    }
+  });
+
+  app.get("/api/offers/received", authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const sellerId = req.user!.id;
+      // Get all cars owned by seller
+      const sellerCars = await db.select().from(cars).where(eq(cars.userId, sellerId));
+      const carIds = sellerCars.map(c => c.id);
+      
+      if (carIds.length === 0) {
+        return res.json([]);
+      }
+      
+      // Get offers for seller's cars
+      const offers = await db.select({
+        offer: buyerOffers,
+        car: cars,
+        buyer: users,
+      })
+        .from(buyerOffers)
+        .innerJoin(cars, eq(buyerOffers.carId, cars.id))
+        .innerJoin(users, eq(buyerOffers.buyerId, users.id))
+        .where(sql`${buyerOffers.carId} = ANY(${sql.raw(`ARRAY[${carIds.map(id => `'${id}'`).join(',')}]::varchar[]`)})`)
+        .orderBy(desc(buyerOffers.createdAt));
+      
+      res.json(offers);
+    } catch (error) {
+      console.error("Fetch received offers error:", error);
+      res.status(500).json({ error: "Failed to fetch received offers" });
+    }
+  });
+
+  app.put("/api/offers/:id/status", authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      const sellerId = req.user!.id;
+      
+      // Verify the offer belongs to a car owned by the seller
+      const [offer] = await db.select().from(buyerOffers).where(eq(buyerOffers.id, id));
+      if (!offer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+      
+      const [car] = await db.select().from(cars).where(eq(cars.id, offer.carId));
+      if (!car || car.userId !== sellerId) {
+        return res.status(403).json({ error: "Not authorized to update this offer" });
+      }
+      
+      const [updatedOffer] = await db.update(buyerOffers)
+        .set({ status })
+        .where(eq(buyerOffers.id, id))
+        .returning();
+      
+      res.json(updatedOffer);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update offer status" });
+    }
+  });
+
+  // Inspection Requests API
+  app.post("/api/inspection-requests", authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { carId, message } = req.body;
+      const buyerId = req.user!.id;
+      
+      // Get car to find seller
+      const [car] = await db.select().from(cars).where(eq(cars.id, carId));
+      if (!car) {
+        return res.status(404).json({ error: "Car not found" });
+      }
+      
+      const [newRequest] = await db.insert(inspectionRequests).values({
+        carId,
+        buyerId,
+        sellerId: car.userId,
+        message,
+        status: "pending",
+      }).returning();
+      
+      res.json(newRequest);
+    } catch (error) {
+      console.error("Create inspection request error:", error);
+      res.status(500).json({ error: "Failed to create inspection request" });
+    }
+  });
+
+  app.get("/api/inspection-requests/received", authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const sellerId = req.user!.id;
+      const requests = await db.select({
+        request: inspectionRequests,
+        car: cars,
+        buyer: users,
+      })
+        .from(inspectionRequests)
+        .innerJoin(cars, eq(inspectionRequests.carId, cars.id))
+        .innerJoin(users, eq(inspectionRequests.buyerId, users.id))
+        .where(eq(inspectionRequests.sellerId, sellerId))
+        .orderBy(desc(inspectionRequests.createdAt));
+      
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch inspection requests" });
+    }
+  });
+
+  app.put("/api/inspection-requests/:id/respond", authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { status, sellerResponse } = req.body;
+      const sellerId = req.user!.id;
+      
+      const [request] = await db.select().from(inspectionRequests).where(eq(inspectionRequests.id, id));
+      if (!request || request.sellerId !== sellerId) {
+        return res.status(403).json({ error: "Not authorized to respond to this request" });
+      }
+      
+      const [updatedRequest] = await db.update(inspectionRequests)
+        .set({ status, sellerResponse, updatedAt: new Date() })
+        .where(eq(inspectionRequests.id, id))
+        .returning();
+      
+      res.json(updatedRequest);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update inspection request" });
     }
   });
 

@@ -30,18 +30,21 @@ export default function SearchScreen() {
   const { user } = useAuth();
   
   const isSpecialCategory = route.params?.category === "my-listings" || route.params?.category === "favorites";
+  const specialMode = route.params?.category;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilterModal, setShowFilterModal] = useState(false);
   
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(route.params?.category || null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    isSpecialCategory ? null : (route.params?.category || null)
+  );
   const [selectedCondition, setSelectedCondition] = useState<string | null>(null);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
   const [tempCity, setTempCity] = useState<string | null>(selectedCity);
-  const [tempCategory, setTempCategory] = useState<string | null>(selectedCategory);
+  const [tempCategory, setTempCategory] = useState<string | null>(null);
   const [tempCondition, setTempCondition] = useState<string | null>(selectedCondition);
   const [tempMinPrice, setTempMinPrice] = useState(minPrice);
   const [tempMaxPrice, setTempMaxPrice] = useState(maxPrice);
@@ -71,9 +74,9 @@ export default function SearchScreen() {
   const filteredCars = useMemo(() => {
     let baseCars = cars;
     
-    if (route.params?.category === "my-listings") {
+    if (specialMode === "my-listings") {
       baseCars = cars.filter((car) => car.sellerId === user?.id);
-    } else if (route.params?.category === "favorites") {
+    } else if (specialMode === "favorites") {
       baseCars = cars.filter((car) => favorites.includes(car.id));
     }
     
@@ -82,19 +85,19 @@ export default function SearchScreen() {
         car.make.toLowerCase().includes(searchQuery.toLowerCase()) ||
         car.model.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCity = !selectedCity || car.city === selectedCity;
-      const matchesCategory = !selectedCategory || isSpecialCategory || car.category === selectedCategory;
+      const matchesCategory = !selectedCategory || car.category === selectedCategory;
       const matchesCondition = !selectedCondition || car.condition === selectedCondition;
       const matchesMinPrice = !minPrice || car.price >= parseInt(minPrice);
       const matchesMaxPrice = !maxPrice || car.price <= parseInt(maxPrice);
       return matchesSearch && matchesCity && matchesCategory && matchesCondition && matchesMinPrice && matchesMaxPrice;
     });
-  }, [cars, searchQuery, selectedCity, selectedCategory, selectedCondition, minPrice, maxPrice, favorites, user?.id, route.params?.category, isSpecialCategory]);
+  }, [cars, searchQuery, selectedCity, selectedCategory, selectedCondition, minPrice, maxPrice, favorites, user?.id, specialMode]);
 
   const activeFiltersCount = [selectedCity, selectedCategory, selectedCondition, minPrice, maxPrice].filter(Boolean).length;
 
   const openFilterModal = () => {
     setTempCity(selectedCity);
-    setTempCategory(selectedCategory);
+    setTempCategory(isSpecialCategory ? null : selectedCategory);
     setTempCondition(selectedCondition);
     setTempMinPrice(minPrice);
     setTempMaxPrice(maxPrice);
@@ -143,18 +146,18 @@ export default function SearchScreen() {
   );
 
   const getScreenTitle = () => {
-    if (route.params?.category === "my-listings") {
+    if (specialMode === "my-listings") {
       return t("myListings");
-    } else if (route.params?.category === "favorites") {
+    } else if (specialMode === "favorites") {
       return t("favorites");
     }
     return t("searchCars");
   };
 
   const getEmptyMessage = () => {
-    if (route.params?.category === "my-listings") {
+    if (specialMode === "my-listings") {
       return isRTL ? "لم تقم بإضافة أي إعلانات بعد" : "You haven't posted any listings yet";
-    } else if (route.params?.category === "favorites") {
+    } else if (specialMode === "favorites") {
       return isRTL ? "لم تقم بإضافة أي سيارات للمفضلة" : "You haven't added any favorites yet";
     }
     return t("adjustFilters");
