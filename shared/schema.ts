@@ -3,6 +3,30 @@ import { pgTable, text, varchar, integer, timestamp, boolean, jsonb } from "driz
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const admins = pgTable("admins", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  name: text("name").notNull(),
+  role: text("role").default("admin"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const otpCodes = pgTable("otp_codes", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  phone: text("phone").notNull(),
+  code: text("code").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  verified: boolean("verified").default(false),
+  attempts: integer("attempts").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const users = pgTable("users", {
   id: varchar("id")
     .primaryKey()
@@ -117,3 +141,19 @@ export type Favorite = typeof favorites.$inferSelect;
 
 export type InsertSliderImage = z.infer<typeof insertSliderImageSchema>;
 export type SliderImage = typeof sliderImages.$inferSelect;
+
+export const insertAdminSchema = createInsertSchema(admins).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertOtpCodeSchema = createInsertSchema(otpCodes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertAdmin = z.infer<typeof insertAdminSchema>;
+export type Admin = typeof admins.$inferSelect;
+
+export type InsertOtpCode = z.infer<typeof insertOtpCodeSchema>;
+export type OtpCode = typeof otpCodes.$inferSelect;
