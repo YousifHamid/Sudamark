@@ -834,13 +834,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/admin/cars", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { make, model, year, price, mileage, city, transmission, fuelType, description, userId } = req.body;
+      
+      let ownerId = userId;
+      if (!ownerId) {
+        const [adminUser] = await db.select().from(users).where(eq(users.name, "Admin")).limit(1);
+        if (adminUser) {
+          ownerId = adminUser.id;
+        } else {
+          const [newAdmin] = await db.insert(users).values({
+            name: "Admin",
+            phone: "0000000000",
+            roles: ["admin"],
+          }).returning();
+          ownerId = newAdmin.id;
+        }
+      }
+      
+      const [newCar] = await db.insert(cars).values({
+        userId: ownerId,
+        make,
+        model,
+        year,
+        price,
+        mileage: mileage || 0,
+        city,
+        transmission,
+        fuelType,
+        description,
+        isActive: true,
+        isFeatured: false,
+        images: [],
+      }).returning();
+      res.json(newCar);
+    } catch (error) {
+      console.error("Failed to create car:", error);
+      res.status(500).json({ error: "Failed to create car" });
+    }
+  });
+
   app.put("/api/admin/cars/:id", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
-      const { isActive, isFeatured } = req.body;
+      const { isActive, isFeatured, make, model, year, price, mileage, city, transmission, fuelType, description } = req.body;
+      
+      const updateData: Record<string, any> = { updatedAt: new Date() };
+      if (isActive !== undefined) updateData.isActive = isActive;
+      if (isFeatured !== undefined) updateData.isFeatured = isFeatured;
+      if (make) updateData.make = make;
+      if (model) updateData.model = model;
+      if (year) updateData.year = year;
+      if (price) updateData.price = price;
+      if (mileage !== undefined) updateData.mileage = mileage;
+      if (city) updateData.city = city;
+      if (transmission) updateData.transmission = transmission;
+      if (fuelType) updateData.fuelType = fuelType;
+      if (description !== undefined) updateData.description = description;
       
       const [updatedCar] = await db.update(cars)
-        .set({ isActive, isFeatured, updatedAt: new Date() })
+        .set(updateData)
         .where(eq(cars.id, id))
         .returning();
       res.json(updatedCar);

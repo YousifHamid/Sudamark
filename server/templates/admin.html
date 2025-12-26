@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لوحة تحكم عربتي - Admin Dashboard</title>
+  <title>لوحة تحكم عرباتي - Admin Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap');
@@ -16,7 +16,7 @@
     <div id="login-page" class="min-h-screen flex items-center justify-center p-4">
       <div class="glass rounded-2xl p-8 w-full max-w-md border border-gray-700">
         <div class="text-center mb-8">
-          <h1 class="text-3xl font-bold text-orange-500 mb-2">عربتي</h1>
+          <img src="/assets/images/ARABATY2_1766665788809.png" alt="عرباتي" class="h-16 mx-auto mb-2">
           <p class="text-gray-400">لوحة تحكم المدير</p>
         </div>
         <div id="setup-form" class="hidden">
@@ -41,7 +41,10 @@
     <div id="dashboard-page" class="hidden">
       <nav class="bg-gray-800 border-b border-gray-700 p-4">
         <div class="container mx-auto flex justify-between items-center">
-          <h1 class="text-2xl font-bold text-orange-500">عربتي - لوحة التحكم</h1>
+          <div class="flex items-center gap-3">
+            <img src="/assets/images/ARABATY2_1766665788809.png" alt="عرباتي" class="h-10">
+            <span class="text-xl font-bold text-orange-500">لوحة التحكم</span>
+          </div>
           <div class="flex items-center gap-4">
             <span id="admin-name" class="text-gray-300"></span>
             <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-sm">تسجيل الخروج</button>
@@ -82,6 +85,7 @@
                 <tr>
                   <th class="p-4 text-right">الاسم</th>
                   <th class="p-4 text-right">الهاتف</th>
+                  <th class="p-4 text-right">الموقع</th>
                   <th class="p-4 text-right">الأدوار</th>
                   <th class="p-4 text-right">التاريخ</th>
                 </tr>
@@ -92,6 +96,9 @@
         </div>
 
         <div id="cars-tab" class="tab-content hidden">
+          <div class="flex justify-end mb-4">
+            <button onclick="showAddCar()" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg">إضافة سيارة</button>
+          </div>
           <div class="glass rounded-xl border border-gray-700 overflow-hidden">
             <table class="w-full">
               <thead class="bg-gray-800">
@@ -127,6 +134,42 @@
               <tbody id="providers-table"></tbody>
             </table>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="add-car-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div class="glass rounded-2xl p-6 w-full max-w-lg border border-gray-700 max-h-screen overflow-y-auto">
+        <h2 class="text-xl font-bold mb-4" id="car-modal-title">إضافة سيارة</h2>
+        <input type="hidden" id="edit-car-id">
+        <div class="grid grid-cols-2 gap-3">
+          <input type="text" id="car-make" placeholder="الماركة (مثال: تويوتا)" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+          <input type="text" id="car-model" placeholder="الموديل (مثال: كامري)" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+          <input type="number" id="car-year" placeholder="السنة" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+          <input type="number" id="car-price" placeholder="السعر (SDG)" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+          <input type="number" id="car-mileage" placeholder="المسافة المقطوعة (كم)" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+          <select id="car-city" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+            <option value="الخرطوم">الخرطوم</option>
+            <option value="أم درمان">أم درمان</option>
+            <option value="بحري">بحري</option>
+            <option value="بورتسودان">بورتسودان</option>
+            <option value="كسلا">كسلا</option>
+          </select>
+          <select id="car-transmission" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+            <option value="automatic">أوتوماتيك</option>
+            <option value="manual">عادي</option>
+          </select>
+          <select id="car-fuel" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+            <option value="petrol">بنزين</option>
+            <option value="diesel">ديزل</option>
+            <option value="electric">كهرباء</option>
+            <option value="hybrid">هايبرد</option>
+          </select>
+        </div>
+        <textarea id="car-description" placeholder="الوصف" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mt-3" rows="3"></textarea>
+        <div class="flex gap-3 mt-4">
+          <button onclick="saveCar()" class="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-lg">حفظ</button>
+          <button onclick="hideAddCar()" class="flex-1 bg-gray-600 hover:bg-gray-700 py-3 rounded-lg">إلغاء</button>
         </div>
       </div>
     </div>
@@ -261,6 +304,7 @@
           <tr class="border-t border-gray-700">
             <td class="p-4">${u.name}</td>
             <td class="p-4 text-gray-400">${u.phone}</td>
+            <td class="p-4">${u.city || 'غير محدد'}</td>
             <td class="p-4"><span class="bg-blue-500 px-2 py-1 rounded text-xs">${(u.roles || []).join(', ')}</span></td>
             <td class="p-4 text-gray-400">${new Date(u.createdAt).toLocaleDateString('ar')}</td>
           </tr>
@@ -273,6 +317,7 @@
     async function loadCars() {
       try {
         const cars = await api('/api/admin/cars');
+        window.carsData = cars;
         const tbody = document.getElementById('cars-table');
         tbody.innerHTML = cars.map(c => `
           <tr class="border-t border-gray-700">
@@ -282,15 +327,16 @@
             <td class="p-4 text-gray-400">${c.owner?.name || 'غير معروف'}</td>
             <td class="p-4">
               <span class="px-2 py-1 rounded text-xs ${c.car.isActive ? 'bg-green-500' : 'bg-red-500'}">
-                ${c.car.isActive ? 'نشط' : 'معطل'}
+                ${c.car.isActive ? 'نشط' : 'معلق'}
               </span>
               ${c.car.isFeatured ? '<span class="bg-orange-500 px-2 py-1 rounded text-xs mr-1">مميز</span>' : ''}
             </td>
-            <td class="p-4">
-              <button onclick="toggleCar('${c.car.id}', ${!c.car.isActive})" class="text-blue-400 hover:underline ml-2">
-                ${c.car.isActive ? 'تعطيل' : 'تفعيل'}
+            <td class="p-4 flex gap-2 flex-wrap">
+              <button onclick="editCar('${c.car.id}')" class="text-yellow-400 hover:underline">تعديل</button>
+              <button onclick="toggleCar('${c.car.id}', ${!c.car.isActive})" class="text-blue-400 hover:underline">
+                ${c.car.isActive ? 'تعليق' : 'تفعيل'}
               </button>
-              <button onclick="toggleFeatured('${c.car.id}', ${!c.car.isFeatured})" class="text-orange-400 hover:underline ml-2">
+              <button onclick="toggleFeatured('${c.car.id}', ${!c.car.isFeatured})" class="text-orange-400 hover:underline">
                 ${c.car.isFeatured ? 'إلغاء التمييز' : 'تمييز'}
               </button>
               <button onclick="deleteCar('${c.car.id}')" class="text-red-400 hover:underline">حذف</button>
@@ -325,6 +371,72 @@
       if (!confirm('هل أنت متأكد من حذف هذه السيارة؟')) return;
       try {
         await api(`/api/admin/cars/${id}`, { method: 'DELETE' });
+        loadCars();
+        loadStats();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function showAddCar() {
+      document.getElementById('car-modal-title').textContent = 'إضافة سيارة';
+      document.getElementById('edit-car-id').value = '';
+      document.getElementById('car-make').value = '';
+      document.getElementById('car-model').value = '';
+      document.getElementById('car-year').value = '';
+      document.getElementById('car-price').value = '';
+      document.getElementById('car-mileage').value = '';
+      document.getElementById('car-city').value = 'الخرطوم';
+      document.getElementById('car-transmission').value = 'automatic';
+      document.getElementById('car-fuel').value = 'petrol';
+      document.getElementById('car-description').value = '';
+      document.getElementById('add-car-modal').classList.remove('hidden');
+    }
+
+    function hideAddCar() {
+      document.getElementById('add-car-modal').classList.add('hidden');
+    }
+
+    function editCar(id) {
+      const carData = window.carsData?.find(c => c.car.id === id);
+      if (!carData) return alert('لم يتم العثور على السيارة');
+      const car = carData.car;
+      
+      document.getElementById('car-modal-title').textContent = 'تعديل السيارة';
+      document.getElementById('edit-car-id').value = id;
+      document.getElementById('car-make').value = car.make || '';
+      document.getElementById('car-model').value = car.model || '';
+      document.getElementById('car-year').value = car.year || '';
+      document.getElementById('car-price').value = car.price || '';
+      document.getElementById('car-mileage').value = car.mileage || '';
+      document.getElementById('car-city').value = car.city || 'الخرطوم';
+      document.getElementById('car-transmission').value = car.transmission || 'automatic';
+      document.getElementById('car-fuel').value = car.fuelType || 'petrol';
+      document.getElementById('car-description').value = car.description || '';
+      document.getElementById('add-car-modal').classList.remove('hidden');
+    }
+
+    async function saveCar() {
+      try {
+        const editId = document.getElementById('edit-car-id').value;
+        const data = {
+          make: document.getElementById('car-make').value,
+          model: document.getElementById('car-model').value,
+          year: parseInt(document.getElementById('car-year').value),
+          price: parseInt(document.getElementById('car-price').value),
+          mileage: parseInt(document.getElementById('car-mileage').value) || 0,
+          city: document.getElementById('car-city').value,
+          transmission: document.getElementById('car-transmission').value,
+          fuelType: document.getElementById('car-fuel').value,
+          description: document.getElementById('car-description').value,
+        };
+        
+        if (editId) {
+          await api(`/api/admin/cars/${editId}`, { method: 'PUT', body: JSON.stringify(data) });
+        } else {
+          await api('/api/admin/cars', { method: 'POST', body: JSON.stringify(data) });
+        }
+        hideAddCar();
         loadCars();
         loadStats();
       } catch (err) {
