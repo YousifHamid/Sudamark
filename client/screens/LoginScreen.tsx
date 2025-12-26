@@ -27,7 +27,7 @@ interface Country {
 }
 
 const SUPPORTED_COUNTRIES: Country[] = [
-  { id: "sd", name: "Sudan", dialCode: "+249", flag: "SD", placeholder: "9X XXX XXXX", minLength: 9, maxLength: 9 },
+  { id: "sd", name: "Sudan", dialCode: "+249", flag: "SD", placeholder: "9X XXX XXXX", minLength: 9, maxLength: 10 },
   { id: "sa", name: "Saudi Arabia", dialCode: "+966", flag: "SA", placeholder: "5X XXX XXXX", minLength: 9, maxLength: 9 },
   { id: "om", name: "Oman", dialCode: "+968", flag: "OM", placeholder: "9XXX XXXX", minLength: 8, maxLength: 8 },
   { id: "qa", name: "Qatar", dialCode: "+974", flag: "QA", placeholder: "XXXX XXXX", minLength: 8, maxLength: 8 },
