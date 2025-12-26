@@ -40,11 +40,11 @@ export default function RequestInspectionScreen() {
   const sellerWhatsApp = "+249123456789";
 
   const dates = [
-    { id: "1", label: t("tomorrow"), date: "Dec 27" },
-    { id: "2", label: isRTL ? "السبت" : "Sat", date: "Dec 28" },
-    { id: "3", label: isRTL ? "الأحد" : "Sun", date: "Dec 29" },
-    { id: "4", label: isRTL ? "الاثنين" : "Mon", date: "Dec 30" },
-    { id: "5", label: isRTL ? "الثلاثاء" : "Tue", date: "Dec 31" },
+    { id: "1", label: t("tomorrow"), date: `${t("december")} 27` },
+    { id: "2", label: t("saturday"), date: `${t("december")} 28` },
+    { id: "3", label: t("sunday"), date: `${t("december")} 29` },
+    { id: "4", label: t("monday"), date: `${t("december")} 30` },
+    { id: "5", label: t("tuesday"), date: `${t("december")} 31` },
   ];
 
   const handleCall = () => {
@@ -52,12 +52,25 @@ export default function RequestInspectionScreen() {
     Linking.openURL(`tel:${sellerPhone}`);
   };
 
-  const handleWhatsApp = () => {
+  const handleWhatsApp = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const message = isRTL 
       ? `مرحباً، أريد الاستفسار عن السيارة: ${car?.title}` 
       : `Hello, I'm interested in the car: ${car?.title}`;
-    Linking.openURL(`whatsapp://send?phone=${sellerWhatsApp}&text=${encodeURIComponent(message)}`);
+    const whatsappUrl = `whatsapp://send?phone=${sellerWhatsApp}&text=${encodeURIComponent(message)}`;
+    const webWhatsappUrl = `https://wa.me/${sellerWhatsApp.replace('+', '')}?text=${encodeURIComponent(message)}`;
+    
+    const canOpen = await Linking.canOpenURL(whatsappUrl);
+    if (canOpen) {
+      Linking.openURL(whatsappUrl);
+    } else {
+      const canOpenWeb = await Linking.canOpenURL(webWhatsappUrl);
+      if (canOpenWeb) {
+        Linking.openURL(webWhatsappUrl);
+      } else {
+        Alert.alert(t("error"), t("whatsappNotAvailable"));
+      }
+    }
   };
 
   const handleSubmit = async () => {

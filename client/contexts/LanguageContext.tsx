@@ -224,6 +224,16 @@ export const translations: Translations = {
   ok: { ar: "حسناً", en: "OK" },
   selectCenterAndDate: { ar: "يرجى اختيار مركز المعاينة والتاريخ", en: "Please select an inspection center and date" },
   tomorrow: { ar: "غداً", en: "Tomorrow" },
+  saturday: { ar: "السبت", en: "Sat" },
+  sunday: { ar: "الأحد", en: "Sun" },
+  monday: { ar: "الاثنين", en: "Mon" },
+  tuesday: { ar: "الثلاثاء", en: "Tue" },
+  wednesday: { ar: "الأربعاء", en: "Wed" },
+  thursday: { ar: "الخميس", en: "Thu" },
+  friday: { ar: "الجمعة", en: "Fri" },
+  december: { ar: "ديسمبر", en: "Dec" },
+  january: { ar: "يناير", en: "Jan" },
+  whatsappNotAvailable: { ar: "تطبيق واتساب غير متوفر على هذا الجهاز", en: "WhatsApp is not available on this device" },
   
   // Notifications
   notifications: { ar: "الإشعارات", en: "Notifications" },
