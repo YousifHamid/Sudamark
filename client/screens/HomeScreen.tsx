@@ -40,11 +40,11 @@ export default function HomeScreen() {
   const { cars, featuredCars } = useCars();
 
   const categories = [
-    { id: "new", labelKey: "newCar", icon: "check-circle" as const, color: "#10B981" },
-    { id: "used", labelKey: "usedCar", icon: "refresh-cw" as const, color: "#F59E0B" },
-    { id: "orneek", labelKey: "orneek", icon: "file-text" as const, color: "#3B82F6" },
-    { id: "customs", labelKey: "customs", icon: "package" as const, color: "#8B5CF6" },
-    { id: "body", labelKey: "body", icon: "truck" as const, color: "#EF4444" },
+    { id: "new", labelKey: "newCar", icon: "check-circle" as const },
+    { id: "used", labelKey: "usedCar", icon: "refresh-cw" as const },
+    { id: "orneek", labelKey: "orneek", icon: "file-text" as const },
+    { id: "customs", labelKey: "customs", icon: "package" as const },
+    { id: "body", labelKey: "body", icon: "truck" as const },
   ];
 
   const handleSearchPress = () => {
@@ -82,14 +82,14 @@ export default function HomeScreen() {
 
       <View style={styles.sponsorSection}>
         <LinearGradient
-          colors={["#F97316", "#FB923C"]}
+          colors={["#FFA43A", "#FFB85C"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.sponsorCard}
         >
           <View style={[styles.sponsorContent, isRTL && styles.sponsorContentRTL]}>
             <View style={styles.sponsorLogo}>
-              <Feather name="award" size={20} color="#F97316" />
+              <Feather name="award" size={20} color="#FFA43A" />
             </View>
             <View style={styles.sponsorTextContainer}>
               <ThemedText style={[styles.sponsorLabel, isRTL && styles.rtlText]}>
@@ -110,11 +110,11 @@ export default function HomeScreen() {
           {categories.map((category) => (
             <Pressable
               key={category.id}
-              style={[styles.categoryChip, { backgroundColor: category.color + "15" }]}
+              style={[styles.categoryChip, { backgroundColor: theme.primary + "15" }]}
               onPress={() => navigation.navigate("Search", { category: category.id })}
             >
-              <Feather name={category.icon} size={18} color={category.color} />
-              <ThemedText type="small" style={[styles.categoryLabel, { color: category.color }, isRTL && styles.rtlText]}>{t(category.labelKey)}</ThemedText>
+              <Feather name={category.icon} size={18} color={theme.primary} />
+              <ThemedText type="small" style={[styles.categoryLabel, { color: theme.primary }, isRTL && styles.rtlText]}>{t(category.labelKey)}</ThemedText>
             </Pressable>
           ))}
         </ScrollView>
