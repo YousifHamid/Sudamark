@@ -1,90 +1,145 @@
-import React, { createContext, useContext, ReactNode } from "react";
+import React, { createContext, useContext, ReactNode, useState, useEffect, useCallback } from "react";
 import { ServiceProvider } from "@/components/ServiceProviderCard";
+import { getApiUrl } from "@/lib/query-client";
 
 interface ServiceProvidersContextType {
   providers: ServiceProvider[];
+  isLoading: boolean;
+  getProvidersByType: (type: string) => ServiceProvider[];
+  refreshProviders: () => Promise<void>;
 }
 
 const ServiceProvidersContext = createContext<ServiceProvidersContextType | undefined>(undefined);
 
 const SAMPLE_PROVIDERS: ServiceProvider[] = [
   {
-    id: "1",
-    name: "Al-Rashid Auto Repair",
+    id: "sample-1",
+    name: "ورشة الرشيد للسيارات",
     role: "mechanic",
-    city: "Riyadh",
+    city: "الخرطوم",
     rating: 4.8,
     reviewCount: 156,
-    description: "Expert mechanics with 20+ years experience",
+    description: "خبرة أكثر من 20 سنة في صيانة السيارات",
   },
   {
-    id: "2",
-    name: "ElectroTech Auto",
+    id: "sample-2",
+    name: "إلكترو تك للسيارات",
     role: "electrician",
-    city: "Jeddah",
+    city: "أم درمان",
     rating: 4.6,
     reviewCount: 89,
-    description: "Specialized in modern car electronics",
+    description: "متخصصون في كهرباء السيارات الحديثة",
   },
   {
-    id: "3",
-    name: "Legal Auto Advisors",
+    id: "sample-3",
+    name: "المستشار القانوني للسيارات",
     role: "lawyer",
-    city: "Riyadh",
+    city: "الخرطوم",
     rating: 4.9,
     reviewCount: 234,
-    description: "Vehicle documentation and legal services",
+    description: "خدمات توثيق المركبات والاستشارات القانونية",
   },
   {
-    id: "4",
-    name: "Saudi Inspection Center",
+    id: "sample-4",
+    name: "مركز الفحص السوداني",
     role: "inspection_center",
-    city: "Riyadh",
+    city: "الخرطوم",
     rating: 4.7,
     reviewCount: 312,
-    description: "Official vehicle inspection services",
+    description: "خدمات فحص المركبات الرسمية",
   },
   {
-    id: "5",
-    name: "Quick Fix Motors",
+    id: "sample-5",
+    name: "ورشة الإصلاح السريع",
     role: "mechanic",
-    city: "Dammam",
+    city: "بحري",
     rating: 4.5,
     reviewCount: 78,
-    description: "Fast and reliable repairs",
+    description: "إصلاحات سريعة وموثوقة",
   },
   {
-    id: "6",
-    name: "Gulf Inspection Hub",
+    id: "sample-6",
+    name: "مركز فحص الخليج",
     role: "inspection_center",
-    city: "Jeddah",
+    city: "بورتسودان",
     rating: 4.8,
     reviewCount: 189,
-    description: "Comprehensive vehicle inspections",
+    description: "فحوصات شاملة للمركبات",
   },
   {
-    id: "7",
-    name: "Power Circuit Auto",
+    id: "sample-7",
+    name: "باور سيركيت أوتو",
     role: "electrician",
-    city: "Riyadh",
+    city: "الخرطوم",
     rating: 4.4,
     reviewCount: 67,
-    description: "Battery, alternator and electrical systems",
+    description: "بطاريات ومولدات وأنظمة كهربائية",
   },
   {
-    id: "8",
-    name: "Auto Law Firm",
+    id: "sample-8",
+    name: "مكتب المحاماة للسيارات",
     role: "lawyer",
-    city: "Jeddah",
+    city: "أم درمان",
     rating: 4.7,
     reviewCount: 145,
-    description: "Insurance claims and accident cases",
+    description: "قضايا التأمين والحوادث",
   },
 ];
 
 export function ServiceProvidersProvider({ children }: { children: ReactNode }) {
+  const [providers, setProviders] = useState<ServiceProvider[]>(SAMPLE_PROVIDERS);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadProviders = useCallback(async () => {
+    try {
+      const baseUrl = getApiUrl();
+      const response = await fetch(`${baseUrl}api/service-providers`);
+      if (response.ok) {
+        const apiProviders = await response.json();
+        if (apiProviders.length > 0) {
+          const formattedProviders = apiProviders.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            role: p.type,
+            city: p.city,
+            rating: p.rating || 0,
+            reviewCount: p.reviewCount || 0,
+            description: p.description || "",
+            phone: p.phone,
+            address: p.address,
+            isVerified: p.isVerified,
+          }));
+          setProviders(formattedProviders);
+        }
+      }
+    } catch (error) {
+      console.log("Using sample providers data");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadProviders();
+  }, [loadProviders]);
+
+  const refreshProviders = async () => {
+    setIsLoading(true);
+    await loadProviders();
+  };
+
+  const getProvidersByType = (type: string) => {
+    if (type === "all") return providers;
+    return providers.filter(p => p.role === type);
+  };
+
   return (
-    <ServiceProvidersContext.Provider value={{ providers: SAMPLE_PROVIDERS }}>
+    <ServiceProvidersContext.Provider value={{ 
+      providers, 
+      isLoading, 
+      getProvidersByType,
+      refreshProviders 
+    }}>
       {children}
     </ServiceProvidersContext.Provider>
   );
