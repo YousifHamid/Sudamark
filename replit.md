@@ -90,3 +90,30 @@ Preferred communication style: Simple, everyday language.
 ### Planned Integrations
 - WhatsApp OTP service (Twilio-ready abstraction)
 - SMS fallback for OTP delivery
+
+## Production Configuration
+
+### OTP Authentication
+- **Demo Mode**: Currently using demo OTP code "123456" for testing
+- **Production Mode**: To enable real SMS OTP:
+  1. Set up Twilio account and get credentials
+  2. Add secrets: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`
+  3. Set `OTP_DEMO_MODE=false` in production environment
+  4. The backend is ready to integrate with Twilio SMS API
+
+### Admin Dashboard
+- Access at `/admin` route (e.g., https://your-domain.replit.app/admin)
+- First-time setup: Create admin account via the dashboard
+- Features: Manage users, cars, service providers, and view statistics
+
+### Database
+- PostgreSQL with Drizzle ORM
+- Tables: users, cars, service_providers, favorites, slider_images, admins, otp_codes
+- Run `npm run db:push` to sync schema changes
+
+### API Endpoints
+- `/api/auth/*` - Authentication (send-otp, verify-otp, register)
+- `/api/cars/*` - Car listings CRUD
+- `/api/service-providers/*` - Service providers
+- `/api/favorites/*` - User favorites
+- `/api/admin/*` - Admin dashboard APIs (requires admin auth)
