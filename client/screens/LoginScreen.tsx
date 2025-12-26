@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { View, StyleSheet, TextInput, Pressable, Modal, FlatList } from "react-native";
+import { View, StyleSheet, TextInput, Pressable, Modal, FlatList, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
+import * as Clipboard from "expo-clipboard";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -14,7 +15,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 
-type LoginStep = "phone" | "otp" | "role";
+type LoginStep = "input" | "verify" | "role";
 
 interface Country {
   id: string;
@@ -41,11 +42,13 @@ export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
-  const { login, verifyOtp, setUserRoles } = useAuth();
+  const { sendMagicLink, verifyMagicToken, setUserRoles } = useAuth();
 
-  const [step, setStep] = useState<LoginStep>("phone");
+  const [step, setStep] = useState<LoginStep>("input");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [otp, setOtp] = useState("");
+  const [email, setEmail] = useState("");
+  const [token, setToken] = useState("");
+  const [demoToken, setDemoToken] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [selectedRoles, setSelectedRoles] = useState<Array<"buyer" | "seller" | "mechanic" | "electrician" | "lawyer" | "inspectionCenter">>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -62,19 +65,38 @@ export default function LoginScreen() {
     { id: "inspection_center", labelKey: "inspectionCenter", icon: "clipboard" as const },
   ];
 
-  const handleSendOtp = async () => {
+  const validateEmail = (emailValue: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(emailValue);
+  };
+
+  const handleSendMagicLink = async () => {
     const cleanNumber = phoneNumber.replace(/\s/g, "");
     if (cleanNumber.length < selectedCountry.minLength || cleanNumber.length > selectedCountry.maxLength) {
       setError(t("invalidPhoneNumber"));
       return;
     }
+    if (!validateEmail(email)) {
+      setError(t("invalidEmail"));
+      return;
+    }
+    
     setError("");
     setIsLoading(true);
-    const fullNumber = selectedCountry.dialCode + cleanNumber;
-    await login(fullNumber);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setIsLoading(false);
-    setStep("otp");
+    
+    try {
+      const result = await sendMagicLink(email, cleanNumber, selectedCountry.dialCode);
+      if (result.demoToken) {
+        setDemoToken(result.demoToken);
+      }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setStep("verify");
+    } catch (err) {
+      setError(t("error"));
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSelectCountry = (country: Country) => {
@@ -84,21 +106,36 @@ export default function LoginScreen() {
     Haptics.selectionAsync();
   };
 
-  const handleVerifyOtp = async () => {
-    if (otp.length !== 6) {
-      setError(t("enter6DigitCode"));
+  const handleCopyToken = async () => {
+    if (demoToken) {
+      await Clipboard.setStringAsync(demoToken);
+      setToken(demoToken);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  };
+
+  const handleVerifyToken = async () => {
+    if (!token.trim()) {
+      setError(t("fillRequiredFields"));
       return;
     }
+    
     setError("");
     setIsLoading(true);
-    const success = await verifyOtp(otp);
-    setIsLoading(false);
-    if (success) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setStep("role");
-    } else {
-      setError(t("invalidCode"));
+    
+    try {
+      const result = await verifyMagicToken(token);
+      if (result.isNewUser) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        setStep("role");
+      } else {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (err) {
+      setError(t("tokenExpired"));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -113,9 +150,15 @@ export default function LoginScreen() {
     }
     setError("");
     setIsLoading(true);
-    await setUserRoles(selectedRoles, name);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setIsLoading(false);
+    try {
+      await setUserRoles(selectedRoles, name, email);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (err) {
+      setError(t("error"));
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const toggleRole = (roleId: string) => {
@@ -143,8 +186,8 @@ export default function LoginScreen() {
             contentFit="contain"
           />
           <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
-            {step === "phone" && t("enterPhoneToStart")}
-            {step === "otp" && t("enterVerificationCode")}
+            {step === "input" && t("enterPhoneAndEmail")}
+            {step === "verify" && t("checkEmail")}
             {step === "role" && t("completeProfile")}
           </ThemedText>
         </View>
@@ -155,7 +198,7 @@ export default function LoginScreen() {
           </View>
         ) : null}
 
-        {step === "phone" ? (
+        {step === "input" ? (
           <View style={styles.form}>
             <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
               {t("phoneNumber")}
@@ -178,11 +221,25 @@ export default function LoginScreen() {
                 onChangeText={setPhoneNumber}
                 keyboardType="phone-pad"
                 maxLength={selectedCountry.maxLength + 2}
-                autoFocus
               />
             </View>
-            <Button onPress={handleSendOtp} disabled={isLoading} style={styles.button}>
-              {isLoading ? t("sending") : t("sendVerificationCode")}
+            
+            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary, marginTop: Spacing.md }, isRTL && styles.rtlText]}>
+              {t("email")}
+            </ThemedText>
+            <TextInput
+              style={[styles.emailInput, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border, textAlign: isRTL ? "right" : "left" }]}
+              placeholder={t("enterEmail")}
+              placeholderTextColor={theme.textSecondary}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            
+            <Button onPress={handleSendMagicLink} disabled={isLoading} style={styles.button}>
+              {isLoading ? t("sendingLink") : t("sendMagicLink")}
             </Button>
           </View>
         ) : null}
@@ -228,28 +285,50 @@ export default function LoginScreen() {
           </View>
         </Modal>
 
-        {step === "otp" ? (
+        {step === "verify" ? (
           <View style={styles.form}>
-            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
-              {t("verificationCode")}
+            <View style={[styles.infoBox, { backgroundColor: theme.primary + "15" }]}>
+              <Feather name="mail" size={24} color={theme.primary} />
+              <ThemedText type="small" style={[styles.infoText, { color: theme.text }, isRTL && styles.rtlText]}>
+                {t("magicLinkSent")}
+              </ThemedText>
+            </View>
+            
+            {demoToken ? (
+              <Pressable 
+                onPress={handleCopyToken}
+                style={[styles.demoTokenBox, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}
+              >
+                <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                  {t("demoTokenHint")}
+                </ThemedText>
+                <View style={styles.tokenRow}>
+                  <ThemedText type="small" style={[styles.tokenText, { color: theme.primary }]} numberOfLines={1}>
+                    {demoToken.substring(0, 20)}...
+                  </ThemedText>
+                  <Feather name="copy" size={16} color={theme.primary} />
+                </View>
+              </Pressable>
+            ) : null}
+            
+            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary, marginTop: Spacing.xl }, isRTL && styles.rtlText]}>
+              {t("enterToken")}
             </ThemedText>
             <TextInput
-              style={[styles.otpInput, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }]}
-              placeholder="000000"
+              style={[styles.tokenInput, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }]}
+              placeholder="xxxxxxxxxxxxxxxx"
               placeholderTextColor={theme.textSecondary}
-              value={otp}
-              onChangeText={setOtp}
-              keyboardType="number-pad"
-              maxLength={6}
-              autoFocus
+              value={token}
+              onChangeText={setToken}
+              autoCapitalize="none"
+              autoCorrect={false}
             />
-            <ThemedText type="small" style={[styles.hint, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
-              {t("demoCode")}
-            </ThemedText>
-            <Button onPress={handleVerifyOtp} disabled={isLoading} style={styles.button}>
-              {isLoading ? t("verifying") : t("verifyCode")}
+            
+            <Button onPress={handleVerifyToken} disabled={isLoading} style={styles.button}>
+              {isLoading ? t("verifying") : t("verifyToken")}
             </Button>
-            <Pressable onPress={() => setStep("phone")} style={styles.backLink}>
+            
+            <Pressable onPress={() => { setStep("input"); setDemoToken(null); setToken(""); }} style={styles.backLink}>
               <ThemedText type="link">{t("changePhoneNumber")}</ThemedText>
             </Pressable>
           </View>
@@ -357,7 +436,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     height: Spacing.inputHeight,
     paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.xl,
   },
   countrySelector: {
     flexDirection: "row",
@@ -377,6 +455,13 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    fontSize: 16,
+  },
+  emailInput: {
+    height: Spacing.inputHeight,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    paddingHorizontal: Spacing.lg,
     fontSize: 16,
   },
   modalOverlay: {
@@ -417,19 +502,41 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginRight: Spacing.sm,
   },
-  otpInput: {
+  infoBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.lg,
+  },
+  infoText: {
+    flex: 1,
+  },
+  demoTokenBox: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    marginBottom: Spacing.md,
+  },
+  tokenRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: Spacing.xs,
+  },
+  tokenText: {
+    flex: 1,
+    fontFamily: "monospace",
+  },
+  tokenInput: {
     height: Spacing.inputHeight,
     borderRadius: BorderRadius.sm,
     borderWidth: 1,
     paddingHorizontal: Spacing.lg,
-    fontSize: 24,
-    textAlign: "center",
-    letterSpacing: 8,
+    fontSize: 14,
+    fontFamily: "monospace",
     marginBottom: Spacing.sm,
-  },
-  hint: {
-    textAlign: "center",
-    marginBottom: Spacing.xl,
   },
   nameInput: {
     height: Spacing.inputHeight,

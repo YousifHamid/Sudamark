@@ -178,6 +178,21 @@ export const translations: Translations = {
   portSudan: { ar: "بورتسودان", en: "Port Sudan" },
   kassala: { ar: "كسلا", en: "Kassala" },
   
+  // Email Magic Link Auth
+  email: { ar: "البريد الإلكتروني", en: "Email" },
+  enterEmail: { ar: "أدخل بريدك الإلكتروني", en: "Enter your email" },
+  enterPhoneAndEmail: { ar: "أدخل رقم هاتفك وبريدك الإلكتروني", en: "Enter your phone number and email" },
+  sendMagicLink: { ar: "إرسال رابط الدخول", en: "Send Login Link" },
+  sendingLink: { ar: "جاري الإرسال...", en: "Sending..." },
+  checkEmail: { ar: "تحقق من بريدك الإلكتروني", en: "Check Your Email" },
+  magicLinkSent: { ar: "تم إرسال رابط تسجيل الدخول إلى بريدك الإلكتروني", en: "A login link has been sent to your email" },
+  enterToken: { ar: "أو أدخل الرمز هنا", en: "Or enter the token here" },
+  verifyToken: { ar: "تحقق", en: "Verify" },
+  resendLink: { ar: "إعادة إرسال الرابط", en: "Resend Link" },
+  invalidEmail: { ar: "يرجى إدخال بريد إلكتروني صحيح", en: "Please enter a valid email" },
+  tokenExpired: { ar: "انتهت صلاحية الرمز. أعد إرسال الرابط", en: "Token expired. Please resend the link" },
+  demoTokenHint: { ar: "تجريبي: انسخ الرمز من الأعلى", en: "Demo: Copy the token above" },
+  
   // Errors
   invalidPhoneNumber: { ar: "يرجى إدخال رقم هاتف صحيح", en: "Please enter a valid phone number" },
   invalidCode: { ar: "رمز غير صحيح. جرب 123456", en: "Invalid code. Try 123456" },
