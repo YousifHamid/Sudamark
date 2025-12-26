@@ -6,9 +6,34 @@ import { db } from "./db";
 import { users, cars, serviceProviders, favorites, sliderImages, admins, otpCodes } from "@shared/schema";
 import { eq, desc, and, gt, like, or, sql } from "drizzle-orm";
 
-const JWT_SECRET = process.env.SESSION_SECRET || "arabaty-secret-key-2024";
+const JWT_SECRET_RAW = process.env.SESSION_SECRET;
+if (!JWT_SECRET_RAW) {
+  throw new Error("FATAL: SESSION_SECRET environment variable is required for JWT authentication");
+}
+const JWT_SECRET: string = JWT_SECRET_RAW;
 const OTP_EXPIRY_MINUTES = 10;
 const MAX_OTP_ATTEMPTS = 3;
+
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT_MAX_REQUESTS = 5;
+
+function rateLimit(key: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(key);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  
+  if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
 
 interface AuthRequest extends Request {
   user?: { id: string; phone: string; roles: string[] };
@@ -67,6 +92,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const fullPhone = `${countryCode || "+249"}${phone}`;
+      
+      if (!rateLimit(`otp:${fullPhone}`)) {
+        return res.status(429).json({ error: "Too many requests. Please try again later." });
+      }
       const isDemoMode = process.env.NODE_ENV !== "production" || process.env.OTP_DEMO_MODE === "true";
       
       let otpCode: string;
@@ -102,6 +131,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { phone, otp, countryCode } = req.body;
       const fullPhone = `${countryCode || "+249"}${phone}`;
+      
+      if (!rateLimit(`verify:${fullPhone}`)) {
+        return res.status(429).json({ error: "Too many attempts. Please try again later." });
+      }
       
       const [otpRecord] = await db.select().from(otpCodes)
         .where(and(
@@ -430,6 +463,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/login", async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
+      
+      if (!rateLimit(`admin:${email}`)) {
+        return res.status(429).json({ error: "Too many login attempts. Please try again later." });
+      }
       
       const [admin] = await db.select().from(admins)
         .where(and(eq(admins.email, email), eq(admins.isActive, true)));
