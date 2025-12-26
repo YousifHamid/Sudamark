@@ -32,11 +32,25 @@ export const users = pgTable("users", {
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   phone: text("phone").notNull().unique(),
+  email: text("email").unique(),
+  emailVerified: boolean("email_verified").default(false),
   name: text("name").notNull(),
   roles: jsonb("roles").$type<string[]>().notNull().default(sql`'["buyer"]'::jsonb`),
   countryCode: text("country_code").default("+249"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const magicTokens = pgTable("magic_tokens", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const cars = pgTable("cars", {
@@ -157,3 +171,11 @@ export type Admin = typeof admins.$inferSelect;
 
 export type InsertOtpCode = z.infer<typeof insertOtpCodeSchema>;
 export type OtpCode = typeof otpCodes.$inferSelect;
+
+export const insertMagicTokenSchema = createInsertSchema(magicTokens).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertMagicToken = z.infer<typeof insertMagicTokenSchema>;
+export type MagicToken = typeof magicTokens.$inferSelect;
