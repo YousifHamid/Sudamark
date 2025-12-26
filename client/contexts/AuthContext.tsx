@@ -22,6 +22,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   hasSeenOnboarding: boolean;
+  loginWithPhone: (phone: string, countryCode?: string) => Promise<{ isNewUser: boolean; user?: User }>;
   sendMagicLink: (email: string, phone: string, countryCode?: string) => Promise<{ success: boolean; demoToken?: string }>;
   verifyMagicToken: (magicToken: string) => Promise<{ isNewUser: boolean; user?: User; email?: string; phone?: string }>;
   setUserRoles: (roles: UserRole[], name: string, email?: string) => Promise<void>;
@@ -76,6 +77,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const completeOnboarding = async () => {
     await AsyncStorage.setItem(ONBOARDING_STORAGE_KEY, "true");
     setHasSeenOnboarding(true);
+  };
+
+  const loginWithPhone = async (phone: string, countryCode: string = "+249"): Promise<{ isNewUser: boolean; user?: User }> => {
+    try {
+      const fullPhone = `${countryCode}${phone.replace(/\s/g, "")}`;
+      const baseUrl = getApiUrl();
+      const response = await fetch(`${baseUrl}api/auth/phone-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: fullPhone, countryCode }),
+      });
+      
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Login failed");
+      }
+      
+      if (data.isNewUser) {
+        setPendingPhoneNumber(phone);
+        setPendingCountryCode(countryCode);
+        return { isNewUser: true };
+      }
+      
+      const userData: User = {
+        ...data.user,
+        phoneNumber: data.user.phone,
+      };
+      await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userData));
+      await AsyncStorage.setItem(TOKEN_STORAGE_KEY, data.token);
+      setUser(userData);
+      setToken(data.token);
+      
+      return { isNewUser: false, user: userData };
+    } catch (error) {
+      console.error("Phone login error:", error);
+      throw error;
+    }
   };
 
   const sendMagicLink = async (email: string, phone: string, countryCode: string = "+249"): Promise<{ success: boolean; demoToken?: string }> => {
@@ -224,6 +262,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated: !!user,
         hasSeenOnboarding,
+        loginWithPhone,
         sendMagicLink,
         verifyMagicToken,
         setUserRoles,

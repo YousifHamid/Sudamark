@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, TextInput, Pressable, Modal, FlatList, Alert, Platform } from "react-native";
+import { View, StyleSheet, TextInput, Pressable, Modal, FlatList } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -14,7 +14,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 
-type LoginStep = "input" | "verify" | "role";
+type LoginStep = "phone" | "role";
 
 interface Country {
   id: string;
@@ -41,15 +41,12 @@ export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
-  const { sendMagicLink, verifyMagicToken, setUserRoles } = useAuth();
+  const { loginWithPhone, setUserRoles } = useAuth();
 
-  const [step, setStep] = useState<LoginStep>("input");
+  const [step, setStep] = useState<LoginStep>("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [email, setEmail] = useState("");
-  const [token, setToken] = useState("");
-  const [demoToken, setDemoToken] = useState<string | null>(null);
   const [name, setName] = useState("");
-  const [selectedRoles, setSelectedRoles] = useState<Array<"buyer" | "seller" | "mechanic" | "electrician" | "lawyer" | "inspectionCenter">>([]);
+  const [selectedRoles, setSelectedRoles] = useState<Array<"buyer" | "seller" | "mechanic" | "electrician" | "lawyer" | "inspection_center">>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<Country>(SUPPORTED_COUNTRIES[0]);
@@ -64,19 +61,10 @@ export default function LoginScreen() {
     { id: "inspection_center", labelKey: "inspectionCenter", icon: "clipboard" as const },
   ];
 
-  const validateEmail = (emailValue: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(emailValue);
-  };
-
-  const handleSendMagicLink = async () => {
+  const handlePhoneLogin = async () => {
     const cleanNumber = phoneNumber.replace(/\s/g, "");
     if (cleanNumber.length < selectedCountry.minLength || cleanNumber.length > selectedCountry.maxLength) {
       setError(t("invalidPhoneNumber"));
-      return;
-    }
-    if (!validateEmail(email)) {
-      setError(t("invalidEmail"));
       return;
     }
     
@@ -84,12 +72,11 @@ export default function LoginScreen() {
     setIsLoading(true);
     
     try {
-      const result = await sendMagicLink(email, cleanNumber, selectedCountry.dialCode);
-      if (result.demoToken) {
-        setDemoToken(result.demoToken);
-      }
+      const result = await loginWithPhone(cleanNumber, selectedCountry.dialCode);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setStep("verify");
+      if (result.isNewUser) {
+        setStep("role");
+      }
     } catch (err) {
       setError(t("error"));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -105,38 +92,6 @@ export default function LoginScreen() {
     Haptics.selectionAsync();
   };
 
-  const handleCopyToken = () => {
-    if (demoToken) {
-      setToken(demoToken);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-  };
-
-  const handleVerifyToken = async () => {
-    if (!token.trim()) {
-      setError(t("fillRequiredFields"));
-      return;
-    }
-    
-    setError("");
-    setIsLoading(true);
-    
-    try {
-      const result = await verifyMagicToken(token);
-      if (result.isNewUser) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        setStep("role");
-      } else {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
-    } catch (err) {
-      setError(t("tokenExpired"));
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleCompleteSignup = async () => {
     if (!name.trim()) {
       setError(t("enterName"));
@@ -149,7 +104,7 @@ export default function LoginScreen() {
     setError("");
     setIsLoading(true);
     try {
-      await setUserRoles(selectedRoles, name, email);
+      await setUserRoles(selectedRoles, name);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       setError(t("error"));
@@ -161,10 +116,10 @@ export default function LoginScreen() {
 
   const toggleRole = (roleId: string) => {
     setSelectedRoles((prev) => {
-      if (prev.includes(roleId)) {
+      if (prev.includes(roleId as any)) {
         return prev.filter((id) => id !== roleId);
       }
-      return [...prev, roleId];
+      return [...prev, roleId as any];
     });
     Haptics.selectionAsync();
   };
@@ -184,8 +139,7 @@ export default function LoginScreen() {
             contentFit="contain"
           />
           <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
-            {step === "input" && t("enterPhoneAndEmail")}
-            {step === "verify" && t("checkEmail")}
+            {step === "phone" && t("enterPhoneToStart")}
             {step === "role" && t("completeProfile")}
           </ThemedText>
         </View>
@@ -196,7 +150,7 @@ export default function LoginScreen() {
           </View>
         ) : null}
 
-        {step === "input" ? (
+        {step === "phone" ? (
           <View style={styles.form}>
             <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
               {t("phoneNumber")}
@@ -222,22 +176,8 @@ export default function LoginScreen() {
               />
             </View>
             
-            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary, marginTop: Spacing.md }, isRTL && styles.rtlText]}>
-              {t("email")}
-            </ThemedText>
-            <TextInput
-              style={[styles.emailInput, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border, textAlign: isRTL ? "right" : "left" }]}
-              placeholder={t("enterEmail")}
-              placeholderTextColor={theme.textSecondary}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            
-            <Button onPress={handleSendMagicLink} disabled={isLoading} style={styles.button}>
-              {isLoading ? t("sendingLink") : t("sendMagicLink")}
+            <Button onPress={handlePhoneLogin} disabled={isLoading} style={styles.button}>
+              {isLoading ? t("loading") : t("continue")}
             </Button>
           </View>
         ) : null}
@@ -283,55 +223,6 @@ export default function LoginScreen() {
           </View>
         </Modal>
 
-        {step === "verify" ? (
-          <View style={styles.form}>
-            <View style={[styles.infoBox, { backgroundColor: theme.primary + "15" }]}>
-              <Feather name="mail" size={24} color={theme.primary} />
-              <ThemedText type="small" style={[styles.infoText, { color: theme.text }, isRTL && styles.rtlText]}>
-                {t("magicLinkSent")}
-              </ThemedText>
-            </View>
-            
-            {demoToken ? (
-              <Pressable 
-                onPress={handleCopyToken}
-                style={[styles.demoTokenBox, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}
-              >
-                <ThemedText type="small" style={{ color: theme.textSecondary }}>
-                  {t("demoTokenHint")}
-                </ThemedText>
-                <View style={styles.tokenRow}>
-                  <ThemedText type="small" style={[styles.tokenText, { color: theme.primary }]} numberOfLines={1}>
-                    {demoToken.substring(0, 24)}...
-                  </ThemedText>
-                  <Feather name="arrow-down" size={16} color={theme.primary} />
-                </View>
-              </Pressable>
-            ) : null}
-            
-            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary, marginTop: Spacing.xl }, isRTL && styles.rtlText]}>
-              {t("enterToken")}
-            </ThemedText>
-            <TextInput
-              style={[styles.tokenInput, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }]}
-              placeholder="xxxxxxxxxxxxxxxx"
-              placeholderTextColor={theme.textSecondary}
-              value={token}
-              onChangeText={setToken}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            
-            <Button onPress={handleVerifyToken} disabled={isLoading} style={styles.button}>
-              {isLoading ? t("verifying") : t("verifyToken")}
-            </Button>
-            
-            <Pressable onPress={() => { setStep("input"); setDemoToken(null); setToken(""); }} style={styles.backLink}>
-              <ThemedText type="link">{t("changePhoneNumber")}</ThemedText>
-            </Pressable>
-          </View>
-        ) : null}
-
         {step === "role" ? (
           <View style={styles.form}>
             <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
@@ -350,7 +241,7 @@ export default function LoginScreen() {
             </ThemedText>
             <View style={styles.rolesGrid}>
               {roles.map((role) => {
-                const isSelected = selectedRoles.includes(role.id);
+                const isSelected = selectedRoles.includes(role.id as any);
                 return (
                   <Pressable
                     key={role.id}
@@ -454,13 +345,56 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
+    paddingVertical: 0,
   },
-  emailInput: {
-    height: Spacing.inputHeight,
+  button: {
+    marginTop: Spacing["2xl"],
+  },
+  nameInput: {
     borderRadius: BorderRadius.sm,
     borderWidth: 1,
-    paddingHorizontal: Spacing.lg,
+    height: Spacing.inputHeight,
+    paddingHorizontal: Spacing.md,
     fontSize: 16,
+  },
+  rolesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: Spacing.md,
+    justifyContent: "space-between",
+  },
+  roleCard: {
+    width: "47%",
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    alignItems: "center",
+    position: "relative",
+  },
+  roleIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "transparent",
+    borderWidth: 2,
+    borderColor: "#2563eb",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.sm,
+  },
+  roleLabel: {
+    textAlign: "center",
+  },
+  checkMark: {
+    position: "absolute",
+    top: Spacing.sm,
+    right: Spacing.sm,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
   },
   modalOverlay: {
     flex: 1,
@@ -468,10 +402,10 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalContent: {
-    borderTopLeftRadius: BorderRadius.xl,
-    borderTopRightRadius: BorderRadius.xl,
-    maxHeight: "60%",
-    paddingBottom: Spacing.xl,
+    borderTopLeftRadius: BorderRadius.lg,
+    borderTopRightRadius: BorderRadius.lg,
+    maxHeight: "70%",
+    paddingBottom: 40,
   },
   modalHeader: {
     flexDirection: "row",
@@ -489,7 +423,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   countryItemFlag: {
-    fontSize: 20,
+    fontSize: 24,
     marginRight: Spacing.md,
   },
   countryItemName: {
@@ -500,95 +434,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginRight: Spacing.sm,
   },
-  infoBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.md,
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.md,
-    marginBottom: Spacing.lg,
-  },
-  infoText: {
-    flex: 1,
-  },
-  demoTokenBox: {
-    padding: Spacing.md,
-    borderRadius: BorderRadius.sm,
-    borderWidth: 1,
-    marginBottom: Spacing.md,
-  },
-  tokenRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: Spacing.xs,
-  },
-  tokenText: {
-    flex: 1,
-    fontFamily: "monospace",
-  },
-  tokenInput: {
-    height: Spacing.inputHeight,
-    borderRadius: BorderRadius.sm,
-    borderWidth: 1,
-    paddingHorizontal: Spacing.lg,
-    fontSize: 14,
-    fontFamily: "monospace",
-    marginBottom: Spacing.sm,
-  },
-  nameInput: {
-    height: Spacing.inputHeight,
-    borderRadius: BorderRadius.sm,
-    borderWidth: 1,
-    paddingHorizontal: Spacing.lg,
-    fontSize: 16,
-  },
-  rolesGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginHorizontal: -Spacing.xs,
-    marginBottom: Spacing.xl,
-  },
-  roleCard: {
-    width: "30%",
-    marginHorizontal: "1.5%",
-    marginVertical: Spacing.xs,
-    paddingVertical: Spacing.lg,
-    alignItems: "center",
-    borderRadius: BorderRadius.md,
-    borderWidth: 2,
-    position: "relative",
-  },
-  roleIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(138, 92, 226, 0.15)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  roleLabel: {
-    marginTop: Spacing.sm,
-    textAlign: "center",
-  },
-  checkMark: {
-    position: "absolute",
-    top: 6,
-    right: 6,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  button: {
-    marginTop: Spacing.lg,
-  },
-  backLink: {
-    alignItems: "center",
-    marginTop: Spacing.lg,
-  },
   rtlText: {
-    writingDirection: "rtl",
+    textAlign: "right",
   },
 });

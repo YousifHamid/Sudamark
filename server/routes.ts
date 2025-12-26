@@ -26,7 +26,7 @@ async function sendMagicLinkEmail(email: string, token: string, magicLink: strin
   
   try {
     await emailTransporter.sendMail({
-      from: '"Arabaty" <noreply@arabaty.app>',
+      from: `"Arabaty" <${process.env.BREVO_SMTP_LOGIN}>`,
       to: email,
       subject: "رابط تسجيل الدخول - Arabaty Login Link",
       html: `
@@ -339,6 +339,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Verify token error:", error);
       res.status(500).json({ error: "Failed to verify token" });
+    }
+  });
+
+  app.post("/api/auth/phone-login", async (req: Request, res: Response) => {
+    try {
+      const { phone, countryCode } = req.body;
+      
+      if (!phone) {
+        return res.status(400).json({ error: "Phone number is required" });
+      }
+      
+      const [existingUser] = await db.select().from(users)
+        .where(eq(users.phone, phone))
+        .limit(1);
+      
+      if (existingUser) {
+        const token = jwt.sign(
+          { id: existingUser.id, phone: existingUser.phone, roles: existingUser.roles },
+          JWT_SECRET,
+          { expiresIn: "30d" }
+        );
+        return res.json({ user: existingUser, token, isNewUser: false });
+      }
+      
+      res.json({ isNewUser: true, phone });
+    } catch (error) {
+      console.error("Phone login error:", error);
+      res.status(500).json({ error: "Failed to login" });
     }
   });
 
