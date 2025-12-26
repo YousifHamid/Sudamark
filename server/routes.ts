@@ -2,10 +2,62 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "node:http";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import nodemailer from "nodemailer";
 import { db } from "./db";
 import { users, cars, serviceProviders, favorites, sliderImages, admins, otpCodes, magicTokens } from "@shared/schema";
 import crypto from "crypto";
 import { eq, desc, and, gt, like, or, sql } from "drizzle-orm";
+
+const emailTransporter = nodemailer.createTransport({
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.BREVO_SMTP_LOGIN,
+    pass: process.env.BREVO_SMTP_PASSWORD,
+  },
+});
+
+async function sendMagicLinkEmail(email: string, token: string, magicLink: string): Promise<boolean> {
+  if (!process.env.BREVO_SMTP_LOGIN || !process.env.BREVO_SMTP_PASSWORD) {
+    console.log(`[MAGIC LINK] Demo mode - no SMTP credentials. Token: ${token}`);
+    return false;
+  }
+  
+  try {
+    await emailTransporter.sendMail({
+      from: '"Arabaty" <noreply@arabaty.app>',
+      to: email,
+      subject: "رابط تسجيل الدخول - Arabaty Login Link",
+      html: `
+        <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #2563eb; text-align: center;">عربتي - Arabaty</h1>
+          <p style="font-size: 16px; text-align: center;">مرحباً! استخدم الرابط أدناه لتسجيل الدخول:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${magicLink}" style="background-color: #2563eb; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-size: 18px;">
+              تسجيل الدخول
+            </a>
+          </div>
+          <p style="text-align: center; color: #666;">أو أدخل الرمز التالي في التطبيق:</p>
+          <div style="background-color: #f3f4f6; padding: 15px; text-align: center; border-radius: 8px; margin: 20px 0;">
+            <code style="font-size: 14px; word-break: break-all;">${token}</code>
+          </div>
+          <p style="text-align: center; color: #999; font-size: 12px;">هذا الرابط صالح لمدة 30 دقيقة فقط</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="text-align: center; color: #999; font-size: 12px;">
+            Hello! Use the link above to login to Arabaty.<br>
+            This link expires in 30 minutes.
+          </p>
+        </div>
+      `,
+    });
+    console.log(`[MAGIC LINK] Email sent successfully to ${email}`);
+    return true;
+  } catch (error) {
+    console.error(`[MAGIC LINK] Failed to send email:`, error);
+    return false;
+  }
+}
 
 const JWT_SECRET_RAW = process.env.SESSION_SECRET;
 if (!JWT_SECRET_RAW) {
@@ -128,14 +180,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : "http://localhost:5000";
       const magicLink = `${baseUrl}/api/auth/verify-magic-link?token=${token}`;
       
-      console.log(`[MAGIC LINK] Demo mode - Link for ${email}: ${magicLink}`);
-      console.log(`[MAGIC LINK] Token: ${token}`);
+      const emailSent = await sendMagicLinkEmail(email, token, magicLink);
       
-      res.json({ 
-        success: true, 
-        message: "Magic link sent to email",
-        demoToken: token
-      });
+      if (emailSent) {
+        console.log(`[MAGIC LINK] Email sent to ${email}`);
+        res.json({ 
+          success: true, 
+          message: "Magic link sent to email"
+        });
+      } else {
+        console.log(`[MAGIC LINK] Demo mode - Token: ${token}`);
+        res.json({ 
+          success: true, 
+          message: "Magic link sent to email",
+          demoToken: token
+        });
+      }
     } catch (error) {
       console.error("Send magic link error:", error);
       res.status(500).json({ error: "Failed to send magic link" });

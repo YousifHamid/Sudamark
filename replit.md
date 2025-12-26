@@ -95,12 +95,13 @@ Preferred communication style: Simple, everyday language.
 ## Production Configuration
 
 ### Email Magic Link Authentication
-- **Demo Mode**: Magic token displayed in UI and logged to console for testing
-- **Production Mode**: To enable real email sending:
-  1. Integrate an email service (SendGrid, Mailgun, AWS SES, etc.)
-  2. Add email service credentials as secrets
-  3. Update `send-magic-link` endpoint to send actual emails
-  4. Magic links expire after 30 minutes and are single-use
+- **Email Provider**: Brevo (formerly Sendinblue) SMTP
+- **Configuration**: Secrets `BREVO_SMTP_LOGIN` and `BREVO_SMTP_PASSWORD` are set
+- **Behavior**: 
+  - If SMTP credentials are present, real emails are sent
+  - If credentials are missing, falls back to demo mode (token shown in app)
+  - Magic links expire after 30 minutes and are single-use
+- **Email Template**: Bilingual (Arabic/English) with login button and token code
 
 ### Admin Dashboard
 - Access at `/admin` route (e.g., https://your-domain.replit.app/admin)
