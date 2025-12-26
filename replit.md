@@ -50,6 +50,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Authentication Flow
 - Phone number input → Role selection (first-time users) - No verification required for initial login
+- **TESTING MODE**: No phone verification - anyone can log in with any phone number (NOT for production)
 - Email verification required only when posting a car ad (via magic link)
 - User roles: Buyer, Seller, Mechanic, Electrician, Lawyer, Inspection Center
 - JWT-based session management with AsyncStorage persistence on client
