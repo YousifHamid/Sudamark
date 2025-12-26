@@ -129,7 +129,20 @@ export const translations: Translations = {
   
   // Car Details
   contactSeller: { ar: "تواصل مع البائع", en: "Contact Seller" },
-  requestInspection: { ar: "طلب فحص", en: "Request Inspection" },
+  requestInspection: { ar: "طلب معاينة", en: "Request Preview" },
+  
+  // Search Filters Modal
+  filters: { ar: "الفلاتر", en: "Filters" },
+  applyFilters: { ar: "تطبيق الفلاتر", en: "Apply Filters" },
+  resetFilters: { ar: "إعادة تعيين", en: "Reset" },
+  minPrice: { ar: "أقل سعر", en: "Min Price" },
+  maxPrice: { ar: "أعلى سعر", en: "Max Price" },
+  selectLocation: { ar: "اختر الموقع", en: "Select Location" },
+  selectType: { ar: "اختر النوع", en: "Select Type" },
+  selectCondition: { ar: "اختر الحالة", en: "Select Condition" },
+  allLocations: { ar: "كل المواقع", en: "All Locations" },
+  allTypes: { ar: "كل الأنواع", en: "All Types" },
+  allConditions: { ar: "كل الحالات", en: "All Conditions" },
   specifications: { ar: "المواصفات", en: "Specifications" },
   year: { ar: "السنة", en: "Year" },
   mileage: { ar: "المسافة المقطوعة", en: "Mileage" },

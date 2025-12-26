@@ -71,13 +71,13 @@ export default function HomeScreen() {
           isRTL && styles.searchBarRTL,
         ]}
       >
-        <Feather name="search" size={22} color={theme.textSecondary} />
+        <View style={[styles.filterIconButton, { backgroundColor: theme.primary + "15" }]}>
+          <Feather name="sliders" size={20} color={theme.primary} />
+        </View>
         <ThemedText style={[styles.searchPlaceholder, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
           {t("searchCars")}
         </ThemedText>
-        <View style={[styles.searchHint, { backgroundColor: theme.primary + "15" }]}>
-          <Feather name="sliders" size={18} color={theme.primary} />
-        </View>
+        <Feather name="search" size={22} color={theme.textSecondary} />
       </Pressable>
 
       <View style={styles.sponsorSection}>
@@ -182,9 +182,9 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
   },
-  searchHint: {
-    width: 36,
-    height: 36,
+  filterIconButton: {
+    width: 40,
+    height: 40,
     borderRadius: BorderRadius.sm,
     alignItems: "center",
     justifyContent: "center",
