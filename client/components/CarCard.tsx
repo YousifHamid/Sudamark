@@ -11,6 +11,7 @@ import Animated, {
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 
 export interface Car {
@@ -51,6 +52,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export function CarCard({ car, onPress, horizontal = false }: CarCardProps) {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -88,7 +90,7 @@ export function CarCard({ car, onPress, horizontal = false }: CarCardProps) {
           {car.title}
         </ThemedText>
         <ThemedText type="h4" style={{ color: theme.primary }}>
-          SAR {car.price.toLocaleString()}
+          {car.price.toLocaleString()} {t("sdg")}
         </ThemedText>
         <View style={styles.details}>
           <View style={styles.detailItem}>

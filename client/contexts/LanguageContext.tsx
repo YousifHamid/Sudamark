@@ -205,6 +205,31 @@ export const translations: Translations = {
   adDesc3: { ar: "تأكد من حالة سيارتك قبل الشراء مع مراكز الفحص الموثوقة", en: "Verify car condition before buying with trusted inspection centers" },
   learnMore: { ar: "اعرف المزيد", en: "Learn More" },
   advertisement: { ar: "إعلان", en: "Ad" },
+  
+  // Request Preview Screen
+  selectInspectionCenter: { ar: "اختر مركز المعاينة", en: "Select Inspection Center" },
+  selectDate: { ar: "اختر التاريخ", en: "Select Date" },
+  chooseLocation: { ar: "اختر المكان", en: "Choose Location" },
+  sellerLocation: { ar: "مكان البائع", en: "Seller's Location" },
+  agreedLocation: { ar: "مكان يتفق عليه", en: "Agreed Location" },
+  enterAgreedLocation: { ar: "أدخل المكان المتفق عليه...", en: "Enter the agreed location..." },
+  sellerContact: { ar: "تفاصيل التواصل مع البائع", en: "Seller Contact Details" },
+  callSeller: { ar: "اتصال", en: "Call" },
+  whatsappSeller: { ar: "واتساب", en: "WhatsApp" },
+  inspectionInfo: { ar: "سيتم التواصل معك من قبل مركز المعاينة لتأكيد الموعد. المعاينة تستغرق 1-2 ساعة.", en: "The inspection center will contact you to confirm the exact time. Standard inspection takes 1-2 hours." },
+  submitRequest: { ar: "إرسال الطلب", en: "Submit Request" },
+  submitting: { ar: "جاري الإرسال...", en: "Submitting..." },
+  requestSubmitted: { ar: "تم إرسال الطلب", en: "Request Submitted" },
+  requestSubmittedMessage: { ar: "تم إرسال طلب المعاينة. سيتواصل معك مركز المعاينة قريباً.", en: "Your preview request has been sent. The inspection center will contact you shortly." },
+  ok: { ar: "حسناً", en: "OK" },
+  selectCenterAndDate: { ar: "يرجى اختيار مركز المعاينة والتاريخ", en: "Please select an inspection center and date" },
+  tomorrow: { ar: "غداً", en: "Tomorrow" },
+  
+  // Notifications
+  notifications: { ar: "الإشعارات", en: "Notifications" },
+  enableNotifications: { ar: "تفعيل الإشعارات", en: "Enable Notifications" },
+  notificationsEnabled: { ar: "الإشعارات مفعلة", en: "Notifications Enabled" },
+  notificationsDisabled: { ar: "الإشعارات معطلة", en: "Notifications Disabled" },
 };
 
 interface LanguageContextType {
