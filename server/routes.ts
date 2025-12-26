@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
 import { db } from "./db";
-import { users, cars, serviceProviders, favorites, sliderImages, admins, otpCodes, magicTokens, buyerOffers, inspectionRequests, payments, appSettings } from "@shared/schema";
+import { users, cars, serviceProviders, favorites, sliderImages, admins, otpCodes, magicTokens, buyerOffers, inspectionRequests, payments, appSettings, couponCodes, couponUsages } from "@shared/schema";
 import crypto from "crypto";
 import { eq, desc, and, gt, like, or, sql } from "drizzle-orm";
 
@@ -470,7 +470,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/register", async (req: Request, res: Response) => {
     try {
-      const { phone, email, name, roles, countryCode } = req.body;
+      const { phone, email, name, roles, countryCode, city } = req.body;
       
       const [existingUser] = await db.select().from(users).where(eq(users.phone, phone)).limit(1);
       if (existingUser) {
@@ -491,6 +491,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name,
         roles: roles || ["buyer"],
         countryCode: countryCode || "+249",
+        city: city || null,
       }).returning();
       
       const token = jwt.sign(
@@ -1359,6 +1360,248 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ error: "Failed to update setting" });
     }
+  });
+
+  // Coupon Code APIs
+  app.post("/api/coupons/validate", authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { code } = req.body;
+      const userId = req.user!.id;
+      
+      if (!code) {
+        return res.status(400).json({ error: "Coupon code required", valid: false });
+      }
+      
+      const [coupon] = await db.select().from(couponCodes)
+        .where(and(
+          eq(couponCodes.code, code.toUpperCase()),
+          eq(couponCodes.isActive, true)
+        ));
+      
+      if (!coupon) {
+        return res.status(400).json({ error: "كود غير صالح", valid: false });
+      }
+      
+      if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) {
+        return res.status(400).json({ error: "انتهت صلاحية الكود", valid: false });
+      }
+      
+      if (coupon.maxUses && coupon.usedCount && coupon.usedCount >= coupon.maxUses) {
+        return res.status(400).json({ error: "تم استخدام الكود بالكامل", valid: false });
+      }
+      
+      const [existingUsage] = await db.select().from(couponUsages)
+        .where(and(
+          eq(couponUsages.couponId, coupon.id),
+          eq(couponUsages.userId, userId)
+        ));
+      
+      if (existingUsage) {
+        return res.status(400).json({ error: "لقد استخدمت هذا الكود من قبل", valid: false });
+      }
+      
+      res.json({ 
+        valid: true, 
+        discountPercent: coupon.discountPercent,
+        message: coupon.discountPercent === 100 ? "مجاني!" : `خصم ${coupon.discountPercent}%`
+      });
+    } catch (error) {
+      console.error("Validate coupon error:", error);
+      res.status(500).json({ error: "Failed to validate coupon", valid: false });
+    }
+  });
+
+  app.post("/api/coupons/apply", authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { code, carId } = req.body;
+      const userId = req.user!.id;
+      
+      if (!code) {
+        return res.status(400).json({ error: "Coupon code required" });
+      }
+      
+      const [coupon] = await db.select().from(couponCodes)
+        .where(and(
+          eq(couponCodes.code, code.toUpperCase()),
+          eq(couponCodes.isActive, true)
+        ));
+      
+      if (!coupon) {
+        return res.status(400).json({ error: "كود غير صالح" });
+      }
+      
+      if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) {
+        return res.status(400).json({ error: "انتهت صلاحية الكود" });
+      }
+      
+      if (coupon.maxUses && coupon.usedCount && coupon.usedCount >= coupon.maxUses) {
+        return res.status(400).json({ error: "تم استخدام الكود بالكامل" });
+      }
+      
+      const [existingUsage] = await db.select().from(couponUsages)
+        .where(and(
+          eq(couponUsages.couponId, coupon.id),
+          eq(couponUsages.userId, userId)
+        ));
+      
+      if (existingUsage) {
+        return res.status(400).json({ error: "لقد استخدمت هذا الكود من قبل" });
+      }
+      
+      await db.insert(couponUsages).values({
+        couponId: coupon.id,
+        userId,
+        carId,
+      });
+      
+      await db.update(couponCodes)
+        .set({ usedCount: (coupon.usedCount || 0) + 1 })
+        .where(eq(couponCodes.id, coupon.id));
+      
+      if (carId) {
+        await db.update(cars)
+          .set({ isActive: true })
+          .where(eq(cars.id, carId));
+      }
+      
+      res.json({ 
+        success: true, 
+        message: "تم تطبيق الكود بنجاح!",
+        discountPercent: coupon.discountPercent
+      });
+    } catch (error) {
+      console.error("Apply coupon error:", error);
+      res.status(500).json({ error: "Failed to apply coupon" });
+    }
+  });
+
+  // Admin Coupon Management
+  app.get("/api/admin/coupons", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const allCoupons = await db.select().from(couponCodes).orderBy(desc(couponCodes.createdAt));
+      res.json(allCoupons);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch coupons" });
+    }
+  });
+
+  app.post("/api/admin/coupons", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { code, discountPercent, maxUses, expiresAt } = req.body;
+      
+      if (!code) {
+        return res.status(400).json({ error: "Code is required" });
+      }
+      
+      const [newCoupon] = await db.insert(couponCodes).values({
+        code: code.toUpperCase(),
+        discountPercent: discountPercent || 100,
+        maxUses: maxUses || null,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+      }).returning();
+      
+      res.json(newCoupon);
+    } catch (error: any) {
+      if (error.code === '23505') {
+        return res.status(400).json({ error: "Coupon code already exists" });
+      }
+      res.status(500).json({ error: "Failed to create coupon" });
+    }
+  });
+
+  app.delete("/api/admin/coupons/:id", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      await db.delete(couponCodes).where(eq(couponCodes.id, id));
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete coupon" });
+    }
+  });
+
+  // Privacy Policy API
+  app.get("/api/privacy-policy", async (req: Request, res: Response) => {
+    res.json({
+      title: "سياسة الخصوصية - عربتي",
+      titleEn: "Privacy Policy - Arabaty",
+      lastUpdated: "2025-12-27",
+      content: {
+        ar: `
+سياسة الخصوصية لتطبيق عربتي
+
+آخر تحديث: ديسمبر 2025
+
+مرحباً بك في تطبيق عربتي، السوق الأول للسيارات في السودان. نحن نقدر ثقتك بنا ونلتزم بحماية خصوصيتك.
+
+1. المعلومات التي نجمعها:
+- معلومات الحساب: رقم الهاتف، البريد الإلكتروني، الاسم
+- معلومات الموقع: المدينة والموقع الجغرافي (بإذنك)
+- بيانات الإعلانات: صور السيارات، الأسعار، الوصف
+- معلومات التواصل: سجل المحادثات والعروض
+
+2. كيف نستخدم معلوماتك:
+- تمكينك من نشر وتصفح إعلانات السيارات
+- تسهيل التواصل بين البائعين والمشترين
+- تحسين تجربة المستخدم
+- إرسال إشعارات مهمة حول حسابك
+
+3. مشاركة المعلومات:
+- لا نبيع معلوماتك الشخصية
+- نشارك رقم هاتفك فقط مع المشترين/البائعين المهتمين
+- قد نشارك البيانات مع الجهات القانونية عند الطلب
+
+4. أمان البيانات:
+- نستخدم تشفير SSL لحماية البيانات
+- نخزن كلمات المرور بشكل مشفر
+- ننفذ إجراءات أمنية صارمة
+
+5. حقوقك:
+- حذف حسابك في أي وقت
+- تعديل معلوماتك الشخصية
+- طلب نسخة من بياناتك
+
+6. التواصل معنا:
+للاستفسارات حول الخصوصية: privacy@arabaty.app
+        `,
+        en: `
+Privacy Policy for Arabaty App
+
+Last Updated: December 2025
+
+Welcome to Arabaty, Sudan's first online car marketplace. We value your trust and are committed to protecting your privacy.
+
+1. Information We Collect:
+- Account Information: Phone number, email, name
+- Location Information: City and geographic location (with your permission)
+- Listing Data: Car photos, prices, descriptions
+- Communication Information: Chat history and offers
+
+2. How We Use Your Information:
+- Enable you to post and browse car listings
+- Facilitate communication between buyers and sellers
+- Improve user experience
+- Send important notifications about your account
+
+3. Information Sharing:
+- We do not sell your personal information
+- We share your phone number only with interested buyers/sellers
+- We may share data with legal authorities when required
+
+4. Data Security:
+- We use SSL encryption to protect data
+- Passwords are stored encrypted
+- We implement strict security measures
+
+5. Your Rights:
+- Delete your account at any time
+- Modify your personal information
+- Request a copy of your data
+
+6. Contact Us:
+For privacy inquiries: privacy@arabaty.app
+        `
+      }
+    });
   });
 
   const httpServer = createServer(app);

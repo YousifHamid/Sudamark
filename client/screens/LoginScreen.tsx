@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { View, StyleSheet, TextInput, Pressable, Modal, FlatList } from "react-native";
+import { View, StyleSheet, TextInput, Pressable, Modal, FlatList, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
+import * as Location from "expo-location";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -51,6 +52,18 @@ export default function LoginScreen() {
   const [error, setError] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<Country>(SUPPORTED_COUNTRIES[0]);
   const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [userCity, setUserCity] = useState("");
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+  const [showCityPicker, setShowCityPicker] = useState(false);
+
+  const cities = [
+    { id: "khartoum", label: isRTL ? "الخرطوم" : "Khartoum" },
+    { id: "omdurman", label: isRTL ? "أم درمان" : "Omdurman" },
+    { id: "bahri", label: isRTL ? "بحري" : "Bahri" },
+    { id: "portSudan", label: isRTL ? "بورتسودان" : "Port Sudan" },
+    { id: "kassala", label: isRTL ? "كسلا" : "Kassala" },
+    { id: "other", label: isRTL ? "أخرى" : "Other" },
+  ];
 
   const roles = [
     { id: "buyer", labelKey: "buyer", icon: "shopping-cart" as const },
@@ -104,7 +117,7 @@ export default function LoginScreen() {
     setError("");
     setIsLoading(true);
     try {
-      await setUserRoles(selectedRoles, name);
+      await setUserRoles(selectedRoles, name, undefined, userCity || undefined);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       setError(t("error"));
@@ -122,6 +135,49 @@ export default function LoginScreen() {
       return [...prev, roleId as any];
     });
     Haptics.selectionAsync();
+  };
+
+  const detectLocation = async () => {
+    if (Platform.OS === "web") {
+      setError(isRTL ? "تحديد الموقع غير متاح على الويب" : "Location detection not available on web");
+      return;
+    }
+    
+    setIsDetectingLocation(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setError(isRTL ? "لم يتم منح إذن الموقع" : "Location permission not granted");
+        return;
+      }
+      
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      
+      const lat = location.coords.latitude;
+      const lng = location.coords.longitude;
+      
+      if (lat >= 15.4 && lat <= 16.0 && lng >= 32.3 && lng <= 32.7) {
+        setUserCity("khartoum");
+      } else if (lat >= 15.55 && lat <= 15.75 && lng >= 32.0 && lng <= 32.35) {
+        setUserCity("omdurman");
+      } else if (lat >= 15.6 && lat <= 15.8 && lng >= 32.45 && lng <= 32.65) {
+        setUserCity("bahri");
+      } else if (lat >= 19.5 && lat <= 19.7 && lng >= 37.1 && lng <= 37.3) {
+        setUserCity("portSudan");
+      } else if (lat >= 15.4 && lat <= 15.5 && lng >= 36.3 && lng <= 36.5) {
+        setUserCity("kassala");
+      } else {
+        setUserCity("other");
+      }
+      
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (err) {
+      setError(isRTL ? "فشل تحديد الموقع" : "Failed to detect location");
+    } finally {
+      setIsDetectingLocation(false);
+    }
   };
 
   return (
@@ -236,6 +292,58 @@ export default function LoginScreen() {
               onChangeText={setName}
               autoFocus
             />
+            
+            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary, marginTop: Spacing.lg }, isRTL && styles.rtlText]}>
+              {isRTL ? "المدينة" : "City"}
+            </ThemedText>
+            <View style={[styles.cityRow, isRTL && styles.rowRTL]}>
+              <Pressable
+                style={[styles.citySelector, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}
+                onPress={() => setShowCityPicker(true)}
+              >
+                <ThemedText style={userCity ? {} : { color: theme.textSecondary }}>
+                  {userCity ? cities.find(c => c.id === userCity)?.label : (isRTL ? "اختر المدينة" : "Select city")}
+                </ThemedText>
+                <Feather name="chevron-down" size={18} color={theme.textSecondary} />
+              </Pressable>
+              {Platform.OS !== "web" ? (
+                <Pressable
+                  style={[styles.detectButton, { backgroundColor: theme.primary }]}
+                  onPress={detectLocation}
+                  disabled={isDetectingLocation}
+                >
+                  {isDetectingLocation ? (
+                    <ThemedText style={{ color: "#FFFFFF", fontSize: 12 }}>...</ThemedText>
+                  ) : (
+                    <Feather name="map-pin" size={18} color="#FFFFFF" />
+                  )}
+                </Pressable>
+              ) : null}
+            </View>
+            
+            <Modal
+              visible={showCityPicker}
+              animationType="fade"
+              transparent
+              onRequestClose={() => setShowCityPicker(false)}
+            >
+              <Pressable style={styles.modalOverlay} onPress={() => setShowCityPicker(false)}>
+                <View style={[styles.cityPickerContent, { backgroundColor: theme.backgroundDefault }]}>
+                  <ThemedText type="h4" style={{ marginBottom: Spacing.md }}>{isRTL ? "اختر المدينة" : "Select City"}</ThemedText>
+                  {cities.map((city) => (
+                    <Pressable
+                      key={city.id}
+                      style={[styles.cityItem, { borderBottomColor: theme.border }, userCity === city.id && { backgroundColor: theme.primary + "15" }]}
+                      onPress={() => { setUserCity(city.id); setShowCityPicker(false); Haptics.selectionAsync(); }}
+                    >
+                      <ThemedText>{city.label}</ThemedText>
+                      {userCity === city.id ? <Feather name="check" size={18} color={theme.primary} /> : null}
+                    </Pressable>
+                  ))}
+                </View>
+              </Pressable>
+            </Modal>
+
             <ThemedText type="small" style={[styles.label, { color: theme.textSecondary, marginTop: Spacing.xl }, isRTL && styles.rtlText]}>
               {t("selectYourRole")}
             </ThemedText>
@@ -436,5 +544,43 @@ const styles = StyleSheet.create({
   },
   rtlText: {
     textAlign: "right",
+  },
+  cityRow: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+    alignItems: "center",
+  },
+  rowRTL: {
+    flexDirection: "row-reverse",
+  },
+  citySelector: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    height: Spacing.inputHeight,
+    paddingHorizontal: Spacing.md,
+  },
+  detectButton: {
+    width: Spacing.inputHeight,
+    height: Spacing.inputHeight,
+    borderRadius: BorderRadius.sm,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cityPickerContent: {
+    margin: Spacing.xl,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.lg,
+  },
+  cityItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.sm,
+    borderBottomWidth: 1,
   },
 });

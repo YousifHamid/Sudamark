@@ -37,6 +37,9 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   roles: jsonb("roles").$type<string[]>().notNull().default(sql`'["buyer"]'::jsonb`),
   countryCode: text("country_code").default("+249"),
+  city: text("city"),
+  latitude: text("latitude"),
+  longitude: text("longitude"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -169,6 +172,29 @@ export const appSettings = pgTable("app_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const couponCodes = pgTable("coupon_codes", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  code: text("code").notNull().unique(),
+  discountPercent: integer("discount_percent").default(100),
+  maxUses: integer("max_uses"),
+  usedCount: integer("used_count").default(0),
+  isActive: boolean("is_active").default(true),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const couponUsages = pgTable("coupon_usages", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  couponId: varchar("coupon_id").references(() => couponCodes.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  carId: varchar("car_id").references(() => cars.id),
+  usedAt: timestamp("used_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -267,3 +293,19 @@ export type Payment = typeof payments.$inferSelect;
 
 export type InsertAppSetting = z.infer<typeof insertAppSettingSchema>;
 export type AppSetting = typeof appSettings.$inferSelect;
+
+export const insertCouponCodeSchema = createInsertSchema(couponCodes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCouponUsageSchema = createInsertSchema(couponUsages).omit({
+  id: true,
+  usedAt: true,
+});
+
+export type InsertCouponCode = z.infer<typeof insertCouponCodeSchema>;
+export type CouponCode = typeof couponCodes.$inferSelect;
+
+export type InsertCouponUsage = z.infer<typeof insertCouponUsageSchema>;
+export type CouponUsage = typeof couponUsages.$inferSelect;

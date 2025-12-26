@@ -36,6 +36,9 @@ A multi-role car marketplace mobile application built with React Native and Expo
 - **3-Step Post Car Flow**: Form → QR Payment → Waiting for Approval (for paid listings)
 - **Admin Payments Dashboard**: New "المدفوعات" tab with approve/reject buttons and auto-approval toggle
 - **Unified Color Scheme**: 3 colors only - dark blue (#1E3A5F), warm orange (#E8A54B), and white - applied consistently in both light and dark modes
+- **Coupon Code System**: Alternative payment method - users can enter coupon codes (e.g., ARA1000) for free listings instead of direct payment
+- **Privacy Policy Screen**: Bilingual privacy policy page accessible from Profile settings, suitable for Google Play compliance
+- **Location Feature in Registration**: Users can select their city manually or auto-detect via GPS during signup
 
 ## User Preferences
 
@@ -120,7 +123,8 @@ Preferred communication style: Simple, everyday language.
 
 ### Database
 - PostgreSQL with Drizzle ORM
-- Tables: users, cars, service_providers, favorites, slider_images, admins, otp_codes, magic_tokens
+- Tables: users, cars, service_providers, favorites, slider_images, admins, otp_codes, magic_tokens, coupon_codes, coupon_usages
+- User fields: city, latitude, longitude (for location tracking)
 - Run `npm run db:push` to sync schema changes
 
 ### API Endpoints
@@ -135,3 +139,6 @@ Preferred communication style: Simple, everyday language.
 - `/api/admin/*` - Admin dashboard APIs (requires admin auth)
 - `/api/admin/payments` - List all payments (GET), approve/reject payments (PUT)
 - `/api/admin/settings/auto-approve` - Get/set auto-approval setting
+- `/api/coupons/validate` - Validate a coupon code before applying
+- `/api/coupons/apply` - Apply a validated coupon to a car listing
+- `/api/privacy-policy` - Get bilingual privacy policy content

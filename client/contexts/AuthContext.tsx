@@ -25,7 +25,7 @@ interface AuthContextType {
   loginWithPhone: (phone: string, countryCode?: string) => Promise<{ isNewUser: boolean; user?: User }>;
   sendMagicLink: (email: string, phone: string, countryCode?: string) => Promise<{ success: boolean; demoToken?: string }>;
   verifyMagicToken: (magicToken: string) => Promise<{ isNewUser: boolean; user?: User; email?: string; phone?: string }>;
-  setUserRoles: (roles: UserRole[], name: string, email?: string) => Promise<void>;
+  setUserRoles: (roles: UserRole[], name: string, email?: string, city?: string) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<User>) => Promise<void>;
   completeOnboarding: () => Promise<void>;
@@ -179,7 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const setUserRoles = async (roles: UserRole[], name: string, email?: string) => {
+  const setUserRoles = async (roles: UserRole[], name: string, email?: string, city?: string) => {
     if (!pendingPhoneNumber) return;
 
     try {
@@ -193,7 +193,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: email || pendingEmail,
           name, 
           roles,
-          countryCode: pendingCountryCode 
+          countryCode: pendingCountryCode,
+          city,
         }),
       });
       

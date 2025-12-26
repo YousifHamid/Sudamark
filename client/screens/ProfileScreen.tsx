@@ -14,6 +14,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
+import { ProfileStackParamList } from "@/navigation/ProfileStackNavigator";
+import { CompositeNavigationProp } from "@react-navigation/native";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -21,7 +23,10 @@ export default function ProfileScreen() {
   const tabBarHeight = useBottomTabBarHeight();
   const { theme } = useTheme();
   const { t, language, setLanguage, isRTL } = useLanguage();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<CompositeNavigationProp<
+    NativeStackNavigationProp<ProfileStackParamList>,
+    NativeStackNavigationProp<RootStackParamList>
+  >>();
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
@@ -63,6 +68,7 @@ export default function ProfileScreen() {
 
   const settingsItems = [
     { id: "language", labelKey: "language", icon: "globe" as const, value: language === "ar" ? "العربية" : "English", onPress: handleLanguageToggle },
+    { id: "privacy", label: isRTL ? "سياسة الخصوصية" : "Privacy Policy", icon: "shield" as const, onPress: () => navigation.navigate("PrivacyPolicy") },
     { id: "settings", labelKey: "settings", icon: "settings" as const },
   ];
 
@@ -89,7 +95,7 @@ export default function ProfileScreen() {
           </ThemedText>
           <View style={[styles.roleBadge, { backgroundColor: theme.primary + "20" }]}>
             <ThemedText type="small" style={{ color: theme.primary }}>
-              {t(user?.role === "inspection_center" ? "inspectionCenter" : (user?.role || "buyer"))}
+              {t(user?.roles?.[0] === "inspection_center" ? "inspectionCenter" : (user?.roles?.[0] || "buyer"))}
             </ThemedText>
           </View>
         </View>
@@ -152,10 +158,10 @@ export default function ProfileScreen() {
                 <View style={[styles.iconContainer, { backgroundColor: theme.backgroundSecondary }]}>
                   <Feather name={item.icon} size={18} color={theme.primary} />
                 </View>
-                <ThemedText style={isRTL ? styles.rtlText : undefined}>{t(item.labelKey)}</ThemedText>
+                <ThemedText style={isRTL ? styles.rtlText : undefined}>{"label" in item ? item.label : t(item.labelKey)}</ThemedText>
               </View>
               <View style={[styles.menuItemRight, isRTL && styles.menuItemRightRTL]}>
-                {item.value ? (
+                {"value" in item && item.value ? (
                   <ThemedText type="small" style={{ color: theme.textSecondary }}>{item.value}</ThemedText>
                 ) : null}
                 <Feather name={isRTL ? "chevron-left" : "chevron-right"} size={20} color={theme.textSecondary} />

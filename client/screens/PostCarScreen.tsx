@@ -18,7 +18,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCars } from "@/hooks/useCars";
 import { getApiUrl, apiRequest } from "@/lib/query-client";
 
-type ScreenStep = "form" | "payment" | "waiting";
+type ScreenStep = "form" | "payment" | "coupon" | "waiting";
+type PaymentMethod = "coupon" | "direct" | null;
 
 interface ListingStatus {
   totalListings: number;
@@ -51,6 +52,10 @@ export default function PostCarScreen() {
   const [trxNo, setTrxNo] = useState("");
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentDate, setPaymentDate] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponValid, setCouponValid] = useState(false);
+  const [couponMessage, setCouponMessage] = useState("");
 
   const cities = [
     { id: "khartoum", labelKey: "khartoum" },
@@ -129,6 +134,86 @@ export default function PostCarScreen() {
     await addCar(newCar);
     setIsLoading(false);
     navigation.goBack();
+  };
+
+  const validateCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponMessage(isRTL ? "أدخل كود الخصم" : "Enter coupon code");
+      setCouponValid(false);
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const response = await apiRequest("POST", "/api/coupons/validate", { code: couponCode.toUpperCase() });
+      const data = await response.json();
+      
+      if (data.valid) {
+        setCouponValid(true);
+        setCouponMessage(data.message);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } else {
+        setCouponValid(false);
+        setCouponMessage(data.error || (isRTL ? "كود غير صالح" : "Invalid code"));
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+    } catch (error) {
+      setCouponValid(false);
+      setCouponMessage(isRTL ? "فشل التحقق" : "Validation failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCouponSubmit = async () => {
+    if (!couponValid) {
+      Alert.alert(t("error"), isRTL ? "تحقق من الكود أولاً" : "Validate code first");
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const newCar = {
+        id: Date.now().toString(),
+        title,
+        make,
+        model,
+        year: parseInt(year),
+        price: parseInt(price),
+        mileage: mileage ? parseInt(mileage) : 0,
+        description,
+        city,
+        images: images.length > 0 ? images : ["https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800"],
+        sellerId: user?.id || "",
+        category: "sedan",
+        createdAt: new Date().toISOString(),
+        isActive: true,
+      };
+
+      const createdCar = await addCar(newCar);
+      const carId = createdCar?.id || newCar.id;
+
+      const couponResponse = await apiRequest("POST", "/api/coupons/apply", { 
+        code: couponCode.toUpperCase(),
+        carId 
+      });
+
+      if (!couponResponse.ok) {
+        const errorData = await couponResponse.json();
+        throw new Error(errorData.error || "Coupon application failed");
+      }
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert(
+        isRTL ? "نجح!" : "Success!",
+        isRTL ? "تم نشر إعلانك مجاناً!" : "Your listing is now live for free!",
+        [{ text: isRTL ? "تم" : "OK", onPress: () => navigation.goBack() }]
+      );
+    } catch (error: any) {
+      Alert.alert(t("error"), error.message || (isRTL ? "فشل تطبيق الكود" : "Failed to apply coupon"));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handlePaymentSubmit = async () => {
@@ -241,64 +326,137 @@ export default function PostCarScreen() {
             </ThemedText>
             <ThemedText style={[styles.paymentDesc, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
               {isRTL 
-                ? `يرجى تحويل مبلغ ${listingStatus?.listingFee?.toLocaleString() || "10,000"} جنيه سوداني عبر تطبيق بنكك بمسح الكود أدناه`
-                : `Please transfer ${listingStatus?.listingFee?.toLocaleString() || "10,000"} SDG via Bankak app by scanning the QR code below`}
+                ? `المبلغ المطلوب: ${listingStatus?.listingFee?.toLocaleString() || "10,000"} جنيه سوداني`
+                : `Required: ${listingStatus?.listingFee?.toLocaleString() || "10,000"} SDG`}
             </ThemedText>
           </View>
 
-          <View style={[styles.qrContainer, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
-            <Image
-              source={require("../../attached_assets/WhatsApp_Image_2025-12-27_at_12.56.14_AM_1766789892928.jpeg")}
-              style={styles.qrImage}
-              contentFit="contain"
-            />
+          <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>
+            {isRTL ? "اختر طريقة الدفع" : "Choose Payment Method"}
+          </ThemedText>
+
+          <View style={styles.paymentOptions}>
+            <Pressable
+              style={[
+                styles.paymentOption,
+                { backgroundColor: paymentMethod === "coupon" ? theme.primary + "20" : theme.backgroundSecondary, borderColor: paymentMethod === "coupon" ? theme.primary : theme.border }
+              ]}
+              onPress={() => { setPaymentMethod("coupon"); Haptics.selectionAsync(); }}
+            >
+              <Feather name="gift" size={24} color={paymentMethod === "coupon" ? theme.primary : theme.textSecondary} />
+              <ThemedText style={[styles.paymentOptionText, paymentMethod === "coupon" && { color: theme.primary }]}>
+                {isRTL ? "كود خصم" : "Coupon Code"}
+              </ThemedText>
+            </Pressable>
+
+            <Pressable
+              style={[
+                styles.paymentOption,
+                { backgroundColor: paymentMethod === "direct" ? theme.primary + "20" : theme.backgroundSecondary, borderColor: paymentMethod === "direct" ? theme.primary : theme.border }
+              ]}
+              onPress={() => { setPaymentMethod("direct"); Haptics.selectionAsync(); }}
+            >
+              <Feather name="smartphone" size={24} color={paymentMethod === "direct" ? theme.primary : theme.textSecondary} />
+              <ThemedText style={[styles.paymentOptionText, paymentMethod === "direct" && { color: theme.primary }]}>
+                {isRTL ? "دفع مباشر" : "Direct Payment"}
+              </ThemedText>
+            </Pressable>
           </View>
 
-          <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>
-            {isRTL ? "أدخل تفاصيل التحويل" : "Enter Transfer Details"}
-          </ThemedText>
+          {paymentMethod === "coupon" ? (
+            <View style={styles.couponSection}>
+              <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+                {isRTL ? "أدخل كود الخصم" : "Enter Coupon Code"}
+              </ThemedText>
+              <View style={[styles.couponInputRow, isRTL && styles.rowRTL]}>
+                <TextInput
+                  style={[styles.couponInput, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }]}
+                  placeholder={isRTL ? "مثال: ARA1000" : "e.g. ARA1000"}
+                  placeholderTextColor={theme.textSecondary}
+                  value={couponCode}
+                  onChangeText={(text) => { setCouponCode(text.toUpperCase()); setCouponValid(false); setCouponMessage(""); }}
+                  autoCapitalize="characters"
+                  textAlign={isRTL ? "right" : "left"}
+                />
+                <Pressable
+                  style={[styles.validateButton, { backgroundColor: theme.primary }]}
+                  onPress={validateCoupon}
+                  disabled={isLoading}
+                >
+                  <ThemedText style={{ color: "#FFFFFF", fontWeight: "600" }}>
+                    {isLoading ? "..." : (isRTL ? "تحقق" : "Check")}
+                  </ThemedText>
+                </Pressable>
+              </View>
+              {couponMessage ? (
+                <View style={[styles.couponMessage, { backgroundColor: couponValid ? theme.success + "20" : theme.error + "20" }]}>
+                  <Feather name={couponValid ? "check-circle" : "x-circle"} size={16} color={couponValid ? theme.success : theme.error} />
+                  <ThemedText style={{ color: couponValid ? theme.success : theme.error, marginLeft: 8 }}>
+                    {couponMessage}
+                  </ThemedText>
+                </View>
+              ) : null}
+              {couponValid ? (
+                <Button onPress={handleCouponSubmit} disabled={isLoading} style={styles.submitButton}>
+                  {isLoading ? (isRTL ? "جاري النشر..." : "Publishing...") : (isRTL ? "نشر مجاناً" : "Publish Free")}
+                </Button>
+              ) : null}
+            </View>
+          ) : null}
 
-          <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
-            {isRTL ? "رقم العملية (Trx. ID)" : "Transaction ID (Trx. ID)"} *
-          </ThemedText>
-          <TextInput
-            style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
-            placeholder={isRTL ? "مثال: 20082275558" : "e.g. 20082275558"}
-            placeholderTextColor={theme.textSecondary}
-            value={trxNo}
-            onChangeText={setTrxNo}
-            keyboardType="number-pad"
-            textAlign={isRTL ? "right" : "left"}
-          />
+          {paymentMethod === "direct" ? (
+            <View style={styles.directPaymentSection}>
+              <View style={[styles.qrContainer, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
+                <Image
+                  source={require("../../attached_assets/WhatsApp_Image_2025-12-27_at_12.56.14_AM_1766789892928.jpeg")}
+                  style={styles.qrImage}
+                  contentFit="contain"
+                />
+              </View>
 
-          <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
-            {isRTL ? "المبلغ (Amount)" : "Amount"} *
-          </ThemedText>
-          <TextInput
-            style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
-            placeholder={isRTL ? "10000" : "10000"}
-            placeholderTextColor={theme.textSecondary}
-            value={paymentAmount}
-            onChangeText={setPaymentAmount}
-            keyboardType="number-pad"
-            textAlign={isRTL ? "right" : "left"}
-          />
+              <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+                {isRTL ? "رقم العملية (Trx. ID)" : "Transaction ID (Trx. ID)"} *
+              </ThemedText>
+              <TextInput
+                style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+                placeholder={isRTL ? "مثال: 20082275558" : "e.g. 20082275558"}
+                placeholderTextColor={theme.textSecondary}
+                value={trxNo}
+                onChangeText={setTrxNo}
+                keyboardType="number-pad"
+                textAlign={isRTL ? "right" : "left"}
+              />
 
-          <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
-            {isRTL ? "تاريخ التحويل" : "Transfer Date"} *
-          </ThemedText>
-          <TextInput
-            style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
-            placeholder={isRTL ? "مثال: 27-Dec-2025" : "e.g. 27-Dec-2025"}
-            placeholderTextColor={theme.textSecondary}
-            value={paymentDate}
-            onChangeText={setPaymentDate}
-            textAlign={isRTL ? "right" : "left"}
-          />
+              <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+                {isRTL ? "المبلغ (Amount)" : "Amount"} *
+              </ThemedText>
+              <TextInput
+                style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+                placeholder={isRTL ? "10000" : "10000"}
+                placeholderTextColor={theme.textSecondary}
+                value={paymentAmount}
+                onChangeText={setPaymentAmount}
+                keyboardType="number-pad"
+                textAlign={isRTL ? "right" : "left"}
+              />
 
-          <Button onPress={handlePaymentSubmit} disabled={isLoading} style={styles.submitButton}>
-            {isLoading ? (isRTL ? "جاري الإرسال..." : "Submitting...") : (isRTL ? "تأكيد الدفع" : "Confirm Payment")}
-          </Button>
+              <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+                {isRTL ? "تاريخ التحويل" : "Transfer Date"} *
+              </ThemedText>
+              <TextInput
+                style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+                placeholder={isRTL ? "مثال: 27-Dec-2025" : "e.g. 27-Dec-2025"}
+                placeholderTextColor={theme.textSecondary}
+                value={paymentDate}
+                onChangeText={setPaymentDate}
+                textAlign={isRTL ? "right" : "left"}
+              />
+
+              <Button onPress={handlePaymentSubmit} disabled={isLoading} style={styles.submitButton}>
+                {isLoading ? (isRTL ? "جاري الإرسال..." : "Submitting...") : (isRTL ? "تأكيد الدفع" : "Confirm Payment")}
+              </Button>
+            </View>
+          ) : null}
 
           <Pressable onPress={() => setStep("form")} style={styles.backLink}>
             <ThemedText style={{ color: theme.primary }}>
@@ -672,5 +830,57 @@ const styles = StyleSheet.create({
   },
   doneButton: {
     width: "100%",
+  },
+  paymentOptions: {
+    flexDirection: "row",
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  paymentOption: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    borderWidth: 2,
+    gap: Spacing.sm,
+  },
+  paymentOptionText: {
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  couponSection: {
+    marginBottom: Spacing.md,
+  },
+  couponInputRow: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+    alignItems: "center",
+  },
+  couponInput: {
+    flex: 1,
+    height: Spacing.inputHeight,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    paddingHorizontal: Spacing.md,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  validateButton: {
+    height: Spacing.inputHeight,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.sm,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  couponMessage: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    marginTop: Spacing.md,
+  },
+  directPaymentSection: {
+    marginBottom: Spacing.md,
   },
 });
