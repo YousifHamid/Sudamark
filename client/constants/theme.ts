@@ -1,8 +1,10 @@
 import { Platform, I18nManager } from "react-native";
 
 const primaryColor = "#1E3A8A";
-const primaryColorDark = "#3B82F6";
 const secondaryColor = "#FFA43A";
+const successColor = "#10B981";
+const warningColor = "#FFA43A";
+const errorColor = "#EF4444";
 
 export const Colors = {
   light: {
@@ -18,9 +20,9 @@ export const Colors = {
     backgroundTertiary: "#E5E7EB",
     primary: primaryColor,
     secondary: secondaryColor,
-    success: "#10B981",
-    warning: "#FFA43A",
-    error: "#EF4444",
+    success: successColor,
+    warning: warningColor,
+    error: errorColor,
     border: "#E5E7EB",
     cardBackground: "#FFFFFF",
   },
@@ -29,17 +31,17 @@ export const Colors = {
     textSecondary: "#A1A1AA",
     buttonText: "#FFFFFF",
     tabIconDefault: "#71717A",
-    tabIconSelected: primaryColorDark,
-    link: primaryColorDark,
+    tabIconSelected: primaryColor,
+    link: primaryColor,
     backgroundRoot: "#09090B",
     backgroundDefault: "#18181B",
     backgroundSecondary: "#27272A",
     backgroundTertiary: "#3F3F46",
-    primary: primaryColorDark,
+    primary: primaryColor,
     secondary: secondaryColor,
-    success: "#22C55E",
-    warning: "#FFA43A",
-    error: "#EF4444",
+    success: successColor,
+    warning: warningColor,
+    error: errorColor,
     border: "#3F3F46",
     cardBackground: "#1C1C1E",
   },
