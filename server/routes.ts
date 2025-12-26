@@ -3,7 +3,8 @@ import { createServer, type Server } from "node:http";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { db } from "./db";
-import { users, cars, serviceProviders, favorites, sliderImages, admins, otpCodes } from "@shared/schema";
+import { users, cars, serviceProviders, favorites, sliderImages, admins, otpCodes, magicTokens } from "@shared/schema";
+import crypto from "crypto";
 import { eq, desc, and, gt, like, or, sql } from "drizzle-orm";
 
 const JWT_SECRET_RAW = process.env.SESSION_SECRET;
@@ -13,6 +14,7 @@ if (!JWT_SECRET_RAW) {
 const JWT_SECRET: string = JWT_SECRET_RAW;
 const OTP_EXPIRY_MINUTES = 10;
 const MAX_OTP_ATTEMPTS = 3;
+const MAGIC_LINK_EXPIRY_MINUTES = 30;
 
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
@@ -82,6 +84,196 @@ function adminAuthMiddleware(req: AuthRequest, res: Response, next: NextFunction
 export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/health", (_req: Request, res: Response) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
+  app.post("/api/auth/send-magic-link", async (req: Request, res: Response) => {
+    try {
+      const { email, phone, countryCode } = req.body;
+      
+      if (!email || !phone) {
+        return res.status(400).json({ error: "Email and phone number are required" });
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: "Invalid email format" });
+      }
+      
+      const fullPhone = `${countryCode || "+249"}${phone.replace(/\s/g, "")}`;
+      
+      if (!rateLimit(`magic:${email}`)) {
+        return res.status(429).json({ error: "Too many requests. Please try again later." });
+      }
+      
+      const token = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + MAGIC_LINK_EXPIRY_MINUTES * 60 * 1000);
+      
+      await db.delete(magicTokens).where(eq(magicTokens.email, email));
+      await db.insert(magicTokens).values({
+        email,
+        phone: fullPhone,
+        token,
+        expiresAt,
+        used: false,
+      });
+      
+      const baseUrl = process.env.EXPO_PUBLIC_DOMAIN 
+        ? `https://${process.env.EXPO_PUBLIC_DOMAIN}`
+        : "http://localhost:5000";
+      const magicLink = `${baseUrl}/api/auth/verify-magic-link?token=${token}`;
+      
+      console.log(`[MAGIC LINK] Demo mode - Link for ${email}: ${magicLink}`);
+      console.log(`[MAGIC LINK] Token: ${token}`);
+      
+      res.json({ 
+        success: true, 
+        message: "Magic link sent to email",
+        demoToken: token
+      });
+    } catch (error) {
+      console.error("Send magic link error:", error);
+      res.status(500).json({ error: "Failed to send magic link" });
+    }
+  });
+
+  app.get("/api/auth/verify-magic-link", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.query;
+      
+      if (!token || typeof token !== "string") {
+        return res.status(400).json({ error: "Token is required" });
+      }
+      
+      const [tokenRecord] = await db.select().from(magicTokens)
+        .where(and(
+          eq(magicTokens.token, token),
+          eq(magicTokens.used, false),
+          gt(magicTokens.expiresAt, new Date())
+        ))
+        .limit(1);
+      
+      if (!tokenRecord) {
+        return res.status(400).json({ error: "Invalid or expired magic link" });
+      }
+      
+      await db.update(magicTokens)
+        .set({ used: true })
+        .where(eq(magicTokens.id, tokenRecord.id));
+      
+      let [existingUser] = await db.select().from(users)
+        .where(eq(users.email, tokenRecord.email))
+        .limit(1);
+      
+      if (!existingUser) {
+        [existingUser] = await db.select().from(users)
+          .where(eq(users.phone, tokenRecord.phone))
+          .limit(1);
+          
+        if (existingUser) {
+          await db.update(users)
+            .set({ email: tokenRecord.email, emailVerified: true })
+            .where(eq(users.id, existingUser.id));
+          existingUser.email = tokenRecord.email;
+          existingUser.emailVerified = true;
+        }
+      }
+      
+      if (existingUser) {
+        if (!existingUser.emailVerified) {
+          await db.update(users)
+            .set({ emailVerified: true })
+            .where(eq(users.id, existingUser.id));
+        }
+        
+        const jwtToken = jwt.sign(
+          { id: existingUser.id, phone: existingUser.phone, roles: existingUser.roles },
+          JWT_SECRET,
+          { expiresIn: "30d" }
+        );
+        
+        const appDeepLink = `arabaty://auth/callback?token=${jwtToken}&isNewUser=false`;
+        return res.redirect(appDeepLink);
+      }
+      
+      const tempToken = jwt.sign(
+        { email: tokenRecord.email, phone: tokenRecord.phone, type: "registration" },
+        JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+      
+      const appDeepLink = `arabaty://auth/callback?tempToken=${tempToken}&isNewUser=true&email=${encodeURIComponent(tokenRecord.email)}&phone=${encodeURIComponent(tokenRecord.phone)}`;
+      return res.redirect(appDeepLink);
+    } catch (error) {
+      console.error("Verify magic link error:", error);
+      res.status(500).json({ error: "Failed to verify magic link" });
+    }
+  });
+
+  app.post("/api/auth/verify-token", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.body;
+      
+      if (!token) {
+        return res.status(400).json({ error: "Token is required" });
+      }
+      
+      const [tokenRecord] = await db.select().from(magicTokens)
+        .where(and(
+          eq(magicTokens.token, token),
+          eq(magicTokens.used, false),
+          gt(magicTokens.expiresAt, new Date())
+        ))
+        .limit(1);
+      
+      if (!tokenRecord) {
+        return res.status(400).json({ error: "Invalid or expired token" });
+      }
+      
+      await db.update(magicTokens)
+        .set({ used: true })
+        .where(eq(magicTokens.id, tokenRecord.id));
+      
+      let [existingUser] = await db.select().from(users)
+        .where(eq(users.email, tokenRecord.email))
+        .limit(1);
+      
+      if (!existingUser) {
+        [existingUser] = await db.select().from(users)
+          .where(eq(users.phone, tokenRecord.phone))
+          .limit(1);
+          
+        if (existingUser) {
+          await db.update(users)
+            .set({ email: tokenRecord.email, emailVerified: true })
+            .where(eq(users.id, existingUser.id));
+        }
+      }
+      
+      if (existingUser) {
+        if (!existingUser.emailVerified) {
+          await db.update(users)
+            .set({ emailVerified: true })
+            .where(eq(users.id, existingUser.id));
+        }
+        
+        const jwtToken = jwt.sign(
+          { id: existingUser.id, phone: existingUser.phone, roles: existingUser.roles },
+          JWT_SECRET,
+          { expiresIn: "30d" }
+        );
+        
+        return res.json({ user: existingUser, token: jwtToken, isNewUser: false });
+      }
+      
+      res.json({ 
+        isNewUser: true, 
+        email: tokenRecord.email, 
+        phone: tokenRecord.phone 
+      });
+    } catch (error) {
+      console.error("Verify token error:", error);
+      res.status(500).json({ error: "Failed to verify token" });
+    }
   });
 
   app.post("/api/auth/send-otp", async (req: Request, res: Response) => {
@@ -184,15 +376,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/register", async (req: Request, res: Response) => {
     try {
-      const { phone, name, roles, countryCode } = req.body;
+      const { phone, email, name, roles, countryCode } = req.body;
       
       const [existingUser] = await db.select().from(users).where(eq(users.phone, phone)).limit(1);
       if (existingUser) {
         return res.status(400).json({ error: "User already exists" });
       }
       
+      if (email) {
+        const [existingEmail] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+        if (existingEmail) {
+          return res.status(400).json({ error: "Email already registered" });
+        }
+      }
+      
       const [newUser] = await db.insert(users).values({
         phone,
+        email: email || null,
+        emailVerified: !!email,
         name,
         roles: roles || ["buyer"],
         countryCode: countryCode || "+249",
