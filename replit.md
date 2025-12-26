@@ -49,11 +49,11 @@ Preferred communication style: Simple, everyday language.
 - **Storage**: In-memory storage class (`MemStorage`) as default, designed for easy swap to database-backed implementation
 
 ### Authentication Flow
-- Email + phone input → Magic link sent to email → Role selection (first-time users)
+- Phone number input → Role selection (first-time users) - No verification required for initial login
+- Email verification required only when posting a car ad (via magic link)
 - User roles: Buyer, Seller, Mechanic, Electrician, Lawyer, Inspection Center
 - JWT-based session management with AsyncStorage persistence on client
-- Phone number collected for contact purposes (not verified)
-- Demo mode: Magic token displayed in UI for testing without email service
+- Phone number saved for contact purposes (WhatsApp/calls)
 
 ### Navigation Structure
 - **Tab Navigation**: 5 tabs (Home, Search, Post/Sell, Services, Profile)
