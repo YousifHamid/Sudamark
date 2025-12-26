@@ -24,6 +24,7 @@ export interface Car {
   city: string;
   images: string[];
   category: string;
+  condition?: string;
   description?: string;
   sellerId: string;
   createdAt: string;

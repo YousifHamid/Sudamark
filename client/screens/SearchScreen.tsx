@@ -71,11 +71,12 @@ export default function SearchScreen() {
         car.model.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCity = !selectedCity || car.city === selectedCity;
       const matchesCategory = !selectedCategory || car.category === selectedCategory;
+      const matchesCondition = !selectedCondition || car.condition === selectedCondition;
       const matchesMinPrice = !minPrice || car.price >= parseInt(minPrice);
       const matchesMaxPrice = !maxPrice || car.price <= parseInt(maxPrice);
-      return matchesSearch && matchesCity && matchesCategory && matchesMinPrice && matchesMaxPrice;
+      return matchesSearch && matchesCity && matchesCategory && matchesCondition && matchesMinPrice && matchesMaxPrice;
     });
-  }, [cars, searchQuery, selectedCity, selectedCategory, minPrice, maxPrice]);
+  }, [cars, searchQuery, selectedCity, selectedCategory, selectedCondition, minPrice, maxPrice]);
 
   const activeFiltersCount = [selectedCity, selectedCategory, selectedCondition, minPrice, maxPrice].filter(Boolean).length;
 
