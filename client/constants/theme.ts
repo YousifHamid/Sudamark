@@ -2,7 +2,7 @@ import { Platform, I18nManager } from "react-native";
 
 const primaryColor = "#1E3A8A";
 const primaryColorDark = "#3B82F6";
-const secondaryColor = "#F59E0B";
+const secondaryColor = "#FFA43A";
 
 export const Colors = {
   light: {
@@ -12,14 +12,14 @@ export const Colors = {
     tabIconDefault: "#6B7280",
     tabIconSelected: primaryColor,
     link: primaryColor,
-    backgroundRoot: "#F9FAFB",
+    backgroundRoot: "#F5F7FA",
     backgroundDefault: "#FFFFFF",
     backgroundSecondary: "#F3F4F6",
     backgroundTertiary: "#E5E7EB",
     primary: primaryColor,
     secondary: secondaryColor,
     success: "#10B981",
-    warning: "#F97316",
+    warning: "#FFA43A",
     error: "#EF4444",
     border: "#E5E7EB",
     cardBackground: "#FFFFFF",
@@ -38,7 +38,7 @@ export const Colors = {
     primary: primaryColorDark,
     secondary: secondaryColor,
     success: "#10B981",
-    warning: "#F97316",
+    warning: "#FFA43A",
     error: "#EF4444",
     border: "#334155",
     cardBackground: "#1E293B",

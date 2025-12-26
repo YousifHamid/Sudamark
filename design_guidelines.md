@@ -123,11 +123,11 @@
 
 ### Color Palette
 - **Primary**: Deep Blue (#1E3A8A) - trust, automotive industry
-- **Secondary**: Amber (#F59E0B) - urgency, premium
+- **Secondary**: Warm Orange (#FFA43A) - urgency, premium, friendly warmth
 - **Success**: Green (#10B981) - approved, passed inspections
-- **Warning**: Orange (#F97316) - needs repair
+- **Warning**: Warm Orange (#FFA43A) - needs repair
 - **Error**: Red (#EF4444) - rejected
-- **Background**: Light Gray (#F9FAFB)
+- **Background**: Clean Off-White (#F5F7FA) - clean, light, inviting
 - **Surface**: White (#FFFFFF)
 - **Text Primary**: Charcoal (#1F2937)
 - **Text Secondary**: Gray (#6B7280)
