@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, TextInput, Pressable, ScrollView, Alert, Modal } from "react-native";
+import { View, StyleSheet, TextInput, Pressable, ScrollView, Alert, Modal, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 
@@ -79,6 +80,33 @@ export default function PostCarScreen() {
     }
   };
 
+  const [validatingImage, setValidatingImage] = useState(false);
+
+  const validateImageWithAI = async (uri: string): Promise<{ valid: boolean; message?: string }> => {
+    try {
+      if (Platform.OS === "web") {
+        return { valid: true };
+      }
+      
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: "base64",
+      });
+      
+      const response = await apiRequest("POST", "/api/validate-car-image", { imageBase64: base64 });
+      const data = await response.json();
+      
+      if (data.valid) {
+        return { valid: true };
+      }
+      
+      const message = isRTL ? data.message?.ar : data.message?.en;
+      return { valid: false, message: message || (isRTL ? "صورة غير صالحة" : "Invalid image") };
+    } catch (error) {
+      console.log("Image validation error:", error);
+      return { valid: true };
+    }
+  };
+
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
@@ -87,8 +115,35 @@ export default function PostCarScreen() {
     });
 
     if (!result.canceled) {
-      setImages([...images, ...result.assets.map((a) => a.uri)].slice(0, 6));
-      Haptics.selectionAsync();
+      setValidatingImage(true);
+      const validImages: string[] = [];
+      const rejectedMessages: string[] = [];
+      
+      for (const asset of result.assets) {
+        const validation = await validateImageWithAI(asset.uri);
+        if (validation.valid) {
+          validImages.push(asset.uri);
+        } else {
+          rejectedMessages.push(validation.message || "");
+        }
+      }
+      
+      setValidatingImage(false);
+      
+      if (validImages.length > 0) {
+        setImages([...images, ...validImages].slice(0, 6));
+        Haptics.selectionAsync();
+      }
+      
+      if (rejectedMessages.length > 0) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        const uniqueMessages = [...new Set(rejectedMessages.filter(m => m))];
+        Alert.alert(
+          isRTL ? "صور مرفوضة" : "Images Rejected",
+          uniqueMessages.join("\n") || (isRTL ? "بعض الصور غير صالحة للإعلان" : "Some images are not valid for car listings"),
+          [{ text: isRTL ? "حسناً" : "OK" }]
+        );
+      }
     }
   };
 

@@ -3,10 +3,70 @@ import { createServer, type Server } from "node:http";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
+import OpenAI from "openai";
 import { db } from "./db";
 import { users, cars, serviceProviders, favorites, sliderImages, admins, otpCodes, magicTokens, buyerOffers, inspectionRequests, payments, appSettings, couponCodes, couponUsages } from "@shared/schema";
 import crypto from "crypto";
 import { eq, desc, and, gt, like, or, sql } from "drizzle-orm";
+
+const openai = new OpenAI({
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+});
+
+async function validateCarImage(imageBase64: string): Promise<{ valid: boolean; reason?: string }> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `You are a car image validator for a car marketplace app. Analyze images and determine if they show a car that would be appropriate for a car listing.
+
+ACCEPT: Cars, vehicles (sedans, SUVs, trucks, motorcycles, vans), car interiors, car engines, car parts, car dashboards, car wheels.
+
+REJECT with clear reason:
+- People or selfies (return "people")
+- ID cards, documents, passports (return "documents")
+- Landmarks, buildings, scenery without cars (return "landmarks")
+- Food, animals, random objects (return "unrelated")
+- Inappropriate or explicit content (return "inappropriate")
+- Screenshots, text-heavy images (return "screenshots")
+- Blurry or unrecognizable images (return "unclear")
+
+Respond ONLY with JSON: {"valid": true} or {"valid": false, "reason": "category"}`,
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:image/jpeg;base64,${imageBase64}`,
+              },
+            },
+            {
+              type: "text",
+              text: "Is this a valid car image for a car marketplace listing?",
+            },
+          ],
+        },
+      ],
+      max_tokens: 100,
+    });
+
+    const content = response.choices[0]?.message?.content || '{"valid": false, "reason": "error"}';
+    try {
+      const result = JSON.parse(content);
+      return { valid: result.valid === true, reason: result.reason };
+    } catch {
+      return { valid: false, reason: "error" };
+    }
+  } catch (error) {
+    console.error("[IMAGE VALIDATION] Error:", error);
+    return { valid: true };
+  }
+}
 
 const emailTransporter = nodemailer.createTransport({
   host: "smtp-relay.brevo.com",
@@ -1568,6 +1628,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete coupon" });
+    }
+  });
+
+  // Car Image Validation API
+  app.post("/api/validate-car-image", authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { imageBase64 } = req.body;
+      
+      if (!imageBase64) {
+        return res.status(400).json({ error: "Image data is required" });
+      }
+      
+      if (imageBase64.length > 5 * 1024 * 1024) {
+        return res.status(400).json({ error: "Image too large. Max 5MB allowed." });
+      }
+      
+      const result = await validateCarImage(imageBase64);
+      
+      const rejectionMessages: Record<string, { ar: string; en: string }> = {
+        people: { ar: "لا يمكن رفع صور أشخاص. يرجى رفع صور السيارة فقط.", en: "Cannot upload photos of people. Please upload car images only." },
+        documents: { ar: "لا يمكن رفع صور مستندات أو بطاقات. يرجى رفع صور السيارة فقط.", en: "Cannot upload document or ID images. Please upload car images only." },
+        landmarks: { ar: "يرجى رفع صور سيارة وليس معالم أو مباني.", en: "Please upload car images, not landmarks or buildings." },
+        unrelated: { ar: "الصورة غير مرتبطة بالسيارات. يرجى رفع صور سيارة.", en: "Image is not car-related. Please upload car images." },
+        inappropriate: { ar: "محتوى غير مناسب. يرجى رفع صور مناسبة للسيارة.", en: "Inappropriate content. Please upload appropriate car images." },
+        screenshots: { ar: "لا يمكن قبول لقطات الشاشة. يرجى رفع صور حقيقية للسيارة.", en: "Screenshots not accepted. Please upload real car photos." },
+        unclear: { ar: "الصورة غير واضحة. يرجى رفع صورة واضحة للسيارة.", en: "Image is unclear. Please upload a clear car photo." },
+        error: { ar: "حدث خطأ في التحقق. يرجى المحاولة مرة أخرى.", en: "Validation error. Please try again." },
+      };
+      
+      if (result.valid) {
+        res.json({ valid: true });
+      } else {
+        const message = rejectionMessages[result.reason || "error"] || rejectionMessages.error;
+        res.json({ valid: false, reason: result.reason, message });
+      }
+    } catch (error) {
+      console.error("[IMAGE VALIDATION] API Error:", error);
+      res.json({ valid: true });
     }
   });
 

@@ -39,6 +39,8 @@ A multi-role car marketplace mobile application built with React Native and Expo
 - **Coupon Code System**: Alternative payment method - users can enter coupon codes (e.g., ARA1000) for free listings instead of direct payment
 - **Privacy Policy Screen**: Bilingual privacy policy page accessible from Profile settings, suitable for Google Play compliance
 - **Location Feature in Registration**: Users can select their city manually or auto-detect via GPS during signup
+- **Fixed "بيع عربيتك الان" button**: Button now shows login prompt for unauthenticated users, navigates to PostCar for logged-in users
+- **AI Image Validation**: When uploading car photos, images are validated using OpenAI Vision to ensure only car-related images are accepted. Rejects people, documents, landmarks, and other non-car content with bilingual error messages
 
 ## User Preferences
 
