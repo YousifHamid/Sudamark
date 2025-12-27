@@ -72,6 +72,43 @@ const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 5;
 
+const adminLoginAttempts = new Map<string, { count: number; blockedUntil: number }>();
+const ADMIN_MAX_ATTEMPTS = 3;
+const ADMIN_BLOCK_DURATION_MS = 15 * 60 * 1000;
+
+function checkAdminLoginAllowed(ip: string): { allowed: boolean; remainingTime?: number } {
+  const now = Date.now();
+  const record = adminLoginAttempts.get(ip);
+  
+  if (!record) return { allowed: true };
+  
+  if (now < record.blockedUntil) {
+    return { allowed: false, remainingTime: Math.ceil((record.blockedUntil - now) / 1000 / 60) };
+  }
+  
+  if (record.count >= ADMIN_MAX_ATTEMPTS && now >= record.blockedUntil) {
+    adminLoginAttempts.delete(ip);
+  }
+  
+  return { allowed: true };
+}
+
+function recordAdminLoginFailure(ip: string): void {
+  const now = Date.now();
+  const record = adminLoginAttempts.get(ip) || { count: 0, blockedUntil: 0 };
+  record.count++;
+  
+  if (record.count >= ADMIN_MAX_ATTEMPTS) {
+    record.blockedUntil = now + ADMIN_BLOCK_DURATION_MS;
+  }
+  
+  adminLoginAttempts.set(ip, record);
+}
+
+function clearAdminLoginAttempts(ip: string): void {
+  adminLoginAttempts.delete(ip);
+}
+
 function rateLimit(key: string): boolean {
   const now = Date.now();
   const record = rateLimitMap.get(key);
@@ -758,23 +795,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/login", async (req: Request, res: Response) => {
     try {
+      const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
       const { email, password } = req.body;
       
-      if (!rateLimit(`admin:${email}`)) {
-        return res.status(429).json({ error: "Too many login attempts. Please try again later." });
+      const loginCheck = checkAdminLoginAllowed(clientIp);
+      if (!loginCheck.allowed) {
+        return res.status(403).json({ 
+          error: `تم حظر IP الخاص بك لمدة ${loginCheck.remainingTime} دقيقة بسبب محاولات تسجيل دخول فاشلة متعددة` 
+        });
+      }
+      
+      if (!rateLimit(`admin:${clientIp}`)) {
+        return res.status(429).json({ error: "طلبات كثيرة جداً. يرجى المحاولة لاحقاً." });
       }
       
       const [admin] = await db.select().from(admins)
         .where(and(eq(admins.email, email), eq(admins.isActive, true)));
       
       if (!admin) {
-        return res.status(401).json({ error: "Invalid credentials" });
+        recordAdminLoginFailure(clientIp);
+        console.log(`[ADMIN SECURITY] Failed login attempt from IP: ${clientIp} - Invalid email`);
+        return res.status(401).json({ error: "بيانات الدخول غير صحيحة" });
       }
       
       const isValidPassword = await bcrypt.compare(password, admin.passwordHash);
       if (!isValidPassword) {
-        return res.status(401).json({ error: "Invalid credentials" });
+        recordAdminLoginFailure(clientIp);
+        console.log(`[ADMIN SECURITY] Failed login attempt from IP: ${clientIp} - Invalid password`);
+        return res.status(401).json({ error: "بيانات الدخول غير صحيحة" });
       }
+      
+      clearAdminLoginAttempts(clientIp);
+      console.log(`[ADMIN SECURITY] Successful login from IP: ${clientIp} for admin: ${admin.email}`);
       
       const token = jwt.sign(
         { id: admin.id, email: admin.email, role: admin.role, isAdmin: true },
@@ -785,7 +837,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ admin: { id: admin.id, email: admin.email, name: admin.name, role: admin.role }, token });
     } catch (error) {
       console.error("Admin login error:", error);
-      res.status(500).json({ error: "Login failed" });
+      res.status(500).json({ error: "فشل تسجيل الدخول" });
     }
   });
 
