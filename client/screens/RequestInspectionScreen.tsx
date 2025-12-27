@@ -30,7 +30,6 @@ export default function RequestInspectionScreen() {
   const car = cars.find((c) => c.id === route.params.carId);
   const inspectionCenters = providers.filter((p) => p.role === "inspection_center");
 
-  const [selectedCenter, setSelectedCenter] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [locationType, setLocationType] = useState<"seller" | "agreed">("seller");
   const [agreedLocationText, setAgreedLocationText] = useState("");
@@ -74,8 +73,8 @@ export default function RequestInspectionScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!selectedCenter || !selectedDate) {
-      Alert.alert(t("error"), t("selectCenterAndDate"));
+    if (!selectedDate) {
+      Alert.alert(t("error"), t("selectDateRequired"));
       return;
     }
 
@@ -134,9 +133,6 @@ export default function RequestInspectionScreen() {
               </ThemedText>
             </Pressable>
           </View>
-          <ThemedText type="small" style={[{ color: theme.textSecondary, marginTop: Spacing.sm }, isRTL && styles.rtlText]}>
-            {sellerPhone}
-          </ThemedText>
         </View>
 
         <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t("chooseLocation")}</ThemedText>
@@ -201,48 +197,6 @@ export default function RequestInspectionScreen() {
           />
         ) : null}
 
-        <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t("selectInspectionCenter")}</ThemedText>
-        <View style={styles.centersContainer}>
-          {inspectionCenters.map((center) => (
-            <Pressable
-              key={center.id}
-              onPress={() => {
-                setSelectedCenter(center.id);
-                Haptics.selectionAsync();
-              }}
-              style={[
-                styles.centerCard,
-                { backgroundColor: theme.backgroundDefault, borderColor: theme.border },
-                selectedCenter === center.id && { borderColor: theme.primary, borderWidth: 2 },
-              ]}
-            >
-              <View style={[styles.centerIcon, { backgroundColor: theme.backgroundSecondary }]}>
-                <Feather name="clipboard" size={24} color={theme.primary} />
-              </View>
-              <View style={[styles.centerInfo, isRTL && styles.centerInfoRTL]}>
-                <ThemedText type="body" style={[{ fontWeight: "600" }, isRTL && styles.rtlText]}>{center.name}</ThemedText>
-                <View style={[styles.ratingRow, isRTL && styles.ratingRowRTL]}>
-                  <Feather name="star" size={14} color={theme.secondary} />
-                  <ThemedText type="small" style={{ marginLeft: isRTL ? 0 : Spacing.xs, marginRight: isRTL ? Spacing.xs : 0 }}>
-                    {center.rating} ({center.reviewCount} {t("reviews")})
-                  </ThemedText>
-                </View>
-                <View style={[styles.locationRow, isRTL && styles.locationRowRTL]}>
-                  <Feather name="map-pin" size={12} color={theme.textSecondary} />
-                  <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: isRTL ? 0 : Spacing.xs, marginRight: isRTL ? Spacing.xs : 0 }}>
-                    {center.city}
-                  </ThemedText>
-                </View>
-              </View>
-              {selectedCenter === center.id ? (
-                <View style={[styles.checkmark, { backgroundColor: theme.primary }]}>
-                  <Feather name="check" size={16} color="#FFFFFF" />
-                </View>
-              ) : null}
-            </Pressable>
-          ))}
-        </View>
-
         <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t("selectDate")}</ThemedText>
         <View style={[styles.datesRow, isRTL && styles.datesRowRTL]}>
           {dates.map((date) => (
@@ -284,7 +238,7 @@ export default function RequestInspectionScreen() {
           </ThemedText>
         </View>
 
-        <Button onPress={handleSubmit} disabled={isLoading || !selectedCenter || !selectedDate} style={styles.submitButton}>
+        <Button onPress={handleSubmit} disabled={isLoading || !selectedDate} style={styles.submitButton}>
           {isLoading ? t("submitting") : t("submitRequest")}
         </Button>
       </KeyboardAwareScrollViewCompat>

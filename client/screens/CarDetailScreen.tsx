@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, ScrollView, Pressable, Dimensions, Alert, Modal, TextInput } from "react-native";
+import { View, StyleSheet, ScrollView, Pressable, Dimensions, Alert, Modal, TextInput, Share, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -117,6 +117,48 @@ export default function CarDetailScreen() {
     }
   };
 
+  const handleShare = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      const shareMessage = isRTL 
+        ? `${car.title}\n${car.price.toLocaleString()} جنيه\n${car.city}\n\nشاهد الإعلان على عربتي`
+        : `${car.title}\n${car.price.toLocaleString()} SDG\n${car.city}\n\nView on Arabaty`;
+      
+      await Share.share({
+        message: shareMessage,
+        title: car.title,
+      });
+    } catch (error) {
+      console.error("Share error:", error);
+    }
+  };
+
+  const handleCallSeller = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const sellerPhone = "+249123456789";
+    Linking.openURL(`tel:${sellerPhone}`);
+  };
+
+  const handleWhatsAppSeller = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const sellerPhone = "+249123456789";
+    const message = isRTL 
+      ? `مرحباً، أريد الاستفسار عن السيارة: ${car.title}` 
+      : `Hello, I'm interested in the car: ${car.title}`;
+    const whatsappUrl = `whatsapp://send?phone=${sellerPhone}&text=${encodeURIComponent(message)}`;
+    const webWhatsappUrl = `https://wa.me/${sellerPhone.replace('+', '')}?text=${encodeURIComponent(message)}`;
+    
+    const canOpen = await Linking.canOpenURL(whatsappUrl);
+    if (canOpen) {
+      Linking.openURL(whatsappUrl);
+    } else {
+      const canOpenWeb = await Linking.canOpenURL(webWhatsappUrl);
+      if (canOpenWeb) {
+        Linking.openURL(webWhatsappUrl);
+      }
+    }
+  };
+
   const specs = [
     { labelKey: "year", value: car.year.toString(), icon: "calendar" as const },
     { labelKey: "mileage", value: `${car.mileage?.toLocaleString() || "N/A"} ${t("km")}`, icon: "activity" as const },
@@ -170,7 +212,7 @@ export default function CarDetailScreen() {
           <View style={[styles.headerActions, { top: insets.top + Spacing.sm }]}>
             <Pressable
               style={styles.headerActionButton}
-              onPress={() => Haptics.selectionAsync()}
+              onPress={handleShare}
             >
               <Feather name="share" size={20} color="#FFFFFF" />
             </Pressable>
@@ -246,12 +288,20 @@ export default function CarDetailScreen() {
                   <ThemedText type="small" style={[{ marginLeft: isRTL ? 0 : Spacing.xs, marginRight: isRTL ? Spacing.xs : 0 }, isRTL && styles.rtlText]}>4.8 (24 {t("reviews")})</ThemedText>
                 </View>
               </View>
-              <Pressable
-                style={[styles.callButton, { backgroundColor: theme.success }]}
-                onPress={handleContact}
-              >
-                <Feather name="phone" size={18} color="#FFFFFF" />
-              </Pressable>
+              <View style={[styles.sellerButtons, isRTL && styles.sellerButtonsRTL]}>
+                <Pressable
+                  style={[styles.callButton, { backgroundColor: theme.success }]}
+                  onPress={handleCallSeller}
+                >
+                  <Feather name="phone" size={18} color="#FFFFFF" />
+                </Pressable>
+                <Pressable
+                  style={[styles.callButton, { backgroundColor: "#25D366" }]}
+                  onPress={handleWhatsAppSeller}
+                >
+                  <Feather name="message-circle" size={18} color="#FFFFFF" />
+                </Pressable>
+              </View>
             </View>
           </View>
         </View>
@@ -482,6 +532,13 @@ const styles = StyleSheet.create({
     marginTop: Spacing.xs,
   },
   ratingRowRTL: {
+    flexDirection: "row-reverse",
+  },
+  sellerButtons: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+  },
+  sellerButtonsRTL: {
     flexDirection: "row-reverse",
   },
   callButton: {
