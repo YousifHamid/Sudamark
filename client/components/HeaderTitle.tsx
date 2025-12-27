@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, Pressable, Text } from "react-native";
+import { View, StyleSheet, Pressable, Text, Alert } from "react-native";
 import { Image } from "expo-image";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -8,16 +8,32 @@ import * as Haptics from "expo-haptics";
 
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/contexts/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 export function HeaderTitle() {
   const { t, isRTL } = useLanguage();
   const { theme } = useTheme();
+  const { user, isAuthenticated } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleSellPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (!isAuthenticated) {
+      Alert.alert(
+        isRTL ? "تسجيل الدخول مطلوب" : "Login Required",
+        isRTL ? "يجب تسجيل الدخول لإضافة إعلان" : "Please login to post a listing",
+        [
+          { text: isRTL ? "إلغاء" : "Cancel", style: "cancel" },
+          { 
+            text: isRTL ? "تسجيل الدخول" : "Login", 
+            onPress: () => navigation.navigate("Login" as any)
+          }
+        ]
+      );
+      return;
+    }
     navigation.navigate("PostCar");
   };
 

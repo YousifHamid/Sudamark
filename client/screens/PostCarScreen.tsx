@@ -36,12 +36,6 @@ export default function PostCarScreen() {
   const { user } = useAuth();
   const { addCar } = useCars();
 
-  React.useEffect(() => {
-    if (!user) {
-      navigation.replace("Login");
-    }
-  }, [user, navigation]);
-
   const [step, setStep] = useState<ScreenStep>("form");
   const [listingStatus, setListingStatus] = useState<ListingStatus | null>(null);
   const [images, setImages] = useState<string[]>([]);
