@@ -19,20 +19,10 @@
           <h1 class="text-4xl font-bold text-orange-500 mb-2">ARABATY</h1>
           <p class="text-gray-400">لوحة تحكم المدير</p>
         </div>
-        <div id="setup-form" class="hidden">
-          <h2 class="text-xl font-semibold mb-4 text-center">إنشاء حساب المدير</h2>
-          <input type="text" id="setup-name" placeholder="الاسم" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-4 focus:outline-none focus:border-orange-500">
-          <input type="email" id="setup-email" placeholder="البريد الإلكتروني" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-4 focus:outline-none focus:border-orange-500">
-          <input type="password" id="setup-password" placeholder="كلمة المرور" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-4 focus:outline-none focus:border-orange-500">
-          <button onclick="setupAdmin()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition">إنشاء الحساب</button>
-        </div>
         <div id="login-form">
           <input type="email" id="login-email" placeholder="البريد الإلكتروني" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-4 focus:outline-none focus:border-orange-500">
           <input type="password" id="login-password" placeholder="كلمة المرور" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-4 focus:outline-none focus:border-orange-500">
           <button onclick="login()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition">تسجيل الدخول</button>
-          <p class="text-center mt-4 text-gray-500 text-sm">
-            <a href="#" onclick="showSetup()" class="text-orange-400 hover:underline">إنشاء حساب مدير جديد</a>
-          </p>
         </div>
         <p id="login-error" class="text-red-500 text-center mt-4 hidden"></p>
       </div>
@@ -247,27 +237,6 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Request failed');
       return data;
-    }
-
-    function showSetup() {
-      document.getElementById('login-form').classList.add('hidden');
-      document.getElementById('setup-form').classList.remove('hidden');
-    }
-
-    async function setupAdmin() {
-      try {
-        const name = document.getElementById('setup-name').value;
-        const email = document.getElementById('setup-email').value;
-        const password = document.getElementById('setup-password').value;
-        const result = await api('/api/admin/setup', { method: 'POST', body: JSON.stringify({ name, email, password }) });
-        token = result.token;
-        adminData = result.admin;
-        localStorage.setItem('adminToken', token);
-        localStorage.setItem('adminData', JSON.stringify(adminData));
-        showDashboard();
-      } catch (err) {
-        showError(err.message);
-      }
     }
 
     async function login() {
