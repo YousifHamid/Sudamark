@@ -32,9 +32,15 @@ export default function PostCarScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { user } = useAuth();
   const { addCar } = useCars();
+
+  React.useEffect(() => {
+    if (!user) {
+      navigation.replace("Login");
+    }
+  }, [user, navigation]);
 
   const [step, setStep] = useState<ScreenStep>("form");
   const [listingStatus, setListingStatus] = useState<ListingStatus | null>(null);
