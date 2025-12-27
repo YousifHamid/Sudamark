@@ -230,7 +230,28 @@ function adminAuthMiddleware(req: AuthRequest, res: Response, next: NextFunction
   }
 }
 
+async function ensureDefaultAdmin() {
+  try {
+    const [existingAdmin] = await db.select().from(admins).limit(1);
+    if (!existingAdmin) {
+      const passwordHash = await bcrypt.hash("#%#Ara@26%#%", 12);
+      await db.insert(admins).values({
+        email: "arab",
+        passwordHash,
+        name: "Admin",
+        role: "super_admin",
+        isActive: true,
+      });
+      console.log("[ADMIN] Default admin created: arab");
+    }
+  } catch (error) {
+    console.error("[ADMIN] Error creating default admin:", error);
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  await ensureDefaultAdmin();
+
   app.get("/api/health", (_req: Request, res: Response) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
@@ -1095,36 +1116,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/setup", async (req: Request, res: Response) => {
-    try {
-      const [existingAdmin] = await db.select().from(admins).limit(1);
-      if (existingAdmin) {
-        return res.status(400).json({ error: "Admin already exists" });
-      }
-      
-      const { email, password, name } = req.body;
-      const passwordHash = await bcrypt.hash(password, 10);
-      
-      const [newAdmin] = await db.insert(admins).values({
-        email,
-        passwordHash,
-        name,
-        role: "superadmin",
-        isActive: true,
-      }).returning();
-      
-      const token = jwt.sign(
-        { id: newAdmin.id, email: newAdmin.email, role: newAdmin.role, isAdmin: true },
-        JWT_SECRET,
-        { expiresIn: "7d" }
-      );
-      
-      res.json({ admin: { id: newAdmin.id, email: newAdmin.email, name: newAdmin.name }, token });
-    } catch (error) {
-      console.error("Admin setup error:", error);
-      res.status(500).json({ error: "Failed to create admin" });
-    }
-  });
 
   // Buyer Offers API
   app.post("/api/offers", authMiddleware, async (req: AuthRequest, res: Response) => {
