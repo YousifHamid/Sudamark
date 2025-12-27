@@ -19,10 +19,10 @@ export const translations: Translations = {
   skip: { ar: "تخطي", en: "Skip" },
   next: { ar: "التالي", en: "Next" },
   getStarted: { ar: "ابدأ الآن", en: "Get Started" },
-  welcomeTitle: { ar: "أول سوق سيارات إلكتروني في السودان", en: "Sudan's First Online Car Marketplace" },
+  welcomeTitle: { ar: "عربتي يجمع الكل..بيع واشتري بسهولة", en: "Arabaty Brings Everyone Together..Buy & Sell Easily" },
   welcomeSubtitle: { ar: "بيع وشراء عربيتك بكل سهولة وأمان!", en: "Buy and sell your car easily and safely!" },
-  welcomeFeature1: { ar: "تصفح آلاف الإعلانات العربية الموثوقة", en: "Browse thousands of verified Arabic ads" },
-  welcomeFeature2: { ar: "تواصل مع البائع مباشرة عبر التطبيق", en: "Contact the seller directly through the app" },
+  welcomeFeature1: { ar: "تصفح وتواصل مع البائعين مباشرة", en: "Browse and connect with sellers directly" },
+  welcomeFeature2: { ar: "فتش حوليك مكانيكي وكهربائي حتى محامي تسجيل عربيتك", en: "Find mechanics, electricians, even lawyers for your car registration" },
   
   // Official Sponsor
   officialSponsor: { ar: "الراعي الرسمي لهذا الشهر", en: "Official Sponsor of the Month" },
