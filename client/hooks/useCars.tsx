@@ -196,6 +196,23 @@ export function CarsProvider({ children }: { children: ReactNode }) {
 
   const addCar = async (carData: Omit<Car, "id" | "createdAt">): Promise<Car | null> => {
     try {
+      const processedImages = await Promise.all(
+        (carData.images || []).map(async (img) => {
+          if (img.startsWith("file://")) {
+            try {
+              const base64 = await FileSystem.readAsStringAsync(img, {
+                encoding: "base64",
+              });
+              return `data:image/jpeg;base64,${base64}`;
+            } catch (e) {
+              console.error("Error converting image:", e);
+              return img;
+            }
+          }
+          return img;
+        })
+      );
+
       const response = await apiRequest("POST", "/api/cars", {
         make: carData.make,
         model: carData.model,
@@ -204,10 +221,10 @@ export function CarsProvider({ children }: { children: ReactNode }) {
         mileage: carData.mileage,
         city: carData.city,
         description: carData.description,
-        images: carData.images,
+        images: processedImages,
         category: carData.category,
       });
-      
+
       const newCar = await response.json();
       const formattedCar: Car = {
         id: newCar.id,
@@ -224,7 +241,7 @@ export function CarsProvider({ children }: { children: ReactNode }) {
         sellerId: newCar.userId,
         createdAt: newCar.createdAt,
       };
-      
+
       setCars(prev => [formattedCar, ...prev]);
       return formattedCar;
     } catch (error) {
@@ -237,13 +254,13 @@ export function CarsProvider({ children }: { children: ReactNode }) {
     try {
       const baseUrl = getApiUrl();
       const params = new URLSearchParams();
-      
+
       if (filters.category) params.append("category", filters.category);
       if (filters.city) params.append("city", filters.city);
       if (filters.minPrice) params.append("minPrice", filters.minPrice.toString());
       if (filters.maxPrice) params.append("maxPrice", filters.maxPrice.toString());
       if (filters.search) params.append("search", filters.search);
-      
+
       const response = await fetch(`${baseUrl}api/cars?${params.toString()}`);
       if (response.ok) {
         const apiCars = await response.json();
@@ -274,8 +291,8 @@ export function CarsProvider({ children }: { children: ReactNode }) {
         if (filters.search) {
           const searchLower = filters.search.toLowerCase();
           if (!car.title.toLowerCase().includes(searchLower) &&
-              !car.make.toLowerCase().includes(searchLower) &&
-              !car.model.toLowerCase().includes(searchLower)) {
+            !car.make.toLowerCase().includes(searchLower) &&
+            !car.model.toLowerCase().includes(searchLower)) {
             return false;
           }
         }
@@ -291,7 +308,7 @@ export function CarsProvider({ children }: { children: ReactNode }) {
         : [...favorites, carId];
       setFavorites(newFavorites);
       await AsyncStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(newFavorites));
-      
+
       if (token) {
         try {
           if (favorites.includes(carId)) {

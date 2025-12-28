@@ -12,6 +12,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 export type ProfileStackParamList = {
   Profile: undefined;
   PrivacyPolicy: undefined;
+  EditProfile: undefined;
 };
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -33,6 +34,14 @@ export default function ProfileStackNavigator() {
               <Feather name="settings" size={22} color={theme.text} />
             </Pressable>
           ),
+        }}
+      />
+      <Stack.Screen
+        name="EditProfile"
+        // @ts-ignore
+        component={require("@/screens/EditProfileScreen").default}
+        options={{
+          headerShown: false,
         }}
       />
       <Stack.Screen

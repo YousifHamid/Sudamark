@@ -101,7 +101,11 @@ export default function ProfileScreen() {
         </View>
         <Pressable
           style={[styles.editButton, { backgroundColor: theme.backgroundSecondary }]}
-          onPress={() => Haptics.selectionAsync()}
+          onPress={() => {
+            Haptics.selectionAsync();
+            // @ts-ignore
+            navigation.navigate("EditProfile");
+          }}
         >
           <Feather name="edit-2" size={18} color={theme.text} />
         </Pressable>

@@ -36,6 +36,9 @@ const SUPPORTED_COUNTRIES: Country[] = [
   { id: "gb", name: "UK", dialCode: "+44", flag: "GB", placeholder: "XXXX XXXXXX", minLength: 10, maxLength: 11 },
   { id: "ca", name: "Canada", dialCode: "+1", flag: "CA", placeholder: "XXX XXX XXXX", minLength: 10, maxLength: 10 },
   { id: "eg", name: "Egypt", dialCode: "+20", flag: "EG", placeholder: "1X XXXX XXXX", minLength: 10, maxLength: 11 },
+  { id: "ie", name: "Ireland", dialCode: "+353", flag: "IE", placeholder: "8X XXX XXXX", minLength: 9, maxLength: 9 },
+  { id: "ly", name: "Libya", dialCode: "+218", flag: "LY", placeholder: "9X XXX XXXX", minLength: 9, maxLength: 9 },
+  { id: "ye", name: "Yemen", dialCode: "+967", flag: "YE", placeholder: "7X XXX XXXX", minLength: 9, maxLength: 9 },
 ];
 
 export default function LoginScreen() {
@@ -76,22 +79,27 @@ export default function LoginScreen() {
 
   const handlePhoneLogin = async () => {
     const cleanNumber = phoneNumber.replace(/\s/g, "");
-    if (cleanNumber.length < selectedCountry.minLength || cleanNumber.length > selectedCountry.maxLength) {
+
+    // For testing ease: allow 4-15 digits
+    if (cleanNumber.length < 4 || cleanNumber.length > 15) {
       setError(t("invalidPhoneNumber"));
       return;
     }
-    
+
     setError("");
     setIsLoading(true);
-    
+
     try {
       const result = await loginWithPhone(cleanNumber, selectedCountry.dialCode);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       if (result.isNewUser) {
         setStep("role");
       }
-    } catch (err) {
-      setError(t("error"));
+    } catch (err: any) {
+      // Show actual server error message if available
+      const serverMessage = err.message || t("error");
+      setError(serverMessage);
+      console.error("Login error:", err);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setIsLoading(false);
@@ -142,7 +150,7 @@ export default function LoginScreen() {
       setError(isRTL ? "تحديد الموقع غير متاح على الويب" : "Location detection not available on web");
       return;
     }
-    
+
     setIsDetectingLocation(true);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -150,14 +158,14 @@ export default function LoginScreen() {
         setError(isRTL ? "لم يتم منح إذن الموقع" : "Location permission not granted");
         return;
       }
-      
+
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
-      
+
       const lat = location.coords.latitude;
       const lng = location.coords.longitude;
-      
+
       if (lat >= 15.4 && lat <= 16.0 && lng >= 32.3 && lng <= 32.7) {
         setUserCity("khartoum");
       } else if (lat >= 15.55 && lat <= 15.75 && lng >= 32.0 && lng <= 32.35) {
@@ -171,7 +179,7 @@ export default function LoginScreen() {
       } else {
         setUserCity("other");
       }
-      
+
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       setError(isRTL ? "فشل تحديد الموقع" : "Failed to detect location");
@@ -231,7 +239,7 @@ export default function LoginScreen() {
                 maxLength={selectedCountry.maxLength + 2}
               />
             </View>
-            
+
             <Button onPress={handlePhoneLogin} disabled={isLoading} style={styles.button}>
               {isLoading ? t("loading") : t("continue")}
             </Button>
@@ -292,7 +300,7 @@ export default function LoginScreen() {
               onChangeText={setName}
               autoFocus
             />
-            
+
             <ThemedText type="small" style={[styles.label, { color: theme.textSecondary, marginTop: Spacing.lg }, isRTL && styles.rtlText]}>
               {isRTL ? "المدينة" : "City"}
             </ThemedText>
@@ -320,7 +328,7 @@ export default function LoginScreen() {
                 </Pressable>
               ) : null}
             </View>
-            
+
             <Modal
               visible={showCityPicker}
               animationType="fade"

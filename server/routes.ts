@@ -9,8 +9,9 @@ import { users, cars, serviceProviders, favorites, sliderImages, admins, otpCode
 import crypto from "crypto";
 import { eq, desc, and, gt, like, or, sql } from "drizzle-orm";
 
+// OpenAI initialization made optional for local dev without keys
 const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY || "dummy-key-for-dev",
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
 });
 
@@ -83,7 +84,7 @@ async function sendMagicLinkEmail(email: string, token: string, magicLink: strin
     console.log(`[MAGIC LINK] Demo mode - no SMTP credentials. Token: ${token}`);
     return false;
   }
-  
+
   try {
     await emailTransporter.sendMail({
       from: `"Arabaty" <${process.env.BREVO_SMTP_LOGIN}>`,
@@ -139,17 +140,17 @@ const ADMIN_BLOCK_DURATION_MS = 15 * 60 * 1000;
 function checkAdminLoginAllowed(ip: string): { allowed: boolean; remainingTime?: number } {
   const now = Date.now();
   const record = adminLoginAttempts.get(ip);
-  
+
   if (!record) return { allowed: true };
-  
+
   if (now < record.blockedUntil) {
     return { allowed: false, remainingTime: Math.ceil((record.blockedUntil - now) / 1000 / 60) };
   }
-  
+
   if (record.count >= ADMIN_MAX_ATTEMPTS && now >= record.blockedUntil) {
     adminLoginAttempts.delete(ip);
   }
-  
+
   return { allowed: true };
 }
 
@@ -157,11 +158,11 @@ function recordAdminLoginFailure(ip: string): void {
   const now = Date.now();
   const record = adminLoginAttempts.get(ip) || { count: 0, blockedUntil: 0 };
   record.count++;
-  
+
   if (record.count >= ADMIN_MAX_ATTEMPTS) {
     record.blockedUntil = now + ADMIN_BLOCK_DURATION_MS;
   }
-  
+
   adminLoginAttempts.set(ip, record);
 }
 
@@ -172,16 +173,16 @@ function clearAdminLoginAttempts(ip: string): void {
 function rateLimit(key: string): boolean {
   const now = Date.now();
   const record = rateLimitMap.get(key);
-  
+
   if (!record || now > record.resetTime) {
     rateLimitMap.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
     return true;
   }
-  
+
   if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
     return false;
   }
-  
+
   record.count++;
   return true;
 }
@@ -200,7 +201,7 @@ function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
   if (!authHeader?.startsWith("Bearer ")) {
     return res.status(401).json({ error: "Authorization required" });
   }
-  
+
   const token = authHeader.substring(7);
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string; phone: string; roles: string[] };
@@ -216,7 +217,7 @@ function adminAuthMiddleware(req: AuthRequest, res: Response, next: NextFunction
   if (!authHeader?.startsWith("Bearer ")) {
     return res.status(401).json({ error: "Admin authorization required" });
   }
-  
+
   const token = authHeader.substring(7);
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string; role: string; isAdmin: boolean };
@@ -259,32 +260,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/send-magic-link", async (req: Request, res: Response) => {
     try {
       const { email, phone, countryCode } = req.body;
-      
+
       if (!email || !phone) {
         return res.status(400).json({ error: "Email and phone number are required" });
       }
-      
+
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         return res.status(400).json({ error: "Invalid email format" });
       }
-      
+
       const fullPhone = `${countryCode || "+249"}${phone.replace(/\s/g, "")}`;
-      
+
       const combinedRateKey = `magic:${email}:${fullPhone}`;
       if (!rateLimit(combinedRateKey)) {
         return res.status(429).json({ error: "Too many requests. Please try again later." });
       }
-      
+
       const token = crypto.randomBytes(32).toString("hex");
       const expiresAt = new Date(Date.now() + MAGIC_LINK_EXPIRY_MINUTES * 60 * 1000);
-      
+
       await db.delete(magicTokens).where(and(
         eq(magicTokens.email, email),
         eq(magicTokens.phone, fullPhone),
         eq(magicTokens.used, false)
       ));
-      
+
       await db.insert(magicTokens).values({
         email,
         phone: fullPhone,
@@ -292,24 +293,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         expiresAt,
         used: false,
       });
-      
-      const baseUrl = process.env.EXPO_PUBLIC_DOMAIN 
+
+      const baseUrl = process.env.EXPO_PUBLIC_DOMAIN
         ? `https://${process.env.EXPO_PUBLIC_DOMAIN}`
         : "http://localhost:5000";
       const magicLink = `${baseUrl}/api/auth/verify-magic-link?token=${token}`;
-      
+
       const emailSent = await sendMagicLinkEmail(email, token, magicLink);
-      
+
       if (emailSent) {
         console.log(`[MAGIC LINK] Email sent to ${email}`);
-        res.json({ 
-          success: true, 
+        res.json({
+          success: true,
           message: "Magic link sent to email"
         });
       } else {
         console.log(`[MAGIC LINK] Demo mode - Token: ${token}`);
-        res.json({ 
-          success: true, 
+        res.json({
+          success: true,
           message: "Magic link sent to email",
           demoToken: token
         });
@@ -323,11 +324,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/auth/verify-magic-link", async (req: Request, res: Response) => {
     try {
       const { token } = req.query;
-      
+
       if (!token || typeof token !== "string") {
         return res.status(400).json({ error: "Token is required" });
       }
-      
+
       const [tokenRecord] = await db.select().from(magicTokens)
         .where(and(
           eq(magicTokens.token, token),
@@ -335,24 +336,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           gt(magicTokens.expiresAt, new Date())
         ))
         .limit(1);
-      
+
       if (!tokenRecord) {
         return res.status(400).json({ error: "Invalid or expired magic link" });
       }
-      
+
       await db.update(magicTokens)
         .set({ used: true })
         .where(eq(magicTokens.id, tokenRecord.id));
-      
+
       let [existingUser] = await db.select().from(users)
         .where(eq(users.email, tokenRecord.email))
         .limit(1);
-      
+
       if (!existingUser) {
         [existingUser] = await db.select().from(users)
           .where(eq(users.phone, tokenRecord.phone))
           .limit(1);
-          
+
         if (existingUser) {
           await db.update(users)
             .set({ email: tokenRecord.email, emailVerified: true })
@@ -361,30 +362,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
           existingUser.emailVerified = true;
         }
       }
-      
+
       if (existingUser) {
         if (!existingUser.emailVerified) {
           await db.update(users)
             .set({ emailVerified: true })
             .where(eq(users.id, existingUser.id));
         }
-        
+
         const jwtToken = jwt.sign(
           { id: existingUser.id, phone: existingUser.phone, roles: existingUser.roles },
           JWT_SECRET,
           { expiresIn: "30d" }
         );
-        
+
         const appDeepLink = `arabaty://auth/callback?token=${jwtToken}&isNewUser=false`;
         return res.redirect(appDeepLink);
       }
-      
+
       const tempToken = jwt.sign(
         { email: tokenRecord.email, phone: tokenRecord.phone, type: "registration" },
         JWT_SECRET,
         { expiresIn: "1h" }
       );
-      
+
       const appDeepLink = `arabaty://auth/callback?tempToken=${tempToken}&isNewUser=true&email=${encodeURIComponent(tokenRecord.email)}&phone=${encodeURIComponent(tokenRecord.phone)}`;
       return res.redirect(appDeepLink);
     } catch (error) {
@@ -396,11 +397,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/verify-token", async (req: Request, res: Response) => {
     try {
       const { token } = req.body;
-      
+
       if (!token) {
         return res.status(400).json({ error: "Token is required" });
       }
-      
+
       const [tokenRecord] = await db.select().from(magicTokens)
         .where(and(
           eq(magicTokens.token, token),
@@ -408,51 +409,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
           gt(magicTokens.expiresAt, new Date())
         ))
         .limit(1);
-      
+
       if (!tokenRecord) {
         return res.status(400).json({ error: "Invalid or expired token" });
       }
-      
+
       await db.update(magicTokens)
         .set({ used: true })
         .where(eq(magicTokens.id, tokenRecord.id));
-      
+
       let [existingUser] = await db.select().from(users)
         .where(eq(users.email, tokenRecord.email))
         .limit(1);
-      
+
       if (!existingUser) {
         [existingUser] = await db.select().from(users)
           .where(eq(users.phone, tokenRecord.phone))
           .limit(1);
-          
+
         if (existingUser) {
           await db.update(users)
             .set({ email: tokenRecord.email, emailVerified: true })
             .where(eq(users.id, existingUser.id));
         }
       }
-      
+
       if (existingUser) {
         if (!existingUser.emailVerified) {
           await db.update(users)
             .set({ emailVerified: true })
             .where(eq(users.id, existingUser.id));
         }
-        
+
         const jwtToken = jwt.sign(
           { id: existingUser.id, phone: existingUser.phone, roles: existingUser.roles },
           JWT_SECRET,
           { expiresIn: "30d" }
         );
-        
+
         return res.json({ user: existingUser, token: jwtToken, isNewUser: false });
       }
-      
-      res.json({ 
-        isNewUser: true, 
-        email: tokenRecord.email, 
-        phone: tokenRecord.phone 
+
+      res.json({
+        isNewUser: true,
+        email: tokenRecord.email,
+        phone: tokenRecord.phone
       });
     } catch (error) {
       console.error("Verify token error:", error);
@@ -463,15 +464,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/phone-login", async (req: Request, res: Response) => {
     try {
       const { phone, countryCode } = req.body;
-      
+
       if (!phone) {
         return res.status(400).json({ error: "Phone number is required" });
       }
-      
+
       const [existingUser] = await db.select().from(users)
         .where(eq(users.phone, phone))
         .limit(1);
-      
+
       if (existingUser) {
         const token = jwt.sign(
           { id: existingUser.id, phone: existingUser.phone, roles: existingUser.roles },
@@ -480,7 +481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
         return res.json({ user: existingUser, token, isNewUser: false });
       }
-      
+
       res.json({ isNewUser: true, phone });
     } catch (error) {
       console.error("Phone login error:", error);
@@ -494,23 +495,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!phone) {
         return res.status(400).json({ error: "Phone number is required" });
       }
-      
+
       const fullPhone = `${countryCode || "+249"}${phone}`;
-      
+
       if (!rateLimit(`otp:${fullPhone}`)) {
         return res.status(429).json({ error: "Too many requests. Please try again later." });
       }
       const isDemoMode = process.env.NODE_ENV !== "production" || process.env.OTP_DEMO_MODE === "true";
-      
+
       let otpCode: string;
       if (isDemoMode) {
         otpCode = "123456";
       } else {
         otpCode = generateOTP();
       }
-      
+
       const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
-      
+
       await db.delete(otpCodes).where(eq(otpCodes.phone, fullPhone));
       await db.insert(otpCodes).values({
         phone: fullPhone,
@@ -519,11 +520,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         verified: false,
         attempts: 0,
       });
-      
+
       if (!isDemoMode && process.env.TWILIO_ACCOUNT_SID) {
         console.log(`[OTP] Would send ${otpCode} to ${fullPhone} via Twilio`);
       }
-      
+
       res.json({ success: true, message: "OTP sent successfully" });
     } catch (error) {
       console.error("Send OTP error:", error);
@@ -535,11 +536,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { phone, otp, countryCode } = req.body;
       const fullPhone = `${countryCode || "+249"}${phone}`;
-      
+
       if (!rateLimit(`verify:${fullPhone}`)) {
         return res.status(429).json({ error: "Too many attempts. Please try again later." });
       }
-      
+
       const [otpRecord] = await db.select().from(otpCodes)
         .where(and(
           eq(otpCodes.phone, fullPhone),
@@ -548,28 +549,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ))
         .orderBy(desc(otpCodes.createdAt))
         .limit(1);
-      
+
       if (!otpRecord) {
         return res.status(400).json({ error: "OTP expired or not found" });
       }
-      
+
       if (otpRecord.attempts && otpRecord.attempts >= MAX_OTP_ATTEMPTS) {
         return res.status(400).json({ error: "Too many attempts. Request a new OTP" });
       }
-      
+
       if (otpRecord.code !== otp) {
         await db.update(otpCodes)
           .set({ attempts: (otpRecord.attempts || 0) + 1 })
           .where(eq(otpCodes.id, otpRecord.id));
         return res.status(400).json({ error: "Invalid OTP" });
       }
-      
+
       await db.update(otpCodes)
         .set({ verified: true })
         .where(eq(otpCodes.id, otpRecord.id));
-      
+
       const [existingUser] = await db.select().from(users).where(eq(users.phone, fullPhone)).limit(1);
-      
+
       if (existingUser) {
         const token = jwt.sign(
           { id: existingUser.id, phone: existingUser.phone, roles: existingUser.roles },
@@ -578,7 +579,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
         return res.json({ user: existingUser, token, isNewUser: false });
       }
-      
+
       res.json({ isNewUser: true, phone: fullPhone });
     } catch (error) {
       console.error("Verify OTP error:", error);
@@ -589,19 +590,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/register", async (req: Request, res: Response) => {
     try {
       const { phone, email, name, roles, countryCode, city } = req.body;
-      
+
       const [existingUser] = await db.select().from(users).where(eq(users.phone, phone)).limit(1);
       if (existingUser) {
         return res.status(400).json({ error: "User already exists" });
       }
-      
+
       if (email) {
         const [existingEmail] = await db.select().from(users).where(eq(users.email, email)).limit(1);
         if (existingEmail) {
           return res.status(400).json({ error: "Email already registered" });
         }
       }
-      
+
       const [newUser] = await db.insert(users).values({
         phone,
         email: email || null,
@@ -611,13 +612,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         countryCode: countryCode || "+249",
         city: city || null,
       }).returning();
-      
+
       const token = jwt.sign(
         { id: newUser.id, phone: newUser.phone, roles: newUser.roles },
         JWT_SECRET,
         { expiresIn: "30d" }
       );
-      
+
       res.json({ user: newUser, token });
     } catch (error) {
       console.error("Register error:", error);
@@ -653,9 +654,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/cars", async (req: Request, res: Response) => {
     try {
       const { category, city, minPrice, maxPrice, search } = req.query;
-      
+
       let conditions = [eq(cars.isActive, true)];
-      
+
       if (category && typeof category === "string") {
         conditions.push(eq(cars.category, category));
       }
@@ -675,7 +676,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           like(cars.description, `%${search}%`)
         )!);
       }
-      
+
       const allCars = await db.select().from(cars)
         .where(and(...conditions))
         .orderBy(desc(cars.createdAt));
@@ -705,13 +706,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!car) {
         return res.status(404).json({ error: "Car not found" });
       }
-      
+
       const [owner] = await db.select({
         id: users.id,
         name: users.name,
         phone: users.phone,
       }).from(users).where(eq(users.id, car.userId));
-      
+
       res.json({ ...car, owner });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch car" });
@@ -733,14 +734,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const [existingCar] = await db.select().from(cars).where(eq(cars.id, id));
-      
+
       if (!existingCar) {
         return res.status(404).json({ error: "Car not found" });
       }
       if (existingCar.userId !== req.user!.id) {
         return res.status(403).json({ error: "Not authorized to edit this car" });
       }
-      
+
       const [updatedCar] = await db.update(cars)
         .set({ ...req.body, updatedAt: new Date() })
         .where(eq(cars.id, id))
@@ -755,14 +756,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const [existingCar] = await db.select().from(cars).where(eq(cars.id, id));
-      
+
       if (!existingCar) {
         return res.status(404).json({ error: "Car not found" });
       }
       if (existingCar.userId !== req.user!.id) {
         return res.status(403).json({ error: "Not authorized to delete this car" });
       }
-      
+
       await db.delete(cars).where(eq(cars.id, id));
       res.json({ success: true });
     } catch (error) {
@@ -785,18 +786,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { type, city } = req.query;
       let conditions: any[] = [];
-      
+
       if (type && typeof type === "string") {
         conditions.push(eq(serviceProviders.type, type));
       }
       if (city && typeof city === "string") {
         conditions.push(eq(serviceProviders.city, city));
       }
-      
+
       let query = conditions.length > 0
         ? db.select().from(serviceProviders).where(and(...conditions))
         : db.select().from(serviceProviders);
-      
+
       const providers = await query.orderBy(desc(serviceProviders.rating));
       res.json(providers);
     } catch (error) {
@@ -846,14 +847,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/favorites", authMiddleware, async (req: AuthRequest, res: Response) => {
     try {
       const { carId } = req.body;
-      
+
       const [existing] = await db.select().from(favorites)
         .where(and(eq(favorites.userId, req.user!.id), eq(favorites.carId, carId)));
-      
+
       if (existing) {
         return res.status(400).json({ error: "Already in favorites" });
       }
-      
+
       const [newFavorite] = await db.insert(favorites)
         .values({ userId: req.user!.id, carId })
         .returning();
@@ -878,43 +879,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
       const { email, password } = req.body;
-      
+
       const loginCheck = checkAdminLoginAllowed(clientIp);
       if (!loginCheck.allowed) {
-        return res.status(403).json({ 
-          error: `تم حظر IP الخاص بك لمدة ${loginCheck.remainingTime} دقيقة بسبب محاولات تسجيل دخول فاشلة متعددة` 
+        return res.status(403).json({
+          error: `تم حظر IP الخاص بك لمدة ${loginCheck.remainingTime} دقيقة بسبب محاولات تسجيل دخول فاشلة متعددة`
         });
       }
-      
+
       if (!rateLimit(`admin:${clientIp}`)) {
         return res.status(429).json({ error: "طلبات كثيرة جداً. يرجى المحاولة لاحقاً." });
       }
-      
+
       const [admin] = await db.select().from(admins)
         .where(and(eq(admins.email, email), eq(admins.isActive, true)));
-      
+
       if (!admin) {
         recordAdminLoginFailure(clientIp);
         console.log(`[ADMIN SECURITY] Failed login attempt from IP: ${clientIp} - Invalid email`);
         return res.status(401).json({ error: "بيانات الدخول غير صحيحة" });
       }
-      
+
       const isValidPassword = await bcrypt.compare(password, admin.passwordHash);
       if (!isValidPassword) {
         recordAdminLoginFailure(clientIp);
         console.log(`[ADMIN SECURITY] Failed login attempt from IP: ${clientIp} - Invalid password`);
         return res.status(401).json({ error: "بيانات الدخول غير صحيحة" });
       }
-      
+
       clearAdminLoginAttempts(clientIp);
       console.log(`[ADMIN SECURITY] Successful login from IP: ${clientIp} for admin: ${admin.email}`);
-      
+
       const token = jwt.sign(
         { id: admin.id, email: admin.email, role: admin.role, isAdmin: true },
         JWT_SECRET,
         { expiresIn: "7d" }
       );
-      
+
       res.json({ admin: { id: admin.id, email: admin.email, name: admin.name, role: admin.role }, token });
     } catch (error) {
       console.error("Admin login error:", error);
@@ -928,7 +929,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const [carsCount] = await db.select({ count: sql<number>`count(*)` }).from(cars);
       const [activeCarsCount] = await db.select({ count: sql<number>`count(*)` }).from(cars).where(eq(cars.isActive, true));
       const [providersCount] = await db.select({ count: sql<number>`count(*)` }).from(serviceProviders);
-      
+
       res.json({
         totalUsers: Number(usersCount.count),
         totalCars: Number(carsCount.count),
@@ -971,7 +972,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/cars", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
     try {
       const { make, model, year, price, mileage, city, transmission, fuelType, description, userId } = req.body;
-      
+
       let ownerId = userId;
       if (!ownerId) {
         const [adminUser] = await db.select().from(users).where(eq(users.name, "Admin")).limit(1);
@@ -986,7 +987,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ownerId = newAdmin.id;
         }
       }
-      
+
       const [newCar] = await db.insert(cars).values({
         userId: ownerId,
         make,
@@ -1013,7 +1014,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { isActive, isFeatured, make, model, year, price, mileage, city, transmission, fuelType, description } = req.body;
-      
+
       const updateData: Record<string, any> = { updatedAt: new Date() };
       if (isActive !== undefined) updateData.isActive = isActive;
       if (isFeatured !== undefined) updateData.isFeatured = isFeatured;
@@ -1026,7 +1027,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (transmission) updateData.transmission = transmission;
       if (fuelType) updateData.fuelType = fuelType;
       if (description !== undefined) updateData.description = description;
-      
+
       const [updatedCar] = await db.update(cars)
         .set(updateData)
         .where(eq(cars.id, id))
@@ -1122,18 +1123,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { carId, offerPrice, message } = req.body;
       const buyerId = req.user!.id;
-      
+
       // Get car to find seller
       const [car] = await db.select().from(cars).where(eq(cars.id, carId));
       if (!car) {
         return res.status(404).json({ error: "Car not found" });
       }
-      
+
       // Check if buyer is not the seller
       if (car.userId === buyerId) {
         return res.status(400).json({ error: "Cannot make an offer on your own car" });
       }
-      
+
       const [newOffer] = await db.insert(buyerOffers).values({
         carId,
         buyerId,
@@ -1141,7 +1142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message,
         status: "pending",
       }).returning();
-      
+
       res.json(newOffer);
     } catch (error) {
       console.error("Create offer error:", error);
@@ -1167,11 +1168,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get all cars owned by seller
       const sellerCars = await db.select().from(cars).where(eq(cars.userId, sellerId));
       const carIds = sellerCars.map(c => c.id);
-      
+
       if (carIds.length === 0) {
         return res.json([]);
       }
-      
+
       // Get offers for seller's cars
       const offers = await db.select({
         offer: buyerOffers,
@@ -1183,7 +1184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .innerJoin(users, eq(buyerOffers.buyerId, users.id))
         .where(sql`${buyerOffers.carId} = ANY(${sql.raw(`ARRAY[${carIds.map(id => `'${id}'`).join(',')}]::varchar[]`)})`)
         .orderBy(desc(buyerOffers.createdAt));
-      
+
       res.json(offers);
     } catch (error) {
       console.error("Fetch received offers error:", error);
@@ -1196,23 +1197,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const { status } = req.body;
       const sellerId = req.user!.id;
-      
+
       // Verify the offer belongs to a car owned by the seller
       const [offer] = await db.select().from(buyerOffers).where(eq(buyerOffers.id, id));
       if (!offer) {
         return res.status(404).json({ error: "Offer not found" });
       }
-      
+
       const [car] = await db.select().from(cars).where(eq(cars.id, offer.carId));
       if (!car || car.userId !== sellerId) {
         return res.status(403).json({ error: "Not authorized to update this offer" });
       }
-      
+
       const [updatedOffer] = await db.update(buyerOffers)
         .set({ status })
         .where(eq(buyerOffers.id, id))
         .returning();
-      
+
       res.json(updatedOffer);
     } catch (error) {
       res.status(500).json({ error: "Failed to update offer status" });
@@ -1224,13 +1225,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { carId, message } = req.body;
       const buyerId = req.user!.id;
-      
+
       // Get car to find seller
       const [car] = await db.select().from(cars).where(eq(cars.id, carId));
       if (!car) {
         return res.status(404).json({ error: "Car not found" });
       }
-      
+
       const [newRequest] = await db.insert(inspectionRequests).values({
         carId,
         buyerId,
@@ -1238,7 +1239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message,
         status: "pending",
       }).returning();
-      
+
       res.json(newRequest);
     } catch (error) {
       console.error("Create inspection request error:", error);
@@ -1259,7 +1260,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .innerJoin(users, eq(inspectionRequests.buyerId, users.id))
         .where(eq(inspectionRequests.sellerId, sellerId))
         .orderBy(desc(inspectionRequests.createdAt));
-      
+
       res.json(requests);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch inspection requests" });
@@ -1271,17 +1272,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const { status, sellerResponse } = req.body;
       const sellerId = req.user!.id;
-      
+
       const [request] = await db.select().from(inspectionRequests).where(eq(inspectionRequests.id, id));
       if (!request || request.sellerId !== sellerId) {
         return res.status(403).json({ error: "Not authorized to respond to this request" });
       }
-      
+
       const [updatedRequest] = await db.update(inspectionRequests)
         .set({ status, sellerResponse, updatedAt: new Date() })
         .where(eq(inspectionRequests.id, id))
         .returning();
-      
+
       res.json(updatedRequest);
     } catch (error) {
       res.status(500).json({ error: "Failed to update inspection request" });
@@ -1289,7 +1290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Payment System APIs
-  const FREE_LISTING_LIMIT = 1000;
+  const FREE_LISTING_LIMIT = 50000;
   const LISTING_FEE = 10000;
 
   app.get("/api/listings/status", async (req: Request, res: Response) => {
@@ -1297,7 +1298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const [result] = await db.select({ count: sql<number>`count(*)` }).from(cars);
       const totalListings = Number(result?.count || 0);
       const requiresPayment = totalListings >= FREE_LISTING_LIMIT;
-      
+
       res.json({
         totalListings,
         freeLimit: FREE_LISTING_LIMIT,
@@ -1314,20 +1315,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { carId, trxNo, amount, paidAt } = req.body;
       const userId = req.user!.id;
-      
+
       if (!trxNo || !amount || !paidAt) {
         return res.status(400).json({ error: "Transaction details required" });
       }
-      
+
       if (amount < LISTING_FEE) {
         return res.status(400).json({ error: `Minimum payment is ${LISTING_FEE} SDG` });
       }
-      
+
       const [existingPayment] = await db.select().from(payments).where(eq(payments.trxNo, trxNo));
       if (existingPayment) {
         return res.status(400).json({ error: "Transaction ID already used" });
       }
-      
+
       const [newPayment] = await db.insert(payments).values({
         userId,
         carId,
@@ -1336,22 +1337,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         paidAt,
         status: "pending",
       }).returning();
-      
+
       const [autoApproveSetting] = await db.select().from(appSettings).where(eq(appSettings.key, "auto_approve_payments"));
       if (autoApproveSetting?.value === "true") {
         await db.update(payments)
           .set({ status: "approved", approvedAt: new Date() })
           .where(eq(payments.id, newPayment.id));
-        
+
         if (carId) {
           await db.update(cars)
             .set({ isActive: true })
             .where(eq(cars.id, carId));
         }
-        
+
         return res.json({ ...newPayment, status: "approved", message: "تم قبول الدفع تلقائياً" });
       }
-      
+
       res.json({ ...newPayment, message: "تم استلام طلب الدفع. يرجى الانتظار للموافقة" });
     } catch (error) {
       console.error("Create payment error:", error);
@@ -1365,7 +1366,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userPayments = await db.select().from(payments)
         .where(eq(payments.userId, userId))
         .orderBy(desc(payments.createdAt));
-      
+
       res.json(userPayments);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch payments" });
@@ -1384,7 +1385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .leftJoin(users, eq(payments.userId, users.id))
         .leftJoin(cars, eq(payments.carId, cars.id))
         .orderBy(desc(payments.createdAt));
-      
+
       res.json(allPayments);
     } catch (error) {
       console.error("Fetch admin payments error:", error);
@@ -1396,23 +1397,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const adminId = req.admin!.id;
-      
+
       const [payment] = await db.select().from(payments).where(eq(payments.id, id));
       if (!payment) {
         return res.status(404).json({ error: "Payment not found" });
       }
-      
+
       const [updatedPayment] = await db.update(payments)
         .set({ status: "approved", approvedBy: adminId, approvedAt: new Date() })
         .where(eq(payments.id, id))
         .returning();
-      
+
       if (payment.carId) {
         await db.update(cars)
           .set({ isActive: true })
           .where(eq(cars.id, payment.carId));
       }
-      
+
       res.json(updatedPayment);
     } catch (error) {
       res.status(500).json({ error: "Failed to approve payment" });
@@ -1423,12 +1424,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const adminId = req.admin!.id;
-      
+
       const [updatedPayment] = await db.update(payments)
         .set({ status: "rejected", approvedBy: adminId, approvedAt: new Date() })
         .where(eq(payments.id, id))
         .returning();
-      
+
       res.json(updatedPayment);
     } catch (error) {
       res.status(500).json({ error: "Failed to reject payment" });
@@ -1448,9 +1449,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { autoApprove } = req.body;
       const value = autoApprove ? "true" : "false";
-      
+
       const [existing] = await db.select().from(appSettings).where(eq(appSettings.key, "auto_approve_payments"));
-      
+
       if (existing) {
         await db.update(appSettings)
           .set({ value, updatedAt: new Date() })
@@ -1458,7 +1459,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         await db.insert(appSettings).values({ key: "auto_approve_payments", value });
       }
-      
+
       res.json({ autoApprove: value === "true" });
     } catch (error) {
       res.status(500).json({ error: "Failed to update setting" });
@@ -1470,41 +1471,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { code } = req.body;
       const userId = req.user!.id;
-      
+
       if (!code) {
         return res.status(400).json({ error: "Coupon code required", valid: false });
       }
-      
+
       const [coupon] = await db.select().from(couponCodes)
         .where(and(
           eq(couponCodes.code, code.toUpperCase()),
           eq(couponCodes.isActive, true)
         ));
-      
+
       if (!coupon) {
         return res.status(400).json({ error: "كود غير صالح", valid: false });
       }
-      
+
       if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) {
         return res.status(400).json({ error: "انتهت صلاحية الكود", valid: false });
       }
-      
+
       if (coupon.maxUses && coupon.usedCount && coupon.usedCount >= coupon.maxUses) {
         return res.status(400).json({ error: "تم استخدام الكود بالكامل", valid: false });
       }
-      
+
       const [existingUsage] = await db.select().from(couponUsages)
         .where(and(
           eq(couponUsages.couponId, coupon.id),
           eq(couponUsages.userId, userId)
         ));
-      
+
       if (existingUsage) {
         return res.status(400).json({ error: "لقد استخدمت هذا الكود من قبل", valid: false });
       }
-      
-      res.json({ 
-        valid: true, 
+
+      res.json({
+        valid: true,
         discountPercent: coupon.discountPercent,
         message: coupon.discountPercent === 100 ? "مجاني!" : `خصم ${coupon.discountPercent}%`
       });
@@ -1518,57 +1519,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { code, carId } = req.body;
       const userId = req.user!.id;
-      
+
       if (!code) {
         return res.status(400).json({ error: "Coupon code required" });
       }
-      
+
       const [coupon] = await db.select().from(couponCodes)
         .where(and(
           eq(couponCodes.code, code.toUpperCase()),
           eq(couponCodes.isActive, true)
         ));
-      
+
       if (!coupon) {
         return res.status(400).json({ error: "كود غير صالح" });
       }
-      
+
       if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) {
         return res.status(400).json({ error: "انتهت صلاحية الكود" });
       }
-      
+
       if (coupon.maxUses && coupon.usedCount && coupon.usedCount >= coupon.maxUses) {
         return res.status(400).json({ error: "تم استخدام الكود بالكامل" });
       }
-      
+
       const [existingUsage] = await db.select().from(couponUsages)
         .where(and(
           eq(couponUsages.couponId, coupon.id),
           eq(couponUsages.userId, userId)
         ));
-      
+
       if (existingUsage) {
         return res.status(400).json({ error: "لقد استخدمت هذا الكود من قبل" });
       }
-      
+
       await db.insert(couponUsages).values({
         couponId: coupon.id,
         userId,
         carId,
       });
-      
+
       await db.update(couponCodes)
         .set({ usedCount: (coupon.usedCount || 0) + 1 })
         .where(eq(couponCodes.id, coupon.id));
-      
+
       if (carId) {
         await db.update(cars)
           .set({ isActive: true })
           .where(eq(cars.id, carId));
       }
-      
-      res.json({ 
-        success: true, 
+
+      res.json({
+        success: true,
         message: "تم تطبيق الكود بنجاح!",
         discountPercent: coupon.discountPercent
       });
@@ -1591,18 +1592,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/coupons", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
     try {
       const { code, discountPercent, maxUses, expiresAt } = req.body;
-      
+
       if (!code) {
         return res.status(400).json({ error: "Code is required" });
       }
-      
+
       const [newCoupon] = await db.insert(couponCodes).values({
         code: code.toUpperCase(),
         discountPercent: discountPercent || 100,
         maxUses: maxUses || null,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
       }).returning();
-      
+
       res.json(newCoupon);
     } catch (error: any) {
       if (error.code === '23505') {
@@ -1626,17 +1627,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/validate-car-image", authMiddleware, async (req: AuthRequest, res: Response) => {
     try {
       const { imageBase64 } = req.body;
-      
+
       if (!imageBase64) {
         return res.status(400).json({ error: "Image data is required" });
       }
-      
+
       if (imageBase64.length > 5 * 1024 * 1024) {
         return res.status(400).json({ error: "Image too large. Max 5MB allowed." });
       }
-      
+
       const result = await validateCarImage(imageBase64);
-      
+
       const rejectionMessages: Record<string, { ar: string; en: string }> = {
         people: { ar: "لا يمكن رفع صور أشخاص. يرجى رفع صور السيارة فقط.", en: "Cannot upload photos of people. Please upload car images only." },
         documents: { ar: "لا يمكن رفع صور مستندات أو بطاقات. يرجى رفع صور السيارة فقط.", en: "Cannot upload document or ID images. Please upload car images only." },
@@ -1647,7 +1648,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         unclear: { ar: "الصورة غير واضحة. يرجى رفع صورة واضحة للسيارة.", en: "Image is unclear. Please upload a clear car photo." },
         error: { ar: "حدث خطأ في التحقق. يرجى المحاولة مرة أخرى.", en: "Validation error. Please try again." },
       };
-      
+
       if (result.valid) {
         res.json({ valid: true });
       } else {
