@@ -1,0 +1,29 @@
+# Exclude client-side code (mobile app)
+client/
+android/
+ios/
+assets/
+
+# Development files
+.expo/
+.local/
+.replit
+replit.md
+design_guidelines.md
+arabaty-backup.tar.gz
+attached_assets/
+
+# Documentation
+*.md
+!README.md
+
+# Environment
+.env.local
+.env.development
+
+# Dependencies
+node_modules/
+
+# Git
+.git/
+.gitignore
