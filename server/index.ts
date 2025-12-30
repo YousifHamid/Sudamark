@@ -225,12 +225,8 @@ function configureExpoAndLanding(app: express.Application) {
     }
 
     if (req.path === "/") {
-      return serveLandingPage({
-        req,
-        res,
-        landingPageTemplate,
-        appName,
-      });
+      // Redirect to admin panel
+      return res.redirect("/admin");
     }
 
     next();

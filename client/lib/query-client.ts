@@ -13,7 +13,7 @@ export function getApiUrl(): string {
       return "http://192.168.1.74:5000/";
     }
     console.warn("EXPO_PUBLIC_DOMAIN is not set");
-    return "http://localhost:5000/"; // Safe fallback
+    return "https://sudamark.up.railway.app/"; // Safe fallback
   }
 
   // If the host already includes the protocol, return it as is
