@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, TextInput, Pressable, ScrollView, Alert, Modal, Platform, Image } from "react-native";
+import {
+  View,
+  StyleSheet,
+  TextInput,
+  Pressable,
+  ScrollView,
+  Alert,
+  Modal,
+  Platform,
+  Image,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
@@ -37,7 +47,9 @@ export default function PostCarScreen() {
   const { addCar } = useCars();
 
   const [step, setStep] = useState<ScreenStep>("form");
-  const [listingStatus, setListingStatus] = useState<ListingStatus | null>(null);
+  const [listingStatus, setListingStatus] = useState<ListingStatus | null>(
+    null,
+  );
   const [images, setImages] = useState<string[]>([]);
   const [title, setTitle] = useState("");
   const [make, setMake] = useState("");
@@ -52,13 +64,18 @@ export default function PostCarScreen() {
 
   const getCategoryFee = (cat: string) => {
     switch (cat) {
-      case "suv": return 50000;
-      case "truck": return 100000;
-      default: return 20000;
+      case "suv":
+        return 50000;
+      case "truck":
+        return 100000;
+      default:
+        return 20000;
     }
   };
+
   const [isLoading, setIsLoading] = useState(false);
   const [isAgreed, setIsAgreed] = useState(false);
+  const [isFormAgreed, setIsFormAgreed] = useState(false);
 
   const [trxNo, setTrxNo] = useState("");
   const [paymentAmount, setPaymentAmount] = useState("");
@@ -67,6 +84,7 @@ export default function PostCarScreen() {
   const [couponCode, setCouponCode] = useState("");
   const [couponValid, setCouponValid] = useState(false);
   const [couponMessage, setCouponMessage] = useState("");
+  const [paymentModalVisible, setPaymentModalVisible] = useState(false);
 
   const cities = [
     { id: "khartoum", nameEn: "Khartoum", nameAr: "الخرطوم" },
@@ -99,38 +117,13 @@ export default function PostCarScreen() {
 
   const fetchListingStatus = async () => {
     try {
-      const response = await fetch(new URL("/api/listings/status", getApiUrl()).toString());
+      const response = await fetch(
+        new URL("/api/listings/status", getApiUrl()).toString(),
+      );
       const data = await response.json();
       setListingStatus(data);
     } catch (error) {
       console.log("Could not fetch listing status");
-    }
-  };
-
-  const [validatingImage, setValidatingImage] = useState(false);
-
-  const validateImageWithAI = async (uri: string): Promise<{ valid: boolean; message?: string }> => {
-    try {
-      if (Platform.OS === "web") {
-        return { valid: true };
-      }
-
-      const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: "base64",
-      });
-
-      const response = await apiRequest("POST", "/api/validate-car-image", { imageBase64: base64 });
-      const data = await response.json();
-
-      if (data.valid) {
-        return { valid: true };
-      }
-
-      const message = isRTL ? data.message?.ar : data.message?.en;
-      return { valid: false, message: message || (isRTL ? "صورة غير صالحة" : "Invalid image") };
-    } catch (error) {
-      console.log("Image validation error:", error);
-      return { valid: true };
     }
   };
 
@@ -142,35 +135,9 @@ export default function PostCarScreen() {
     });
 
     if (!result.canceled) {
-      setValidatingImage(true);
-      const validImages: string[] = [];
-      const rejectedMessages: string[] = [];
-
-      for (const asset of result.assets) {
-        const validation = await validateImageWithAI(asset.uri);
-        if (validation.valid) {
-          validImages.push(asset.uri);
-        } else {
-          rejectedMessages.push(validation.message || "");
-        }
-      }
-
-      setValidatingImage(false);
-
-      if (validImages.length > 0) {
-        setImages([...images, ...validImages].slice(0, 6));
-        Haptics.selectionAsync();
-      }
-
-      if (rejectedMessages.length > 0) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        const uniqueMessages = [...new Set(rejectedMessages.filter(m => m))];
-        Alert.alert(
-          isRTL ? "صور مرفوضة" : "Images Rejected",
-          uniqueMessages.join("\n") || (isRTL ? "بعض الصور غير صالحة للإعلان" : "Some images are not valid for car listings"),
-          [{ text: isRTL ? "حسناً" : "OK" }]
-        );
-      }
+      const newImages = result.assets.map((asset) => asset.uri);
+      setImages([...images, ...newImages].slice(0, 6));
+      Haptics.selectionAsync();
     }
   };
 
@@ -185,18 +152,18 @@ export default function PostCarScreen() {
       return;
     }
 
-    if (!isAgreed) {
+    if (!isFormAgreed) {
       Alert.alert(
         t("error"),
         isRTL
           ? "يجب الموافقة على الشروط والأحكام أولاً"
-          : "You must agree to the terms and conditions first"
+          : "You must agree to the terms and conditions first",
       );
       return;
     }
 
     if (listingStatus?.requiresPayment) {
-      setStep("payment");
+      setPaymentModalVisible(true);
       return;
     }
 
@@ -217,7 +184,12 @@ export default function PostCarScreen() {
       mileage: mileage ? parseInt(mileage) : 0,
       description,
       city,
-      images: images.length > 0 ? images : ["https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800"],
+      images:
+        images.length > 0
+          ? images
+          : [
+              "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+            ],
       sellerId: user?.id || "",
       category,
       condition,
@@ -238,7 +210,9 @@ export default function PostCarScreen() {
 
     setIsLoading(true);
     try {
-      const response = await apiRequest("POST", "/api/coupons/validate", { code: couponCode.toUpperCase() });
+      const response = await apiRequest("POST", "/api/coupons/validate", {
+        code: couponCode.toUpperCase(),
+      });
       const data = await response.json();
 
       if (data.valid) {
@@ -247,7 +221,9 @@ export default function PostCarScreen() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } else {
         setCouponValid(false);
-        setCouponMessage(data.error || (isRTL ? "كود غير صالح" : "Invalid code"));
+        setCouponMessage(
+          data.error || (isRTL ? "كود غير صالح" : "Invalid code"),
+        );
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     } catch (error) {
@@ -260,7 +236,10 @@ export default function PostCarScreen() {
 
   const handleCouponSubmit = async () => {
     if (!couponValid) {
-      Alert.alert(t("error"), isRTL ? "تحقق من الكود أولاً" : "Validate code first");
+      Alert.alert(
+        t("error"),
+        isRTL ? "تحقق من الكود أولاً" : "Validate code first",
+      );
       return;
     }
 
@@ -276,7 +255,12 @@ export default function PostCarScreen() {
         mileage: mileage ? parseInt(mileage) : 0,
         description,
         city,
-        images: images.length > 0 ? images : ["https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800"],
+        images:
+          images.length > 0
+            ? images
+            : [
+                "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+              ],
         sellerId: user?.id || "",
         category: "sedan",
         condition,
@@ -289,7 +273,7 @@ export default function PostCarScreen() {
 
       const couponResponse = await apiRequest("POST", "/api/coupons/apply", {
         code: couponCode.toUpperCase(),
-        carId
+        carId,
       });
 
       if (!couponResponse.ok) {
@@ -299,12 +283,17 @@ export default function PostCarScreen() {
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert(
-        isRTL ? "نجح!" : "Success!",
-        isRTL ? "تم نشر إعلانك مجاناً!" : "Your listing is now live for free!",
-        [{ text: isRTL ? "تم" : "OK", onPress: () => navigation.goBack() }]
+        isRTL ? "تم بنجاح!" : "Success!",
+        isRTL
+          ? "تم إرسال إعلانك للمراجعة."
+          : "Your listing has been submitted for approval.",
+        [{ text: isRTL ? "تم" : "OK", onPress: () => navigation.goBack() }],
       );
     } catch (error: any) {
-      Alert.alert(t("error"), error.message || (isRTL ? "فشل تطبيق الكود" : "Failed to apply coupon"));
+      Alert.alert(
+        t("error"),
+        error.message || (isRTL ? "فشل تطبيق الكود" : "Failed to apply coupon"),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -312,7 +301,12 @@ export default function PostCarScreen() {
 
   const handlePaymentSubmit = async () => {
     if (!trxNo || !paymentAmount || !paymentDate) {
-      Alert.alert(t("error"), isRTL ? "يرجى ملء جميع بيانات الدفع" : "Please fill all payment details");
+      Alert.alert(
+        t("error"),
+        isRTL
+          ? "يرجى ملء جميع بيانات الدفع"
+          : "Please fill all payment details",
+      );
       return;
     }
 
@@ -320,7 +314,12 @@ export default function PostCarScreen() {
     const requiredFee = getCategoryFee(category);
 
     if (isNaN(parsedAmount) || parsedAmount < requiredFee) {
-      Alert.alert(t("error"), isRTL ? `المبلغ يجب أن يكون ${requiredFee.toLocaleString()} جنيه أو أكثر للفئة المختارة` : `Amount must be ${requiredFee.toLocaleString()} SDG or more for selected category`);
+      Alert.alert(
+        t("error"),
+        isRTL
+          ? `المبلغ يجب أن يكون ${requiredFee.toLocaleString()} جنيه أو أكثر للفئة المختارة`
+          : `Amount must be ${requiredFee.toLocaleString()} SDG or more for selected category`,
+      );
       return;
     }
 
@@ -336,7 +335,12 @@ export default function PostCarScreen() {
         mileage: mileage ? parseInt(mileage) : 0,
         description,
         city,
-        images: images.length > 0 ? images : ["https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800"],
+        images:
+          images.length > 0
+            ? images
+            : [
+                "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+              ],
         sellerId: user?.id || "",
         category,
         condition,
@@ -362,7 +366,11 @@ export default function PostCarScreen() {
       setStep("waiting");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error: any) {
-      Alert.alert(t("error"), error.message || (isRTL ? "فشل في تقديم الدفع" : "Failed to submit payment"));
+      Alert.alert(
+        t("error"),
+        error.message ||
+          (isRTL ? "فشل في تقديم الدفع" : "Failed to submit payment"),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -371,29 +379,64 @@ export default function PostCarScreen() {
   if (step === "waiting") {
     return (
       <ThemedView style={styles.container}>
-        <View style={[styles.waitingContainer, { paddingTop: insets.top + Spacing["4xl"], paddingBottom: insets.bottom + Spacing["2xl"] }]}>
-          <View style={[styles.waitingIcon, { backgroundColor: theme.secondary + "20" }]}>
+        <View
+          style={[
+            styles.waitingContainer,
+            {
+              paddingTop: insets.top + Spacing["4xl"],
+              paddingBottom: insets.bottom + Spacing["2xl"],
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.waitingIcon,
+              { backgroundColor: theme.secondary + "20" },
+            ]}
+          >
             <Feather name="clock" size={48} color={theme.secondary} />
           </View>
-          <ThemedText type="h2" style={[styles.waitingTitle, isRTL && styles.rtlText]}>
+          <ThemedText
+            type="h2"
+            style={[styles.waitingTitle, isRTL && styles.rtlText]}
+          >
             {isRTL ? "في انتظار الموافقة" : "Waiting for Approval"}
           </ThemedText>
-          <ThemedText style={[styles.waitingText, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+          <ThemedText
+            style={[
+              styles.waitingText,
+              { color: theme.textSecondary },
+              isRTL && styles.rtlText,
+            ]}
+          >
             {isRTL
               ? "تم استلام طلب الدفع الخاص بك. سيتم مراجعته والموافقة عليه خلال دقائق قليلة."
               : "Your payment request has been received. It will be reviewed and approved within a few minutes."}
           </ThemedText>
-          <View style={[styles.paymentSummary, { backgroundColor: theme.backgroundSecondary }]}>
+          <View
+            style={[
+              styles.paymentSummary,
+              { backgroundColor: theme.backgroundSecondary },
+            ]}
+          >
             <View style={[styles.summaryRow, isRTL && styles.rowRTL]}>
-              <ThemedText style={{ color: theme.textSecondary }}>{isRTL ? "رقم العملية:" : "Transaction ID:"}</ThemedText>
+              <ThemedText style={{ color: theme.textSecondary }}>
+                {isRTL ? "رقم العملية:" : "Transaction ID:"}
+              </ThemedText>
               <ThemedText style={styles.summaryValue}>{trxNo}</ThemedText>
             </View>
             <View style={[styles.summaryRow, isRTL && styles.rowRTL]}>
-              <ThemedText style={{ color: theme.textSecondary }}>{isRTL ? "المبلغ:" : "Amount:"}</ThemedText>
-              <ThemedText style={styles.summaryValue}>{paymentAmount} {isRTL ? "جنيه" : "SDG"}</ThemedText>
+              <ThemedText style={{ color: theme.textSecondary }}>
+                {isRTL ? "المبلغ:" : "Amount:"}
+              </ThemedText>
+              <ThemedText style={styles.summaryValue}>
+                {paymentAmount} {isRTL ? "جنيه" : "SDG"}
+              </ThemedText>
             </View>
             <View style={[styles.summaryRow, isRTL && styles.rowRTL]}>
-              <ThemedText style={{ color: theme.textSecondary }}>{isRTL ? "التاريخ:" : "Date:"}</ThemedText>
+              <ThemedText style={{ color: theme.textSecondary }}>
+                {isRTL ? "التاريخ:" : "Date:"}
+              </ThemedText>
               <ThemedText style={styles.summaryValue}>{paymentDate}</ThemedText>
             </View>
           </View>
@@ -415,20 +458,37 @@ export default function PostCarScreen() {
           ]}
         >
           <View style={styles.paymentHeader}>
-            <View style={[styles.feeIcon, { backgroundColor: theme.secondary + "20" }]}>
+            <View
+              style={[
+                styles.feeIcon,
+                { backgroundColor: theme.secondary + "20" },
+              ]}
+            >
               <Feather name="credit-card" size={32} color={theme.secondary} />
             </View>
-            <ThemedText type="h3" style={[styles.paymentTitle, isRTL && styles.rtlText]}>
+            <ThemedText
+              type="h3"
+              style={[styles.paymentTitle, isRTL && styles.rtlText]}
+            >
               {isRTL ? "رسوم الإعلان" : "Listing Fee"}
             </ThemedText>
-            <ThemedText style={[styles.paymentDesc, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+            <ThemedText
+              style={[
+                styles.paymentDesc,
+                { color: theme.textSecondary },
+                isRTL && styles.rtlText,
+              ]}
+            >
               {isRTL
                 ? `المبلغ المطلوب: ${getCategoryFee(category).toLocaleString()} جنيه سوداني`
                 : `Required: ${getCategoryFee(category).toLocaleString()} SDG`}
             </ThemedText>
           </View>
 
-          <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>
+          <ThemedText
+            type="h4"
+            style={[styles.sectionTitle, isRTL && styles.rtlText]}
+          >
             {isRTL ? "اختر طريقة الدفع" : "Choose Payment Method"}
           </ThemedText>
 
@@ -436,12 +496,35 @@ export default function PostCarScreen() {
             <Pressable
               style={[
                 styles.paymentOption,
-                { backgroundColor: paymentMethod === "coupon" ? theme.primary + "20" : theme.backgroundSecondary, borderColor: paymentMethod === "coupon" ? theme.primary : theme.border }
+                {
+                  backgroundColor:
+                    paymentMethod === "coupon"
+                      ? theme.primary + "20"
+                      : theme.backgroundSecondary,
+                  borderColor:
+                    paymentMethod === "coupon" ? theme.primary : theme.border,
+                },
               ]}
-              onPress={() => { setPaymentMethod("coupon"); Haptics.selectionAsync(); }}
+              onPress={() => {
+                setPaymentMethod("coupon");
+                Haptics.selectionAsync();
+              }}
             >
-              <Feather name="gift" size={24} color={paymentMethod === "coupon" ? theme.primary : theme.textSecondary} />
-              <ThemedText style={[styles.paymentOptionText, paymentMethod === "coupon" && { color: theme.primary }]}>
+              <Feather
+                name="gift"
+                size={24}
+                color={
+                  paymentMethod === "coupon"
+                    ? theme.primary
+                    : theme.textSecondary
+                }
+              />
+              <ThemedText
+                style={[
+                  styles.paymentOptionText,
+                  paymentMethod === "coupon" && { color: theme.primary },
+                ]}
+              >
                 {isRTL ? "كود خصم" : "Coupon Code"}
               </ThemedText>
             </Pressable>
@@ -449,12 +532,35 @@ export default function PostCarScreen() {
             <Pressable
               style={[
                 styles.paymentOption,
-                { backgroundColor: paymentMethod === "direct" ? theme.primary + "20" : theme.backgroundSecondary, borderColor: paymentMethod === "direct" ? theme.primary : theme.border }
+                {
+                  backgroundColor:
+                    paymentMethod === "direct"
+                      ? theme.primary + "20"
+                      : theme.backgroundSecondary,
+                  borderColor:
+                    paymentMethod === "direct" ? theme.primary : theme.border,
+                },
               ]}
-              onPress={() => { setPaymentMethod("direct"); Haptics.selectionAsync(); }}
+              onPress={() => {
+                setPaymentMethod("direct");
+                Haptics.selectionAsync();
+              }}
             >
-              <Feather name="smartphone" size={24} color={paymentMethod === "direct" ? theme.primary : theme.textSecondary} />
-              <ThemedText style={[styles.paymentOptionText, paymentMethod === "direct" && { color: theme.primary }]}>
+              <Feather
+                name="smartphone"
+                size={24}
+                color={
+                  paymentMethod === "direct"
+                    ? theme.primary
+                    : theme.textSecondary
+                }
+              />
+              <ThemedText
+                style={[
+                  styles.paymentOptionText,
+                  paymentMethod === "direct" && { color: theme.primary },
+                ]}
+              >
                 {isRTL ? "دفع مباشر" : "Direct Payment"}
               </ThemedText>
             </Pressable>
@@ -462,48 +568,114 @@ export default function PostCarScreen() {
 
           {paymentMethod === "coupon" ? (
             <View style={styles.couponSection}>
-              <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+              <ThemedText
+                type="small"
+                style={[
+                  styles.label,
+                  { color: theme.textSecondary },
+                  isRTL && styles.rtlText,
+                ]}
+              >
                 {isRTL ? "أدخل كود الخصم" : "Enter Coupon Code"}
               </ThemedText>
               <View style={[styles.couponInputRow, isRTL && styles.rowRTL]}>
                 <TextInput
-                  style={[styles.couponInput, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }]}
+                  style={[
+                    styles.couponInput,
+                    {
+                      backgroundColor: theme.backgroundSecondary,
+                      color: theme.text,
+                      borderColor: theme.border,
+                    },
+                  ]}
                   placeholder={isRTL ? "مثال: ARA1000" : "e.g. ARA1000"}
                   placeholderTextColor={theme.textSecondary}
                   value={couponCode}
-                  onChangeText={(text) => { setCouponCode(text.toUpperCase()); setCouponValid(false); setCouponMessage(""); }}
+                  onChangeText={(text) => {
+                    setCouponCode(text.toUpperCase());
+                    setCouponValid(false);
+                    setCouponMessage("");
+                  }}
                   autoCapitalize="characters"
                   textAlign={isRTL ? "right" : "left"}
                 />
                 <Pressable
-                  style={[styles.validateButton, { backgroundColor: theme.primary }]}
+                  style={[
+                    styles.validateButton,
+                    { backgroundColor: theme.primary },
+                  ]}
                   onPress={validateCoupon}
                   disabled={isLoading}
                 >
                   <ThemedText style={{ color: "#FFFFFF", fontWeight: "600" }}>
-                    {isLoading ? "..." : (isRTL ? "تحقق" : "Check")}
+                    {isLoading ? "..." : isRTL ? "تحقق" : "Check"}
                   </ThemedText>
                 </Pressable>
               </View>
               {couponMessage ? (
-                <View style={[styles.couponMessage, { backgroundColor: couponValid ? theme.success + "20" : theme.error + "20" }]}>
-                  <Feather name={couponValid ? "check-circle" : "x-circle"} size={16} color={couponValid ? theme.success : theme.error} />
-                  <ThemedText style={{ color: couponValid ? theme.success : theme.error, marginLeft: 8 }}>
+                <View
+                  style={[
+                    styles.couponMessage,
+                    {
+                      backgroundColor: couponValid
+                        ? theme.success + "20"
+                        : theme.error + "20",
+                    },
+                  ]}
+                >
+                  <Feather
+                    name={couponValid ? "check-circle" : "x-circle"}
+                    size={16}
+                    color={couponValid ? theme.success : theme.error}
+                  />
+                  <ThemedText
+                    style={{
+                      color: couponValid ? theme.success : theme.error,
+                      marginLeft: 8,
+                    }}
+                  >
                     {couponMessage}
                   </ThemedText>
                 </View>
               ) : null}
               {couponValid ? (
                 <>
-                  <View style={[styles.agreementContainer, { backgroundColor: theme.warning + "10", borderColor: theme.warning }]}>
+                  <View
+                    style={[
+                      styles.agreementContainer,
+                      {
+                        backgroundColor: theme.warning + "10",
+                        borderColor: theme.warning,
+                      },
+                    ]}
+                  >
                     <Pressable
                       style={styles.checkboxRow}
-                      onPress={() => { setIsAgreed(!isAgreed); Haptics.selectionAsync(); }}
+                      onPress={() => {
+                        setIsAgreed(!isAgreed);
+                        Haptics.selectionAsync();
+                      }}
                     >
-                      <View style={[styles.checkbox, isAgreed && { backgroundColor: theme.primary, borderColor: theme.primary }]}>
-                        {isAgreed && <Feather name="check" size={14} color="#FFFFFF" />}
+                      <View
+                        style={[
+                          styles.checkbox,
+                          isAgreed && {
+                            backgroundColor: theme.primary,
+                            borderColor: theme.primary,
+                          },
+                        ]}
+                      >
+                        {isAgreed && (
+                          <Feather name="check" size={14} color="#FFFFFF" />
+                        )}
                       </View>
-                      <ThemedText style={[styles.agreementText, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+                      <ThemedText
+                        style={[
+                          styles.agreementText,
+                          { color: theme.textSecondary },
+                          isRTL && styles.rtlText,
+                        ]}
+                      >
                         {isRTL
                           ? "أتعهد بأنني مالك السلعة أو مفوض ببيعها، وأن التطبيق مجرد وسيط للعرض ولا يتحمل أي مسؤولية قانونية عن التعاملات المالية أو جودة المعروضات. أنا المسؤول الأول والأخير عن صحة البيانات."
                           : "I agree that I am the owner or authorized seller, and the app is just a listing platform bearing no legal liability for transactions. I am fully responsible for the data accuracy."}
@@ -511,8 +683,18 @@ export default function PostCarScreen() {
                     </Pressable>
                   </View>
 
-                  <Button onPress={handleCouponSubmit} disabled={isLoading || !isAgreed} style={styles.submitButton}>
-                    {isLoading ? (isRTL ? "جاري النشر..." : "Publishing...") : (isRTL ? "نشر مجاناً" : "Publish Free")}
+                  <Button
+                    onPress={handleCouponSubmit}
+                    disabled={isLoading || !isAgreed}
+                    style={styles.submitButton}
+                  >
+                    {isLoading
+                      ? isRTL
+                        ? "جاري النشر..."
+                        : "Publishing..."
+                      : isRTL
+                        ? "نشر مجاناً"
+                        : "Publish Free"}
                   </Button>
                 </>
               ) : null}
@@ -521,7 +703,15 @@ export default function PostCarScreen() {
 
           {paymentMethod === "direct" ? (
             <View style={styles.directPaymentSection}>
-              <View style={[styles.qrContainer, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
+              <View
+                style={[
+                  styles.qrContainer,
+                  {
+                    backgroundColor: theme.backgroundDefault,
+                    borderColor: theme.border,
+                  },
+                ]}
+              >
                 <Image
                   source={require("../../attached_assets/WhatsApp_Image_2025-12-27_at_12.56.14_AM_1766789892928.jpeg")}
                   style={styles.qrImage}
@@ -529,11 +719,26 @@ export default function PostCarScreen() {
                 />
               </View>
 
-              <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+              <ThemedText
+                type="small"
+                style={[
+                  styles.label,
+                  { color: theme.textSecondary },
+                  isRTL && styles.rtlText,
+                ]}
+              >
                 {isRTL ? "رقم العملية (Trx. ID)" : "Transaction ID (Trx. ID)"} *
               </ThemedText>
               <TextInput
-                style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: theme.backgroundSecondary,
+                    color: theme.text,
+                    borderColor: theme.border,
+                  },
+                  isRTL && styles.rtlInput,
+                ]}
                 placeholder={isRTL ? "مثال: 20082275558" : "e.g. 20082275558"}
                 placeholderTextColor={theme.textSecondary}
                 value={trxNo}
@@ -542,12 +747,31 @@ export default function PostCarScreen() {
                 textAlign={isRTL ? "right" : "left"}
               />
 
-              <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+              <ThemedText
+                type="small"
+                style={[
+                  styles.label,
+                  { color: theme.textSecondary },
+                  isRTL && styles.rtlText,
+                ]}
+              >
                 {isRTL ? "المبلغ (Amount)" : "Amount"} *
               </ThemedText>
               <TextInput
-                style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
-                placeholder={isRTL ? getCategoryFee(category).toString() : getCategoryFee(category).toString()}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: theme.backgroundSecondary,
+                    color: theme.text,
+                    borderColor: theme.border,
+                  },
+                  isRTL && styles.rtlInput,
+                ]}
+                placeholder={
+                  isRTL
+                    ? getCategoryFee(category).toString()
+                    : getCategoryFee(category).toString()
+                }
                 placeholderTextColor={theme.textSecondary}
                 value={paymentAmount}
                 onChangeText={setPaymentAmount}
@@ -555,11 +779,26 @@ export default function PostCarScreen() {
                 textAlign={isRTL ? "right" : "left"}
               />
 
-              <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+              <ThemedText
+                type="small"
+                style={[
+                  styles.label,
+                  { color: theme.textSecondary },
+                  isRTL && styles.rtlText,
+                ]}
+              >
                 {isRTL ? "تاريخ التحويل" : "Transfer Date"} *
               </ThemedText>
               <TextInput
-                style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: theme.backgroundSecondary,
+                    color: theme.text,
+                    borderColor: theme.border,
+                  },
+                  isRTL && styles.rtlInput,
+                ]}
                 placeholder={isRTL ? "مثال: 27-Dec-2025" : "e.g. 27-Dec-2025"}
                 placeholderTextColor={theme.textSecondary}
                 value={paymentDate}
@@ -567,8 +806,18 @@ export default function PostCarScreen() {
                 textAlign={isRTL ? "right" : "left"}
               />
 
-              <Button onPress={handlePaymentSubmit} disabled={isLoading} style={styles.submitButton}>
-                {isLoading ? (isRTL ? "جاري الإرسال..." : "Submitting...") : (isRTL ? "تأكيد الدفع" : "Confirm Payment")}
+              <Button
+                onPress={handlePaymentSubmit}
+                disabled={isLoading}
+                style={styles.submitButton}
+              >
+                {isLoading
+                  ? isRTL
+                    ? "جاري الإرسال..."
+                    : "Submitting..."
+                  : isRTL
+                    ? "تأكيد الدفع"
+                    : "Confirm Payment"}
               </Button>
             </View>
           ) : null}
@@ -592,9 +841,23 @@ export default function PostCarScreen() {
         ]}
       >
         {listingStatus?.requiresPayment ? (
-          <View style={[styles.feeNotice, { backgroundColor: theme.secondary + "15", borderColor: theme.secondary }]}>
+          <View
+            style={[
+              styles.feeNotice,
+              {
+                backgroundColor: theme.secondary + "15",
+                borderColor: theme.secondary,
+              },
+            ]}
+          >
             <Feather name="info" size={20} color={theme.secondary} />
-            <ThemedText style={[styles.feeNoticeText, { color: theme.secondary }, isRTL && styles.rtlText]}>
+            <ThemedText
+              style={[
+                styles.feeNoticeText,
+                { color: theme.secondary },
+                isRTL && styles.rtlText,
+              ]}
+            >
               {isRTL
                 ? `رسوم الإعلان: ${listingStatus.listingFee.toLocaleString()} جنيه`
                 : `Listing fee: ${listingStatus.listingFee.toLocaleString()} SDG`}
@@ -602,7 +865,14 @@ export default function PostCarScreen() {
           </View>
         ) : null}
 
-        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+        <ThemedText
+          type="small"
+          style={[
+            styles.label,
+            { color: theme.textSecondary },
+            isRTL && styles.rtlText,
+          ]}
+        >
           {t("photosUpTo6")}
         </ThemedText>
         <ScrollView
@@ -613,9 +883,16 @@ export default function PostCarScreen() {
         >
           {images.map((uri, index) => (
             <View key={index} style={styles.imageWrapper}>
-              <Image source={{ uri }} style={styles.imagePreview} resizeMode="cover" />
+              <Image
+                source={{ uri }}
+                style={styles.imagePreview}
+                resizeMode="cover"
+              />
               <Pressable
-                style={[styles.removeImageButton, { backgroundColor: theme.error }]}
+                style={[
+                  styles.removeImageButton,
+                  { backgroundColor: theme.error },
+                ]}
                 onPress={() => removeImage(index)}
               >
                 <Feather name="x" size={16} color="#FFFFFF" />
@@ -624,16 +901,37 @@ export default function PostCarScreen() {
           ))}
           {images.length < 6 ? (
             <Pressable
-              style={[styles.addImageButton, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}
+              style={[
+                styles.addImageButton,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor: theme.border,
+                },
+              ]}
               onPress={pickImage}
             >
               <Feather name="plus" size={24} color={theme.textSecondary} />
-              <ThemedText type="small" style={[{ color: theme.textSecondary }, isRTL && styles.rtlText]}>{t("add")}</ThemedText>
+              <ThemedText
+                type="small"
+                style={[
+                  { color: theme.textSecondary },
+                  isRTL && styles.rtlText,
+                ]}
+              >
+                {t("add")}
+              </ThemedText>
             </Pressable>
           ) : null}
         </ScrollView>
 
-        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+        <ThemedText
+          type="small"
+          style={[
+            styles.label,
+            { color: theme.textSecondary },
+            isRTL && styles.rtlText,
+          ]}
+        >
           {t("category")}
         </ThemedText>
         <View style={[styles.citiesRow, isRTL && styles.citiesRowRTL]}>
@@ -644,14 +942,29 @@ export default function PostCarScreen() {
           ].map((cat) => (
             <Pressable
               key={cat.id}
-              onPress={() => { setCategory(cat.id); Haptics.selectionAsync(); }}
+              onPress={() => {
+                setCategory(cat.id);
+                Haptics.selectionAsync();
+              }}
               style={[
                 styles.cityChip,
-                { backgroundColor: theme.backgroundSecondary, borderColor: theme.border },
-                category === cat.id && { backgroundColor: theme.primary, borderColor: theme.primary },
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor: theme.border,
+                },
+                category === cat.id && {
+                  backgroundColor: theme.primary,
+                  borderColor: theme.primary,
+                },
               ]}
             >
-              <ThemedText type="small" style={[category === cat.id ? { color: "#FFFFFF" } : undefined, isRTL && styles.rtlText]}>
+              <ThemedText
+                type="small"
+                style={[
+                  category === cat.id ? { color: "#FFFFFF" } : undefined,
+                  isRTL && styles.rtlText,
+                ]}
+              >
                 {isRTL ? cat.labelAr : cat.labelEn}
               </ThemedText>
             </Pressable>
@@ -660,7 +973,14 @@ export default function PostCarScreen() {
 
         <View style={{ height: Spacing.md }} />
 
-        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+        <ThemedText
+          type="small"
+          style={[
+            styles.label,
+            { color: theme.textSecondary },
+            isRTL && styles.rtlText,
+          ]}
+        >
           {isRTL ? "الحالة" : "Condition"}
         </ThemedText>
         <View style={[styles.citiesRow, isRTL && styles.citiesRowRTL]}>
@@ -670,25 +990,55 @@ export default function PostCarScreen() {
           ].map((cond) => (
             <Pressable
               key={cond.id}
-              onPress={() => { setCondition(cond.id); Haptics.selectionAsync(); }}
+              onPress={() => {
+                setCondition(cond.id);
+                Haptics.selectionAsync();
+              }}
               style={[
                 styles.cityChip,
-                { backgroundColor: theme.backgroundSecondary, borderColor: theme.border },
-                condition === cond.id && { backgroundColor: theme.primary, borderColor: theme.primary },
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor: theme.border,
+                },
+                condition === cond.id && {
+                  backgroundColor: theme.primary,
+                  borderColor: theme.primary,
+                },
               ]}
             >
-              <ThemedText type="small" style={[condition === cond.id ? { color: "#FFFFFF" } : undefined, isRTL && styles.rtlText]}>
+              <ThemedText
+                type="small"
+                style={[
+                  condition === cond.id ? { color: "#FFFFFF" } : undefined,
+                  isRTL && styles.rtlText,
+                ]}
+              >
                 {isRTL ? cond.labelAr : cond.labelEn}
               </ThemedText>
             </Pressable>
           ))}
         </View>
 
-        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+        <ThemedText
+          type="small"
+          style={[
+            styles.label,
+            { color: theme.textSecondary },
+            isRTL && styles.rtlText,
+          ]}
+        >
           {t("carTitle")} *
         </ThemedText>
         <TextInput
-          style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.backgroundSecondary,
+              color: theme.text,
+              borderColor: theme.border,
+            },
+            isRTL && styles.rtlInput,
+          ]}
           placeholder={t("titlePlaceholder")}
           placeholderTextColor={theme.textSecondary}
           value={title}
@@ -698,11 +1048,26 @@ export default function PostCarScreen() {
 
         <View style={[styles.row, isRTL && styles.rowRTL]}>
           <View style={styles.halfInput}>
-            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+            <ThemedText
+              type="small"
+              style={[
+                styles.label,
+                { color: theme.textSecondary },
+                isRTL && styles.rtlText,
+              ]}
+            >
               {t("make")} *
             </ThemedText>
             <TextInput
-              style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  color: theme.text,
+                  borderColor: theme.border,
+                },
+                isRTL && styles.rtlInput,
+              ]}
               placeholder={isRTL ? "تويوتا" : "Toyota"}
               placeholderTextColor={theme.textSecondary}
               value={make}
@@ -711,11 +1076,26 @@ export default function PostCarScreen() {
             />
           </View>
           <View style={styles.halfInput}>
-            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+            <ThemedText
+              type="small"
+              style={[
+                styles.label,
+                { color: theme.textSecondary },
+                isRTL && styles.rtlText,
+              ]}
+            >
               {t("model")} *
             </ThemedText>
             <TextInput
-              style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  color: theme.text,
+                  borderColor: theme.border,
+                },
+                isRTL && styles.rtlInput,
+              ]}
               placeholder={isRTL ? "كامري" : "Camry"}
               placeholderTextColor={theme.textSecondary}
               value={model}
@@ -727,11 +1107,26 @@ export default function PostCarScreen() {
 
         <View style={[styles.row, isRTL && styles.rowRTL]}>
           <View style={styles.halfInput}>
-            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+            <ThemedText
+              type="small"
+              style={[
+                styles.label,
+                { color: theme.textSecondary },
+                isRTL && styles.rtlText,
+              ]}
+            >
               {t("year")} *
             </ThemedText>
             <TextInput
-              style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  color: theme.text,
+                  borderColor: theme.border,
+                },
+                isRTL && styles.rtlInput,
+              ]}
               placeholder="2022"
               placeholderTextColor={theme.textSecondary}
               value={year}
@@ -741,11 +1136,26 @@ export default function PostCarScreen() {
             />
           </View>
           <View style={styles.halfInput}>
-            <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+            <ThemedText
+              type="small"
+              style={[
+                styles.label,
+                { color: theme.textSecondary },
+                isRTL && styles.rtlText,
+              ]}
+            >
               {t("priceSdg")} *
             </ThemedText>
             <TextInput
-              style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  color: theme.text,
+                  borderColor: theme.border,
+                },
+                isRTL && styles.rtlInput,
+              ]}
               placeholder="85000"
               placeholderTextColor={theme.textSecondary}
               value={price}
@@ -756,11 +1166,26 @@ export default function PostCarScreen() {
           </View>
         </View>
 
-        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+        <ThemedText
+          type="small"
+          style={[
+            styles.label,
+            { color: theme.textSecondary },
+            isRTL && styles.rtlText,
+          ]}
+        >
           {t("mileage")} ({t("km")})
         </ThemedText>
         <TextInput
-          style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.backgroundSecondary,
+              color: theme.text,
+              borderColor: theme.border,
+            },
+            isRTL && styles.rtlInput,
+          ]}
           placeholder="50000"
           placeholderTextColor={theme.textSecondary}
           value={mileage}
@@ -769,7 +1194,14 @@ export default function PostCarScreen() {
           textAlign={isRTL ? "right" : "left"}
         />
 
-        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+        <ThemedText
+          type="small"
+          style={[
+            styles.label,
+            { color: theme.textSecondary },
+            isRTL && styles.rtlText,
+          ]}
+        >
           {t("city")} *
         </ThemedText>
         <View style={[styles.citiesRow, isRTL && styles.citiesRowRTL]}>
@@ -778,14 +1210,27 @@ export default function PostCarScreen() {
               key={c.id}
               style={[
                 styles.cityChip,
-                { backgroundColor: theme.backgroundSecondary, borderColor: theme.border },
-                city === c.id && { backgroundColor: theme.primary, borderColor: theme.primary },
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor: theme.border,
+                },
+                city === c.id && {
+                  backgroundColor: theme.primary,
+                  borderColor: theme.primary,
+                },
               ]}
-              onPress={() => { setCity(c.id); Haptics.selectionAsync(); }}
+              onPress={() => {
+                setCity(c.id);
+                Haptics.selectionAsync();
+              }}
             >
               <ThemedText
                 type="small"
-                style={city === c.id ? { color: "#FFFFFF" } : { color: theme.textSecondary }}
+                style={
+                  city === c.id
+                    ? { color: "#FFFFFF" }
+                    : { color: theme.textSecondary }
+                }
               >
                 {isRTL ? c.nameAr : c.nameEn}
               </ThemedText>
@@ -793,11 +1238,26 @@ export default function PostCarScreen() {
           ))}
         </View>
 
-        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+        <ThemedText
+          type="small"
+          style={[
+            styles.label,
+            { color: theme.textSecondary },
+            isRTL && styles.rtlText,
+          ]}
+        >
           {t("description")}
         </ThemedText>
         <TextInput
-          style={[styles.textArea, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+          style={[
+            styles.textArea,
+            {
+              backgroundColor: theme.backgroundSecondary,
+              color: theme.text,
+              borderColor: theme.border,
+            },
+            isRTL && styles.rtlInput,
+          ]}
           placeholder={t("describeYourCar")}
           placeholderTextColor={theme.textSecondary}
           value={description}
@@ -808,8 +1268,62 @@ export default function PostCarScreen() {
           textAlign={isRTL ? "right" : "left"}
         />
 
-        <Button onPress={handleSubmit} disabled={isLoading} style={styles.submitButton}>
-          {isLoading ? t("posting") : (listingStatus?.requiresPayment ? (isRTL ? "متابعة للدفع" : "Continue to Payment") : t("postListing"))}
+        <View
+          style={[
+            styles.agreementContainer,
+            {
+              backgroundColor: theme.warning + "10",
+              borderColor: theme.warning,
+              marginTop: Spacing.lg,
+            },
+          ]}
+        >
+          <Pressable
+            style={styles.checkboxRow}
+            onPress={() => {
+              setIsFormAgreed(!isFormAgreed);
+              Haptics.selectionAsync();
+            }}
+          >
+            <View
+              style={[
+                styles.checkbox,
+                isFormAgreed && {
+                  backgroundColor: theme.primary,
+                  borderColor: theme.primary,
+                },
+              ]}
+            >
+              {isFormAgreed && (
+                <Feather name="check" size={14} color="#FFFFFF" />
+              )}
+            </View>
+            <ThemedText
+              style={[
+                styles.agreementText,
+                { color: theme.textSecondary },
+                isRTL && styles.rtlText,
+              ]}
+            >
+              {isRTL
+                ? "أتعهد بأنني مالك السلعة أو مفوض ببيعها، وأن التطبيق مجرد وسيط للعرض ولا يتحمل أي مسؤولية قانونية عن التعاملات المالية أو جودة المعروضات. أنا المسؤول الأول والأخير عن صحة البيانات."
+                : "I agree that I am the owner or authorized seller, and the app is just a listing platform bearing no legal liability for transactions. I am fully responsible for the data accuracy."}
+            </ThemedText>
+          </Pressable>
+        </View>
+
+        <Button
+          onPress={handleSubmit}
+          disabled={isLoading}
+          style={styles.submitButton}
+        >
+          {isLoading
+            ? t("posting")
+            : listingStatus?.requiresPayment
+              ? isRTL
+                ? "متابعة للدفع"
+                : "Continue to Payment"
+              : t("postListing")}
         </Button>
       </KeyboardAwareScrollViewCompat>
     </ThemedView>

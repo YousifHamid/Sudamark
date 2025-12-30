@@ -8,6 +8,7 @@ import RequestInspectionScreen from "@/screens/RequestInspectionScreen";
 import PostCarScreen from "@/screens/PostCarScreen";
 import SearchScreen from "@/screens/SearchScreen";
 import ServiceProviderDetailScreen from "@/screens/ServiceProviderDetailScreen";
+import NotificationsScreen from "@/screens/NotificationsScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppReview } from "@/hooks/useAppReview";
@@ -24,14 +25,21 @@ export type RootStackParamList = {
   MyListings: undefined;
   MyFavorites: undefined;
   EditProfile: undefined;
-  Report: { userId?: string };
+  Report: {
+    userId?: string;
+    targetId?: string;
+    targetType?: string;
+    targetName?: string;
+  };
+  Notifications: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootStackNavigator() {
   const screenOptions = useScreenOptions({ transparent: false });
-  const { isAuthenticated, isLoading, hasSeenOnboarding, completeOnboarding } = useAuth();
+  const { isAuthenticated, isLoading, hasSeenOnboarding, completeOnboarding } =
+    useAuth();
   useAppReview();
 
   if (isLoading) {
@@ -42,10 +50,7 @@ export default function RootStackNavigator() {
     <Stack.Navigator screenOptions={screenOptions}>
       {!isAuthenticated ? (
         !hasSeenOnboarding ? (
-          <Stack.Screen
-            name="Onboarding"
-            options={{ headerShown: false }}
-          >
+          <Stack.Screen name="Onboarding" options={{ headerShown: false }}>
             {() => <OnboardingScreen onComplete={completeOnboarding} />}
           </Stack.Screen>
         ) : (
@@ -108,6 +113,14 @@ export default function RootStackNavigator() {
             options={{
               presentation: "modal",
               headerTitle: "",
+            }}
+          />
+          <Stack.Screen
+            name="Notifications"
+            component={NotificationsScreen}
+            options={{
+              presentation: "card",
+              headerTitle: "Notifications",
             }}
           />
         </>

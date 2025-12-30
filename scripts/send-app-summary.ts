@@ -231,7 +231,8 @@ async function sendEmail() {
     await emailTransporter.sendMail({
       from: `"Sudmark" <${process.env.BREVO_SMTP_LOGIN}>`,
       to: recipientEmail,
-      subject: "سودمارك - ملخص التطبيق للعروض والإعلانات | Sudmark App Summary for Presentations",
+      subject:
+        "سودمارك - ملخص التطبيق للعروض والإعلانات | Sudmark App Summary for Presentations",
       html: emailContent,
     });
     console.log(`Email sent successfully to ${recipientEmail}`);

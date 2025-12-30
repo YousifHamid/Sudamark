@@ -1,5 +1,13 @@
 import React, { useState, useMemo } from "react";
-import { View, StyleSheet, FlatList, TextInput, Pressable, Modal, ScrollView } from "react-native";
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  TextInput,
+  Pressable,
+  Modal,
+  ScrollView,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -24,12 +32,15 @@ export default function SearchScreen() {
   const tabBarHeight = 65;
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<SearchScreenRouteProp>();
   const { cars, favorites } = useCars();
   const { user } = useAuth();
 
-  const isSpecialCategory = route.params?.category === "my-listings" || route.params?.category === "favorites";
+  const isSpecialCategory =
+    route.params?.category === "my-listings" ||
+    route.params?.category === "favorites";
   const specialMode = route.params?.category;
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -37,15 +48,19 @@ export default function SearchScreen() {
 
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
-    isSpecialCategory ? null : (route.params?.category || null)
+    isSpecialCategory ? null : route.params?.category || null,
   );
-  const [selectedCondition, setSelectedCondition] = useState<string | null>(null);
+  const [selectedCondition, setSelectedCondition] = useState<string | null>(
+    null,
+  );
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
   const [tempCity, setTempCity] = useState<string | null>(selectedCity);
   const [tempCategory, setTempCategory] = useState<string | null>(null);
-  const [tempCondition, setTempCondition] = useState<string | null>(selectedCondition);
+  const [tempCondition, setTempCondition] = useState<string | null>(
+    selectedCondition,
+  );
   const [tempMinPrice, setTempMinPrice] = useState(minPrice);
   const [tempMaxPrice, setTempMaxPrice] = useState(maxPrice);
 
@@ -79,19 +94,46 @@ export default function SearchScreen() {
     }
 
     return baseCars.filter((car) => {
-      const matchesSearch = car.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      const matchesSearch =
+        car.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         car.make.toLowerCase().includes(searchQuery.toLowerCase()) ||
         car.model.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCity = !selectedCity || car.city === selectedCity;
-      const matchesCategory = !selectedCategory || car.category === selectedCategory;
-      const matchesCondition = !selectedCondition || car.condition === selectedCondition;
+      const matchesCategory =
+        !selectedCategory || car.category === selectedCategory;
+      const matchesCondition =
+        !selectedCondition || car.condition === selectedCondition;
       const matchesMinPrice = !minPrice || car.price >= parseInt(minPrice);
       const matchesMaxPrice = !maxPrice || car.price <= parseInt(maxPrice);
-      return matchesSearch && matchesCity && matchesCategory && matchesCondition && matchesMinPrice && matchesMaxPrice;
+      return (
+        matchesSearch &&
+        matchesCity &&
+        matchesCategory &&
+        matchesCondition &&
+        matchesMinPrice &&
+        matchesMaxPrice
+      );
     });
-  }, [cars, searchQuery, selectedCity, selectedCategory, selectedCondition, minPrice, maxPrice, favorites, user?.id, specialMode]);
+  }, [
+    cars,
+    searchQuery,
+    selectedCity,
+    selectedCategory,
+    selectedCondition,
+    minPrice,
+    maxPrice,
+    favorites,
+    user?.id,
+    specialMode,
+  ]);
 
-  const activeFiltersCount = [selectedCity, selectedCategory, selectedCondition, minPrice, maxPrice].filter(Boolean).length;
+  const activeFiltersCount = [
+    selectedCity,
+    selectedCategory,
+    selectedCondition,
+    minPrice,
+    maxPrice,
+  ].filter(Boolean).length;
 
   const openFilterModal = () => {
     setTempCity(selectedCity);
@@ -122,7 +164,15 @@ export default function SearchScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
 
-  const FilterChip = ({ label, isSelected, onPress }: { label: string; isSelected: boolean; onPress: () => void }) => (
+  const FilterChip = ({
+    label,
+    isSelected,
+    onPress,
+  }: {
+    label: string;
+    isSelected: boolean;
+    onPress: () => void;
+  }) => (
     <Pressable
       onPress={onPress}
       style={[
@@ -154,32 +204,67 @@ export default function SearchScreen() {
 
   const getEmptyMessage = () => {
     if (specialMode === "my-listings") {
-      return isRTL ? "لم تقم بإضافة أي إعلانات بعد" : "You haven't posted any listings yet";
+      return isRTL
+        ? "لم تقم بإضافة أي إعلانات بعد"
+        : "You haven't posted any listings yet";
     } else if (specialMode === "favorites") {
-      return isRTL ? "لم تقم بإضافة أي سيارات للمفضلة" : "You haven't added any favorites yet";
+      return isRTL
+        ? "لم تقم بإضافة أي سيارات للمفضلة"
+        : "You haven't added any favorites yet";
     }
     return t("adjustFilters");
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
-      <View style={[styles.searchContainer, { backgroundColor: theme.backgroundDefault, paddingTop: insets.top + Spacing.sm }]}>
+      <View
+        style={[
+          styles.searchContainer,
+          {
+            backgroundColor: theme.backgroundDefault,
+            paddingTop: insets.top + Spacing.sm,
+          },
+        ]}
+      >
         {isSpecialCategory ? (
-          <ThemedText type="h3" style={[styles.screenTitle, isRTL && styles.rtlText]}>
+          <ThemedText
+            type="h3"
+            style={[styles.screenTitle, isRTL && styles.rtlText]}
+          >
             {getScreenTitle()}
           </ThemedText>
         ) : null}
-        <View style={[styles.searchBar, { backgroundColor: theme.backgroundSecondary }, isRTL && styles.searchBarRTL]}>
-          <Pressable onPress={openFilterModal} style={[styles.filterButton, { backgroundColor: theme.primary + "15" }]}>
+        <View
+          style={[
+            styles.searchBar,
+            { backgroundColor: theme.backgroundSecondary },
+            isRTL && styles.searchBarRTL,
+          ]}
+        >
+          <Pressable
+            onPress={openFilterModal}
+            style={[
+              styles.filterButton,
+              { backgroundColor: theme.primary + "15" },
+            ]}
+          >
             <Feather name="sliders" size={20} color={theme.primary} />
             {activeFiltersCount > 0 ? (
-              <View style={[styles.filterBadge, { backgroundColor: theme.primary }]}>
-                <ThemedText style={styles.filterBadgeText}>{activeFiltersCount}</ThemedText>
+              <View
+                style={[styles.filterBadge, { backgroundColor: theme.primary }]}
+              >
+                <ThemedText style={styles.filterBadgeText}>
+                  {activeFiltersCount}
+                </ThemedText>
               </View>
             ) : null}
           </Pressable>
           <TextInput
-            style={[styles.searchInput, { color: theme.text }, isRTL && styles.searchInputRTL]}
+            style={[
+              styles.searchInput,
+              { color: theme.text },
+              isRTL && styles.searchInputRTL,
+            ]}
             placeholder={t("searchCars")}
             placeholderTextColor={theme.textSecondary}
             value={searchQuery}
@@ -214,9 +299,29 @@ export default function SearchScreen() {
         )}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Feather name={isSpecialCategory ? (route.params?.category === "favorites" ? "heart" : "list") : "search"} size={48} color={theme.textSecondary} />
-            <ThemedText type="h4" style={[styles.emptyTitle, isRTL && styles.rtlText]}>{t("noCarsFound")}</ThemedText>
-            <ThemedText style={[{ color: theme.textSecondary, textAlign: "center" }, isRTL && styles.rtlText]}>
+            <Feather
+              name={
+                isSpecialCategory
+                  ? route.params?.category === "favorites"
+                    ? "heart"
+                    : "list"
+                  : "search"
+              }
+              size={48}
+              color={theme.textSecondary}
+            />
+            <ThemedText
+              type="h4"
+              style={[styles.emptyTitle, isRTL && styles.rtlText]}
+            >
+              {t("noCarsFound")}
+            </ThemedText>
+            <ThemedText
+              style={[
+                { color: theme.textSecondary, textAlign: "center" },
+                isRTL && styles.rtlText,
+              ]}
+            >
               {getEmptyMessage()}
             </ThemedText>
           </View>
@@ -230,21 +335,48 @@ export default function SearchScreen() {
         onRequestClose={() => setShowFilterModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <ThemedView style={[styles.modalContent, { paddingBottom: insets.bottom + Spacing.lg }]}>
+          <ThemedView
+            style={[
+              styles.modalContent,
+              { paddingBottom: insets.bottom + Spacing.lg },
+            ]}
+          >
             <View style={[styles.modalHeader, isRTL && styles.modalHeaderRTL]}>
-              <ThemedText type="h3" style={isRTL ? styles.rtlText : undefined}>{t("filters")}</ThemedText>
+              <ThemedText type="h3" style={isRTL ? styles.rtlText : undefined}>
+                {t("filters")}
+              </ThemedText>
               <Pressable onPress={() => setShowFilterModal(false)}>
                 <Feather name="x" size={24} color={theme.text} />
               </Pressable>
             </View>
 
-            <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+            <ScrollView
+              style={styles.modalScroll}
+              showsVerticalScrollIndicator={false}
+            >
               <View style={styles.filterSection}>
-                <ThemedText type="h4" style={[styles.filterSectionTitle, isRTL && styles.rtlText]}>{t("filterPrice")}</ThemedText>
-                <View style={[styles.priceInputsRow, isRTL && styles.priceInputsRowRTL]}>
+                <ThemedText
+                  type="h4"
+                  style={[styles.filterSectionTitle, isRTL && styles.rtlText]}
+                >
+                  {t("filterPrice")}
+                </ThemedText>
+                <View
+                  style={[
+                    styles.priceInputsRow,
+                    isRTL && styles.priceInputsRowRTL,
+                  ]}
+                >
                   <View style={styles.priceInputContainer}>
                     <TextInput
-                      style={[styles.priceInput, { backgroundColor: theme.backgroundSecondary, color: theme.text }, isRTL && styles.rtlText]}
+                      style={[
+                        styles.priceInput,
+                        {
+                          backgroundColor: theme.backgroundSecondary,
+                          color: theme.text,
+                        },
+                        isRTL && styles.rtlText,
+                      ]}
                       placeholder={t("minPrice")}
                       placeholderTextColor={theme.textSecondary}
                       value={tempMinPrice}
@@ -253,10 +385,19 @@ export default function SearchScreen() {
                       textAlign={isRTL ? "right" : "left"}
                     />
                   </View>
-                  <ThemedText style={{ color: theme.textSecondary }}>-</ThemedText>
+                  <ThemedText style={{ color: theme.textSecondary }}>
+                    -
+                  </ThemedText>
                   <View style={styles.priceInputContainer}>
                     <TextInput
-                      style={[styles.priceInput, { backgroundColor: theme.backgroundSecondary, color: theme.text }, isRTL && styles.rtlText]}
+                      style={[
+                        styles.priceInput,
+                        {
+                          backgroundColor: theme.backgroundSecondary,
+                          color: theme.text,
+                        },
+                        isRTL && styles.rtlText,
+                      ]}
                       placeholder={t("maxPrice")}
                       placeholderTextColor={theme.textSecondary}
                       value={tempMaxPrice}
@@ -269,8 +410,18 @@ export default function SearchScreen() {
               </View>
 
               <View style={styles.filterSection}>
-                <ThemedText type="h4" style={[styles.filterSectionTitle, isRTL && styles.rtlText]}>{t("filterLocation")}</ThemedText>
-                <View style={[styles.chipsContainer, isRTL && styles.chipsContainerRTL]}>
+                <ThemedText
+                  type="h4"
+                  style={[styles.filterSectionTitle, isRTL && styles.rtlText]}
+                >
+                  {t("filterLocation")}
+                </ThemedText>
+                <View
+                  style={[
+                    styles.chipsContainer,
+                    isRTL && styles.chipsContainerRTL,
+                  ]}
+                >
                   <FilterChip
                     label={t("allLocations")}
                     isSelected={tempCity === null}
@@ -288,8 +439,18 @@ export default function SearchScreen() {
               </View>
 
               <View style={styles.filterSection}>
-                <ThemedText type="h4" style={[styles.filterSectionTitle, isRTL && styles.rtlText]}>{t("filterType")}</ThemedText>
-                <View style={[styles.chipsContainer, isRTL && styles.chipsContainerRTL]}>
+                <ThemedText
+                  type="h4"
+                  style={[styles.filterSectionTitle, isRTL && styles.rtlText]}
+                >
+                  {t("filterType")}
+                </ThemedText>
+                <View
+                  style={[
+                    styles.chipsContainer,
+                    isRTL && styles.chipsContainerRTL,
+                  ]}
+                >
                   <FilterChip
                     label={t("allTypes")}
                     isSelected={tempCategory === null}
@@ -307,8 +468,18 @@ export default function SearchScreen() {
               </View>
 
               <View style={styles.filterSection}>
-                <ThemedText type="h4" style={[styles.filterSectionTitle, isRTL && styles.rtlText]}>{t("filterCondition")}</ThemedText>
-                <View style={[styles.chipsContainer, isRTL && styles.chipsContainerRTL]}>
+                <ThemedText
+                  type="h4"
+                  style={[styles.filterSectionTitle, isRTL && styles.rtlText]}
+                >
+                  {t("filterCondition")}
+                </ThemedText>
+                <View
+                  style={[
+                    styles.chipsContainer,
+                    isRTL && styles.chipsContainerRTL,
+                  ]}
+                >
                   <FilterChip
                     label={t("allConditions")}
                     isSelected={tempCondition === null}
@@ -331,7 +502,9 @@ export default function SearchScreen() {
                 style={[styles.resetButton, { borderColor: theme.border }]}
                 onPress={resetFilters}
               >
-                <ThemedText style={{ color: theme.text }}>{t("resetFilters")}</ThemedText>
+                <ThemedText style={{ color: theme.text }}>
+                  {t("resetFilters")}
+                </ThemedText>
               </Pressable>
               <Button onPress={applyFilters} style={styles.applyButton}>
                 {t("applyFilters")}

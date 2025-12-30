@@ -1,5 +1,13 @@
 import React from "react";
-import { View, StyleSheet, ScrollView, Pressable, Linking, Platform, Alert } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  Linking,
+  Platform,
+  Alert,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRoute, RouteProp } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
@@ -13,7 +21,10 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
-type ServiceProviderDetailRouteProp = RouteProp<RootStackParamList, "ServiceProviderDetail">;
+type ServiceProviderDetailRouteProp = RouteProp<
+  RootStackParamList,
+  "ServiceProviderDetail"
+>;
 
 export default function ServiceProviderDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -29,7 +40,10 @@ export default function ServiceProviderDetailScreen() {
       if (supported) {
         Linking.openURL(phoneUrl);
       } else {
-        Alert.alert(isRTL ? "خطأ" : "Error", isRTL ? "لا يمكن إجراء المكالمة" : "Cannot make call");
+        Alert.alert(
+          isRTL ? "خطأ" : "Error",
+          isRTL ? "لا يمكن إجراء المكالمة" : "Cannot make call",
+        );
       }
     });
   };
@@ -40,7 +54,10 @@ export default function ServiceProviderDetailScreen() {
     const cleanNumber = whatsappNumber.replace(/[^0-9]/g, "");
     const whatsappUrl = `https://wa.me/${cleanNumber}`;
     Linking.openURL(whatsappUrl).catch(() => {
-      Alert.alert(isRTL ? "خطأ" : "Error", isRTL ? "لا يمكن فتح واتساب" : "Cannot open WhatsApp");
+      Alert.alert(
+        isRTL ? "خطأ" : "Error",
+        isRTL ? "لا يمكن فتح واتساب" : "Cannot open WhatsApp",
+      );
     });
   };
 
@@ -61,10 +78,14 @@ export default function ServiceProviderDetailScreen() {
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case "mechanic": return t("mechanic");
-      case "electrician": return t("electrician");
-      case "lawyer": return t("lawyer");
-      default: return type;
+      case "mechanic":
+        return t("mechanic");
+      case "electrician":
+        return t("electrician");
+      case "lawyer":
+        return t("lawyer");
+      default:
+        return type;
     }
   };
 
@@ -78,7 +99,7 @@ export default function ServiceProviderDetailScreen() {
           size={18}
           color={i <= rating ? "#F59E0B" : theme.border}
           style={{ marginRight: 2 }}
-        />
+        />,
       );
     }
     return stars;
@@ -93,10 +114,18 @@ export default function ServiceProviderDetailScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.header, { backgroundColor: theme.backgroundDefault }]}>
+        <View
+          style={[styles.header, { backgroundColor: theme.backgroundDefault }]}
+        >
           <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
             <Feather
-              name={provider.type === "mechanic" ? "tool" : provider.type === "electrician" ? "zap" : "briefcase"}
+              name={
+                provider.type === "mechanic"
+                  ? "tool"
+                  : provider.type === "electrician"
+                    ? "zap"
+                    : "briefcase"
+              }
               size={32}
               color="#FFFFFF"
             />
@@ -104,35 +133,70 @@ export default function ServiceProviderDetailScreen() {
           <ThemedText type="h2" style={[styles.name, isRTL && styles.rtlText]}>
             {provider.name}
           </ThemedText>
-          <View style={[styles.typeBadge, { backgroundColor: theme.primary + "15" }]}>
-            <ThemedText style={{ color: theme.primary }}>{getTypeLabel(provider.type)}</ThemedText>
+          <View
+            style={[
+              styles.typeBadge,
+              { backgroundColor: theme.primary + "15" },
+            ]}
+          >
+            <ThemedText style={{ color: theme.primary }}>
+              {getTypeLabel(provider.type)}
+            </ThemedText>
           </View>
           {provider.isVerified ? (
-            <View style={[styles.verifiedBadge, { backgroundColor: "#10B981" + "15" }]}>
+            <View
+              style={[
+                styles.verifiedBadge,
+                { backgroundColor: "#10B981" + "15" },
+              ]}
+            >
               <Feather name="check-circle" size={14} color="#10B981" />
-              <ThemedText type="small" style={{ color: "#10B981", marginLeft: 4 }}>
+              <ThemedText
+                type="small"
+                style={{ color: "#10B981", marginLeft: 4 }}
+              >
                 {isRTL ? "موثق" : "Verified"}
               </ThemedText>
             </View>
           ) : null}
         </View>
 
-        <View style={[styles.ratingSection, { backgroundColor: theme.backgroundDefault }]}>
+        <View
+          style={[
+            styles.ratingSection,
+            { backgroundColor: theme.backgroundDefault },
+          ]}
+        >
           <View style={styles.ratingRow}>
-            <View style={styles.starsContainer}>{renderStars(provider.rating || 0)}</View>
+            <View style={styles.starsContainer}>
+              {renderStars(provider.rating || 0)}
+            </View>
             <ThemedText style={{ color: theme.textSecondary }}>
               ({provider.reviewCount || 0} {t("reviews")})
             </ThemedText>
           </View>
         </View>
 
-        <View style={[styles.infoSection, { backgroundColor: theme.backgroundDefault }]}>
-          <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>
+        <View
+          style={[
+            styles.infoSection,
+            { backgroundColor: theme.backgroundDefault },
+          ]}
+        >
+          <ThemedText
+            type="h4"
+            style={[styles.sectionTitle, isRTL && styles.rtlText]}
+          >
             {isRTL ? "معلومات التواصل" : "Contact Info"}
           </ThemedText>
-          
+
           <View style={[styles.infoRow, isRTL && styles.infoRowRTL]}>
-            <View style={[styles.infoIcon, { backgroundColor: theme.backgroundSecondary }]}>
+            <View
+              style={[
+                styles.infoIcon,
+                { backgroundColor: theme.backgroundSecondary },
+              ]}
+            >
               <Feather name="map-pin" size={18} color={theme.primary} />
             </View>
             <View style={styles.infoContent}>
@@ -140,13 +204,19 @@ export default function ServiceProviderDetailScreen() {
                 {isRTL ? "الموقع" : "Location"}
               </ThemedText>
               <ThemedText style={isRTL ? styles.rtlText : undefined}>
-                {provider.address ? `${provider.address}, ` : ""}{t(provider.city) || provider.city}
+                {provider.address ? `${provider.address}, ` : ""}
+                {t(provider.city) || provider.city}
               </ThemedText>
             </View>
           </View>
 
           <View style={[styles.infoRow, isRTL && styles.infoRowRTL]}>
-            <View style={[styles.infoIcon, { backgroundColor: theme.backgroundSecondary }]}>
+            <View
+              style={[
+                styles.infoIcon,
+                { backgroundColor: theme.backgroundSecondary },
+              ]}
+            >
               <Feather name="phone" size={18} color={theme.primary} />
             </View>
             <View style={styles.infoContent}>
@@ -159,22 +229,37 @@ export default function ServiceProviderDetailScreen() {
 
           {provider.price ? (
             <View style={[styles.infoRow, isRTL && styles.infoRowRTL]}>
-              <View style={[styles.infoIcon, { backgroundColor: theme.backgroundSecondary }]}>
+              <View
+                style={[
+                  styles.infoIcon,
+                  { backgroundColor: theme.backgroundSecondary },
+                ]}
+              >
                 <Feather name="dollar-sign" size={18} color={theme.primary} />
               </View>
               <View style={styles.infoContent}>
                 <ThemedText type="small" style={{ color: theme.textSecondary }}>
                   {isRTL ? "السعر" : "Price"}
                 </ThemedText>
-                <ThemedText style={isRTL ? styles.rtlText : undefined}>{provider.price}</ThemedText>
+                <ThemedText style={isRTL ? styles.rtlText : undefined}>
+                  {provider.price}
+                </ThemedText>
               </View>
             </View>
           ) : null}
         </View>
 
         {provider.description ? (
-          <View style={[styles.descSection, { backgroundColor: theme.backgroundDefault }]}>
-            <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>
+          <View
+            style={[
+              styles.descSection,
+              { backgroundColor: theme.backgroundDefault },
+            ]}
+          >
+            <ThemedText
+              type="h4"
+              style={[styles.sectionTitle, isRTL && styles.rtlText]}
+            >
               {isRTL ? "نبذة" : "About"}
             </ThemedText>
             <ThemedText style={[styles.description, isRTL && styles.rtlText]}>
@@ -184,15 +269,31 @@ export default function ServiceProviderDetailScreen() {
         ) : null}
 
         {provider.services && provider.services.length > 0 ? (
-          <View style={[styles.servicesSection, { backgroundColor: theme.backgroundDefault }]}>
-            <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>
+          <View
+            style={[
+              styles.servicesSection,
+              { backgroundColor: theme.backgroundDefault },
+            ]}
+          >
+            <ThemedText
+              type="h4"
+              style={[styles.sectionTitle, isRTL && styles.rtlText]}
+            >
               {isRTL ? "الخدمات" : "Services"}
             </ThemedText>
             <View style={styles.servicesGrid}>
               {provider.services.map((service: string, index: number) => (
-                <View key={index} style={[styles.serviceChip, { backgroundColor: theme.backgroundSecondary }]}>
+                <View
+                  key={index}
+                  style={[
+                    styles.serviceChip,
+                    { backgroundColor: theme.backgroundSecondary },
+                  ]}
+                >
                   <Feather name="check" size={14} color={theme.primary} />
-                  <ThemedText type="small" style={{ marginLeft: 6 }}>{service}</ThemedText>
+                  <ThemedText type="small" style={{ marginLeft: 6 }}>
+                    {service}
+                  </ThemedText>
                 </View>
               ))}
             </View>
@@ -210,7 +311,7 @@ export default function ServiceProviderDetailScreen() {
                 {isRTL ? "واتساب" : "WhatsApp"}
               </ThemedText>
             </Pressable>
-            
+
             <Pressable
               style={[styles.actionButton, { backgroundColor: theme.primary }]}
               onPress={handleCall}

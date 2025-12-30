@@ -1,5 +1,13 @@
 import React from "react";
-import { View, StyleSheet, Pressable, Text, Alert, Image } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  Text,
+  Alert,
+  Image,
+  Platform,
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -11,28 +19,30 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ThemedText } from "./ThemedText";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
-
-import { Platform } from "react-native";
+import { SUPPORTED_COUNTRIES } from "@/constants/countries";
 
 export function HeaderTitle() {
   const { t, isRTL } = useLanguage();
   const { theme } = useTheme();
   const { user, isAuthenticated } = useAuth();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleSellPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (!isAuthenticated) {
       Alert.alert(
         isRTL ? "تسجيل الدخول مطلوب" : "Login Required",
-        isRTL ? "يجب تسجيل الدخول لإضافة إعلان" : "Please login to post a listing",
+        isRTL
+          ? "يجب تسجيل الدخول لإضافة إعلان"
+          : "Please login to post a listing",
         [
           { text: isRTL ? "إلغاء" : "Cancel", style: "cancel" },
           {
             text: isRTL ? "تسجيل الدخول" : "Login",
-            onPress: () => navigation.navigate("Login" as any)
-          }
-        ]
+            onPress: () => navigation.navigate("Login" as any),
+          },
+        ],
       );
       return;
     }
@@ -41,13 +51,31 @@ export function HeaderTitle() {
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    const timeText = hour < 12
-      ? (isRTL ? "صباح الخير" : "Good Morning")
-      : (isRTL ? "مساء الخير" : "Good Evening");
+    const timeText =
+      hour < 12
+        ? isRTL
+          ? "صباح الخير"
+          : "Good Morning"
+        : isRTL
+          ? "مساء الخير"
+          : "Good Evening";
 
     // Get first name safely
-    const firstName = user?.name ? user.name.split(' ')[0] : (isRTL ? "يا غالي" : "Guest");
+    const firstName = user?.name
+      ? user.name.split(" ")[0]
+      : isRTL
+        ? "يا غالي"
+        : "Guest";
     return `${timeText}, ${firstName}`;
+  };
+
+  const getUserCountry = () => {
+    if (!user?.countryCode) return isRTL ? "السودان" : "Sudan";
+    const country = SUPPORTED_COUNTRIES.find(
+      (c) => c.dialCode === user.countryCode,
+    );
+    if (!country) return isRTL ? "السودان" : "Sudan";
+    return isRTL ? country.nameAr : country.name;
   };
 
   return (
@@ -65,24 +93,19 @@ export function HeaderTitle() {
 
       <View style={styles.leftSection}>
         <View style={styles.greetingContainer}>
-          <ThemedText style={{ fontSize: 11, fontWeight: "700", color: theme.primary }}>
+          <ThemedText
+            style={{ fontSize: 11, fontWeight: "700", color: theme.primary }}
+          >
             {getGreeting()}
           </ThemedText>
-          <ThemedText style={{ fontSize: 9, color: theme.textSecondary, marginTop: 1 }}>
-            {isRTL ? "السودان" : "Sudan"}
+          <ThemedText
+            style={{ fontSize: 9, color: theme.textSecondary, marginTop: 1 }}
+          >
+            {getUserCountry()}
           </ThemedText>
         </View>
 
-        <Pressable
-          style={[styles.bellButton, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border }]}
-          onPress={() => {
-            Haptics.selectionAsync();
-            Alert.alert(isRTL ? "الإشعارات" : "Notifications", isRTL ? "لا توجد إشعارات جديدة" : "No new notifications");
-          }}
-        >
-          <Feather name="bell" size={16} color={theme.text} />
-          <View style={[styles.notificationBadge, { backgroundColor: theme.primary }]} />
-        </Pressable>
+
       </View>
     </View>
   );
@@ -114,22 +137,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingTop: 12, // Pushes text down to align with Logo
   },
-  bellButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-  },
-  notificationBadge: {
-    position: "absolute",
-    top: 6,
-    right: 6,
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-  },
+
   slogan: {
     fontSize: 9,
     fontWeight: "500",
@@ -141,6 +149,6 @@ const styles = StyleSheet.create({
     height: 75,
   },
   separator: {
-    display: 'none'
+    display: "none",
   },
 });

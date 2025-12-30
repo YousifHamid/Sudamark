@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Pressable, Alert, Linking, TextInput } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  Alert,
+  Linking,
+  TextInput,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
@@ -15,8 +22,12 @@ import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { useServiceProviders } from "@/hooks/useServiceProviders";
 import { useCars } from "@/hooks/useCars";
+import { apiRequest } from "@/lib/query-client";
 
-type RequestInspectionRouteProp = RouteProp<RootStackParamList, "RequestInspection">;
+type RequestInspectionRouteProp = RouteProp<
+  RootStackParamList,
+  "RequestInspection"
+>;
 
 export default function RequestInspectionScreen() {
   const insets = useSafeAreaInsets();
@@ -28,10 +39,14 @@ export default function RequestInspectionScreen() {
   const { cars } = useCars();
 
   const car = cars.find((c) => c.id === route.params.carId);
-  const inspectionCenters = providers.filter((p) => p.role === "inspection_center");
+  const inspectionCenters = providers.filter(
+    (p) => p.role === "inspection_center",
+  );
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [locationType, setLocationType] = useState<"seller" | "agreed">("seller");
+  const [locationType, setLocationType] = useState<"seller" | "agreed">(
+    "seller",
+  );
   const [agreedLocationText, setAgreedLocationText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -53,12 +68,12 @@ export default function RequestInspectionScreen() {
 
   const handleWhatsApp = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const message = isRTL 
-      ? `مرحباً، أريد الاستفسار عن السيارة: ${car?.title}` 
+    const message = isRTL
+      ? `مرحباً، أريد الاستفسار عن السيارة: ${car?.title}`
       : `Hello, I'm interested in the car: ${car?.title}`;
     const whatsappUrl = `whatsapp://send?phone=${sellerWhatsApp}&text=${encodeURIComponent(message)}`;
-    const webWhatsappUrl = `https://wa.me/${sellerWhatsApp.replace('+', '')}?text=${encodeURIComponent(message)}`;
-    
+    const webWhatsappUrl = `https://wa.me/${sellerWhatsApp.replace("+", "")}?text=${encodeURIComponent(message)}`;
+
     const canOpen = await Linking.canOpenURL(whatsappUrl);
     if (canOpen) {
       Linking.openURL(whatsappUrl);
@@ -81,14 +96,23 @@ export default function RequestInspectionScreen() {
     setIsLoading(true);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-    setTimeout(() => {
+    try {
+      await apiRequest("POST", "/api/inspection-requests", {
+        carId: car?.id,
+        scheduledAt: selectedDate, // In a real app, map this ID to a real date string
+        location: locationType === "agreed" ? agreedLocationText : "Seller Location",
+        message: "New inspection request",
+      });
+
+      Alert.alert(t("requestSubmitted"), t("requestSubmittedMessage"), [
+        { text: t("ok"), onPress: () => navigation.goBack() },
+      ]);
+    } catch (error) {
+      console.error("Inspection request error:", error);
+      Alert.alert(t("error"), t("requestFailed"));
+    } finally {
       setIsLoading(false);
-      Alert.alert(
-        t("requestSubmitted"),
-        t("requestSubmittedMessage"),
-        [{ text: t("ok"), onPress: () => navigation.goBack() }]
-      );
-    }, 1000);
+    }
   };
 
   return (
@@ -100,82 +124,169 @@ export default function RequestInspectionScreen() {
         ]}
       >
         {car ? (
-          <View style={[styles.carPreview, { backgroundColor: theme.backgroundDefault }]}>
-            <ThemedText type="h4" style={isRTL ? styles.rtlText : undefined}>{car.title}</ThemedText>
-            <ThemedText type="small" style={[{ color: theme.textSecondary }, isRTL && styles.rtlText]}>
+          <View
+            style={[
+              styles.carPreview,
+              { backgroundColor: theme.backgroundDefault },
+            ]}
+          >
+            <ThemedText type="h4" style={isRTL ? styles.rtlText : undefined}>
+              {car.title}
+            </ThemedText>
+            <ThemedText
+              type="small"
+              style={[{ color: theme.textSecondary }, isRTL && styles.rtlText]}
+            >
               {car.make} {car.model} - {car.year}
             </ThemedText>
-            <ThemedText type="body" style={[{ color: theme.primary, marginTop: Spacing.xs }, isRTL && styles.rtlText]}>
+            <ThemedText
+              type="body"
+              style={[
+                { color: theme.primary, marginTop: Spacing.xs },
+                isRTL && styles.rtlText,
+              ]}
+            >
               {car.price.toLocaleString()} {t("sdg")}
             </ThemedText>
           </View>
         ) : null}
 
-        <View style={[styles.section, { backgroundColor: theme.backgroundDefault }]}>
-          <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t("sellerContact")}</ThemedText>
+        <View
+          style={[styles.section, { backgroundColor: theme.backgroundDefault }]}
+        >
+          <ThemedText
+            type="h4"
+            style={[styles.sectionTitle, isRTL && styles.rtlText]}
+          >
+            {t("sellerContact")}
+          </ThemedText>
           <View style={[styles.contactRow, isRTL && styles.contactRowRTL]}>
-            <Pressable 
-              style={[styles.contactButton, { backgroundColor: theme.success + "20", borderColor: theme.success }]}
+            <Pressable
+              style={[
+                styles.contactButton,
+                {
+                  backgroundColor: theme.success + "20",
+                  borderColor: theme.success,
+                },
+              ]}
               onPress={handleCall}
             >
               <Feather name="phone" size={20} color={theme.success} />
-              <ThemedText style={{ color: theme.success, marginLeft: isRTL ? 0 : Spacing.sm, marginRight: isRTL ? Spacing.sm : 0, fontWeight: "600" }}>
+              <ThemedText
+                style={{
+                  color: theme.success,
+                  marginLeft: isRTL ? 0 : Spacing.sm,
+                  marginRight: isRTL ? Spacing.sm : 0,
+                  fontWeight: "600",
+                }}
+              >
                 {t("callSeller")}
               </ThemedText>
             </Pressable>
-            <Pressable 
-              style={[styles.contactButton, { backgroundColor: "#25D366" + "20", borderColor: "#25D366" }]}
+            <Pressable
+              style={[
+                styles.contactButton,
+                { backgroundColor: "#25D366" + "20", borderColor: "#25D366" },
+              ]}
               onPress={handleWhatsApp}
             >
               <Feather name="message-circle" size={20} color="#25D366" />
-              <ThemedText style={{ color: "#25D366", marginLeft: isRTL ? 0 : Spacing.sm, marginRight: isRTL ? Spacing.sm : 0, fontWeight: "600" }}>
+              <ThemedText
+                style={{
+                  color: "#25D366",
+                  marginLeft: isRTL ? 0 : Spacing.sm,
+                  marginRight: isRTL ? Spacing.sm : 0,
+                  fontWeight: "600",
+                }}
+              >
                 {t("whatsappSeller")}
               </ThemedText>
             </Pressable>
           </View>
         </View>
 
-        <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t("chooseLocation")}</ThemedText>
-        <View style={[styles.locationOptions, isRTL && styles.locationOptionsRTL]}>
+        <ThemedText
+          type="h4"
+          style={[styles.sectionTitle, isRTL && styles.rtlText]}
+        >
+          {t("chooseLocation")}
+        </ThemedText>
+        <View
+          style={[styles.locationOptions, isRTL && styles.locationOptionsRTL]}
+        >
           <Pressable
             style={[
               styles.locationOption,
-              { backgroundColor: theme.backgroundDefault, borderColor: theme.border },
-              locationType === "seller" && { borderColor: theme.primary, borderWidth: 2 },
+              {
+                backgroundColor: theme.backgroundDefault,
+                borderColor: theme.border,
+              },
+              locationType === "seller" && {
+                borderColor: theme.primary,
+                borderWidth: 2,
+              },
             ]}
             onPress={() => {
               setLocationType("seller");
               Haptics.selectionAsync();
             }}
           >
-            <View style={[styles.locationIcon, { backgroundColor: theme.primary + "20" }]}>
+            <View
+              style={[
+                styles.locationIcon,
+                { backgroundColor: theme.primary + "20" },
+              ]}
+            >
               <Feather name="map-pin" size={20} color={theme.primary} />
             </View>
-            <ThemedText style={[{ fontWeight: "600" }, isRTL && styles.rtlText]}>{t("sellerLocation")}</ThemedText>
+            <ThemedText
+              style={[{ fontWeight: "600" }, isRTL && styles.rtlText]}
+            >
+              {t("sellerLocation")}
+            </ThemedText>
             {locationType === "seller" ? (
-              <View style={[styles.checkmark, { backgroundColor: theme.primary }]}>
+              <View
+                style={[styles.checkmark, { backgroundColor: theme.primary }]}
+              >
                 <Feather name="check" size={14} color="#FFFFFF" />
               </View>
             ) : null}
           </Pressable>
-          
+
           <Pressable
             style={[
               styles.locationOption,
-              { backgroundColor: theme.backgroundDefault, borderColor: theme.border },
-              locationType === "agreed" && { borderColor: theme.primary, borderWidth: 2 },
+              {
+                backgroundColor: theme.backgroundDefault,
+                borderColor: theme.border,
+              },
+              locationType === "agreed" && {
+                borderColor: theme.primary,
+                borderWidth: 2,
+              },
             ]}
             onPress={() => {
               setLocationType("agreed");
               Haptics.selectionAsync();
             }}
           >
-            <View style={[styles.locationIcon, { backgroundColor: theme.secondary + "20" }]}>
+            <View
+              style={[
+                styles.locationIcon,
+                { backgroundColor: theme.secondary + "20" },
+              ]}
+            >
               <Feather name="navigation" size={20} color={theme.secondary} />
             </View>
-            <ThemedText style={[{ fontWeight: "600" }, isRTL && styles.rtlText]}>{t("agreedLocation")}</ThemedText>
+            <ThemedText
+              style={[{ fontWeight: "600" }, isRTL && styles.rtlText]}
+            >
+              {t("agreedLocation")}
+            </ThemedText>
             {locationType === "agreed" ? (
-              <View style={[styles.checkmark, { backgroundColor: theme.primary }]}>
+              <View
+                style={[styles.checkmark, { backgroundColor: theme.primary }]}
+              >
                 <Feather name="check" size={14} color="#FFFFFF" />
               </View>
             ) : null}
@@ -186,7 +297,11 @@ export default function RequestInspectionScreen() {
           <TextInput
             style={[
               styles.locationInput,
-              { backgroundColor: theme.backgroundDefault, color: theme.text, borderColor: theme.border },
+              {
+                backgroundColor: theme.backgroundDefault,
+                color: theme.text,
+                borderColor: theme.border,
+              },
               isRTL && styles.rtlText,
             ]}
             placeholder={t("enterAgreedLocation")}
@@ -197,7 +312,12 @@ export default function RequestInspectionScreen() {
           />
         ) : null}
 
-        <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t("selectDate")}</ThemedText>
+        <ThemedText
+          type="h4"
+          style={[styles.sectionTitle, isRTL && styles.rtlText]}
+        >
+          {t("selectDate")}
+        </ThemedText>
         <View style={[styles.datesRow, isRTL && styles.datesRowRTL]}>
           {dates.map((date) => (
             <Pressable
@@ -214,7 +334,11 @@ export default function RequestInspectionScreen() {
             >
               <ThemedText
                 type="small"
-                style={selectedDate === date.id ? { color: "#FFFFFF" } : { color: theme.textSecondary }}
+                style={
+                  selectedDate === date.id
+                    ? { color: "#FFFFFF" }
+                    : { color: theme.textSecondary }
+                }
               >
                 {date.label}
               </ThemedText>
@@ -231,14 +355,31 @@ export default function RequestInspectionScreen() {
           ))}
         </View>
 
-        <View style={[styles.infoBox, { backgroundColor: theme.backgroundDefault }]}>
+        <View
+          style={[styles.infoBox, { backgroundColor: theme.backgroundDefault }]}
+        >
           <Feather name="info" size={20} color={theme.primary} />
-          <ThemedText type="small" style={[{ flex: 1, marginLeft: isRTL ? 0 : Spacing.md, marginRight: isRTL ? Spacing.md : 0, color: theme.textSecondary }, isRTL && styles.rtlText]}>
+          <ThemedText
+            type="small"
+            style={[
+              {
+                flex: 1,
+                marginLeft: isRTL ? 0 : Spacing.md,
+                marginRight: isRTL ? Spacing.md : 0,
+                color: theme.textSecondary,
+              },
+              isRTL && styles.rtlText,
+            ]}
+          >
             {t("inspectionInfo")}
           </ThemedText>
         </View>
 
-        <Button onPress={handleSubmit} disabled={isLoading || !selectedDate} style={styles.submitButton}>
+        <Button
+          onPress={handleSubmit}
+          disabled={isLoading || !selectedDate}
+          style={styles.submitButton}
+        >
           {isLoading ? t("submitting") : t("submitRequest")}
         </Button>
       </KeyboardAwareScrollViewCompat>

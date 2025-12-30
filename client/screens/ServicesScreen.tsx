@@ -19,7 +19,8 @@ export default function ServicesScreen() {
   const tabBarHeight = useBottomTabBarHeight();
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { providers } = useServiceProviders();
   const [activeTab, setActiveTab] = useState("all");
 
@@ -27,17 +28,24 @@ export default function ServicesScreen() {
     { id: "all", labelKey: "all", icon: "grid" as const },
     { id: "mechanic", labelKey: "mechanics", icon: "tool" as const },
     { id: "electrician", labelKey: "electricians", icon: "zap" as const },
-    { id: "inspection_center", labelKey: "inspectionCenter", icon: "clipboard" as const },
+    {
+      id: "inspection_center",
+      labelKey: "inspectionCenter",
+      icon: "clipboard" as const,
+    },
     { id: "spare_parts", labelKey: "spareParts", icon: "package" as const },
   ];
 
-  const filteredProviders = activeTab === "all"
-    ? providers
-    : providers.filter((p) => p.role === activeTab);
+  const filteredProviders =
+    activeTab === "all"
+      ? providers
+      : providers.filter((p) => p.role === activeTab);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
-      <View style={[styles.tabsContainer, { paddingTop: insets.top + Spacing.sm }]}>
+      <View
+        style={[styles.tabsContainer, { paddingTop: insets.top + Spacing.sm }]}
+      >
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -86,14 +94,26 @@ export default function ServicesScreen() {
         renderItem={({ item }) => (
           <ServiceProviderCard
             provider={item}
-            onPress={() => navigation.navigate("ServiceProviderDetail", { provider: item })}
+            onPress={() =>
+              navigation.navigate("ServiceProviderDetail", { provider: item })
+            }
           />
         )}
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Feather name="users" size={48} color={theme.textSecondary} />
-            <ThemedText type="h4" style={[styles.emptyTitle, isRTL && styles.rtlText]}>{t("noProvidersFound")}</ThemedText>
-            <ThemedText style={[{ color: theme.textSecondary, textAlign: "center" }, isRTL && styles.rtlText]}>
+            <ThemedText
+              type="h4"
+              style={[styles.emptyTitle, isRTL && styles.rtlText]}
+            >
+              {t("noProvidersFound")}
+            </ThemedText>
+            <ThemedText
+              style={[
+                { color: theme.textSecondary, textAlign: "center" },
+                isRTL && styles.rtlText,
+              ]}
+            >
               {t("checkBackLater")}
             </ThemedText>
           </View>

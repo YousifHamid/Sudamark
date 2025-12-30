@@ -1,9 +1,21 @@
 import React, { useState } from "react";
-import { View, StyleSheet, ScrollView, Pressable, Alert, Modal, TextInput, Linking } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  Alert,
+  Modal,
+  TextInput,
+  Linking,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import { useNavigation } from "@react-navigation/native";
+import {
+  useNavigation,
+  CompositeNavigationProp,
+} from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -15,7 +27,6 @@ import { Spacing, BorderRadius } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { ProfileStackParamList } from "@/navigation/ProfileStackNavigator";
-import { CompositeNavigationProp } from "@react-navigation/native";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -23,16 +34,21 @@ export default function ProfileScreen() {
   const tabBarHeight = useBottomTabBarHeight();
   const { theme } = useTheme();
   const { t, language, setLanguage, isRTL } = useLanguage();
-  const navigation = useNavigation<CompositeNavigationProp<
-    NativeStackNavigationProp<ProfileStackParamList>,
-    NativeStackNavigationProp<RootStackParamList>
-  >>();
+  const navigation =
+    useNavigation<
+      CompositeNavigationProp<
+        NativeStackNavigationProp<ProfileStackParamList>,
+        NativeStackNavigationProp<RootStackParamList>
+      >
+    >();
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
     Alert.alert(
       t("logout"),
-      isRTL ? "هل أنت متأكد من تسجيل الخروج؟" : "Are you sure you want to log out?",
+      isRTL
+        ? "هل أنت متأكد من تسجيل الخروج؟"
+        : "Are you sure you want to log out?",
       [
         { text: isRTL ? "إلغاء" : "Cancel", style: "cancel" },
         {
@@ -43,7 +59,7 @@ export default function ProfileScreen() {
             await logout();
           },
         },
-      ]
+      ],
     );
   };
 
@@ -62,15 +78,41 @@ export default function ProfileScreen() {
   };
 
   const menuItems = [
-    { id: "listings", labelKey: "myListings", icon: "list" as const, badge: undefined },
+    {
+      id: "listings",
+      labelKey: "myListings",
+      icon: "list" as const,
+      badge: undefined,
+    },
     { id: "favorites", labelKey: "favorites", icon: "heart" as const },
   ];
 
   const settingsItems = [
-    { id: "advertise", label: isRTL ? "أعلن معنا / كن شريكاً" : "Advertise / Partner with us", icon: "briefcase" as const, onPress: () => setShowAdModal(true) },
-    { id: "language", labelKey: "language", icon: "globe" as const, value: language === "ar" ? "العربية" : "English", onPress: handleLanguageToggle },
-    { id: "privacy", label: isRTL ? "سياسة الخصوصية" : "Privacy Policy", icon: "shield" as const, onPress: () => navigation.navigate("PrivacyPolicy") },
-    { id: "settings", labelKey: "settings", icon: "settings" as const, onPress: () => navigation.navigate("Settings") },
+    {
+      id: "advertise",
+      label: isRTL ? "أعلن معنا / كن شريكاً" : "Advertise / Partner with us",
+      icon: "briefcase" as const,
+      onPress: () => setShowAdModal(true),
+    },
+    {
+      id: "language",
+      labelKey: "language",
+      icon: "globe" as const,
+      value: language === "ar" ? "العربية" : "English",
+      onPress: handleLanguageToggle,
+    },
+    {
+      id: "privacy",
+      label: isRTL ? "سياسة الخصوصية" : "Privacy Policy",
+      icon: "shield" as const,
+      onPress: () => navigation.navigate("PrivacyPolicy"),
+    },
+    {
+      id: "settings",
+      labelKey: "settings",
+      icon: "settings" as const,
+      onPress: () => navigation.navigate("Settings"),
+    },
   ];
 
   const [showAdModal, setShowAdModal] = useState(false);
@@ -80,7 +122,10 @@ export default function ProfileScreen() {
 
   const handleSendAdRequest = async () => {
     if (!adName || !adMessage) {
-      Alert.alert(isRTL ? "خطأ" : "Error", isRTL ? "يرجى ملء الاسم والرسالة" : "Please fill name and message");
+      Alert.alert(
+        isRTL ? "خطأ" : "Error",
+        isRTL ? "يرجى ملء الاسم والرسالة" : "Please fill name and message",
+      );
       return;
     }
 
@@ -116,25 +161,44 @@ export default function ProfileScreen() {
       }}
       scrollIndicatorInsets={{ bottom: insets.bottom }}
     >
-      <View style={[styles.profileCard, { backgroundColor: theme.backgroundDefault }]}>
+      <View
+        style={[
+          styles.profileCard,
+          { backgroundColor: theme.backgroundDefault },
+        ]}
+      >
         <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
           <ThemedText type="h2" style={{ color: "#FFFFFF" }}>
             {user?.name?.charAt(0).toUpperCase() || "U"}
           </ThemedText>
         </View>
         <View style={styles.profileInfo}>
-          <ThemedText type="h3">{user?.name || (isRTL ? "مستخدم" : "User")}</ThemedText>
+          <ThemedText type="h3">
+            {user?.name || (isRTL ? "مستخدم" : "User")}
+          </ThemedText>
           <ThemedText type="small" style={{ color: theme.textSecondary }}>
             {user?.phoneNumber || "+249 9XX XXX XXXX"}
           </ThemedText>
-          <View style={[styles.roleBadge, { backgroundColor: theme.primary + "20" }]}>
+          <View
+            style={[
+              styles.roleBadge,
+              { backgroundColor: theme.primary + "20" },
+            ]}
+          >
             <ThemedText type="small" style={{ color: theme.primary }}>
-              {t(user?.roles?.[0] === "inspection_center" ? "inspectionCenter" : (user?.roles?.[0] || "buyer"))}
+              {t(
+                user?.roles?.[0] === "inspection_center"
+                  ? "inspectionCenter"
+                  : user?.roles?.[0] || "buyer",
+              )}
             </ThemedText>
           </View>
         </View>
         <Pressable
-          style={[styles.editButton, { backgroundColor: theme.backgroundSecondary }]}
+          style={[
+            styles.editButton,
+            { backgroundColor: theme.backgroundSecondary },
+          ]}
           onPress={() => {
             Haptics.selectionAsync();
             // @ts-ignore
@@ -146,32 +210,66 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <ThemedText type="small" style={[styles.sectionTitle, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+        <ThemedText
+          type="small"
+          style={[
+            styles.sectionTitle,
+            { color: theme.textSecondary },
+            isRTL && styles.rtlText,
+          ]}
+        >
           {isRTL ? "النشاط" : "Activity"}
         </ThemedText>
-        <View style={[styles.menuCard, { backgroundColor: theme.backgroundDefault }]}>
+        <View
+          style={[
+            styles.menuCard,
+            { backgroundColor: theme.backgroundDefault },
+          ]}
+        >
           {menuItems.map((item, index) => (
             <Pressable
               key={item.id}
               style={[
                 styles.menuItem,
-                index < menuItems.length - 1 && { borderBottomWidth: 1, borderBottomColor: theme.border },
+                index < menuItems.length - 1 && {
+                  borderBottomWidth: 1,
+                  borderBottomColor: theme.border,
+                },
               ]}
               onPress={() => handleMenuPress(item.id)}
             >
-              <View style={[styles.menuItemLeft, isRTL && styles.menuItemLeftRTL]}>
-                <View style={[styles.iconContainer, { backgroundColor: theme.backgroundSecondary }]}>
+              <View
+                style={[styles.menuItemLeft, isRTL && styles.menuItemLeftRTL]}
+              >
+                <View
+                  style={[
+                    styles.iconContainer,
+                    { backgroundColor: theme.backgroundSecondary },
+                  ]}
+                >
                   <Feather name={item.icon} size={18} color={theme.primary} />
                 </View>
-                <ThemedText style={isRTL ? styles.rtlText : undefined}>{t(item.labelKey)}</ThemedText>
+                <ThemedText style={isRTL ? styles.rtlText : undefined}>
+                  {t(item.labelKey)}
+                </ThemedText>
               </View>
-              <View style={[styles.menuItemRight, isRTL && styles.menuItemRightRTL]}>
+              <View
+                style={[styles.menuItemRight, isRTL && styles.menuItemRightRTL]}
+              >
                 {item.badge ? (
-                  <View style={[styles.badge, { backgroundColor: theme.primary }]}>
-                    <ThemedText type="small" style={{ color: "#FFFFFF" }}>{item.badge}</ThemedText>
+                  <View
+                    style={[styles.badge, { backgroundColor: theme.primary }]}
+                  >
+                    <ThemedText type="small" style={{ color: "#FFFFFF" }}>
+                      {item.badge}
+                    </ThemedText>
                   </View>
                 ) : null}
-                <Feather name={isRTL ? "chevron-left" : "chevron-right"} size={20} color={theme.textSecondary} />
+                <Feather
+                  name={isRTL ? "chevron-left" : "chevron-right"}
+                  size={20}
+                  color={theme.textSecondary}
+                />
               </View>
             </Pressable>
           ))}
@@ -179,30 +277,65 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <ThemedText type="small" style={[styles.sectionTitle, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+        <ThemedText
+          type="small"
+          style={[
+            styles.sectionTitle,
+            { color: theme.textSecondary },
+            isRTL && styles.rtlText,
+          ]}
+        >
           {t("settings")}
         </ThemedText>
-        <View style={[styles.menuCard, { backgroundColor: theme.backgroundDefault }]}>
+        <View
+          style={[
+            styles.menuCard,
+            { backgroundColor: theme.backgroundDefault },
+          ]}
+        >
           {settingsItems.map((item, index) => (
             <Pressable
               key={item.id}
               style={[
                 styles.menuItem,
-                index < settingsItems.length - 1 && { borderBottomWidth: 1, borderBottomColor: theme.border },
+                index < settingsItems.length - 1 && {
+                  borderBottomWidth: 1,
+                  borderBottomColor: theme.border,
+                },
               ]}
               onPress={item.onPress || (() => Haptics.selectionAsync())}
             >
-              <View style={[styles.menuItemLeft, isRTL && styles.menuItemLeftRTL]}>
-                <View style={[styles.iconContainer, { backgroundColor: theme.backgroundSecondary }]}>
+              <View
+                style={[styles.menuItemLeft, isRTL && styles.menuItemLeftRTL]}
+              >
+                <View
+                  style={[
+                    styles.iconContainer,
+                    { backgroundColor: theme.backgroundSecondary },
+                  ]}
+                >
                   <Feather name={item.icon} size={18} color={theme.primary} />
                 </View>
-                <ThemedText style={isRTL ? styles.rtlText : undefined}>{"label" in item ? item.label : t(item.labelKey)}</ThemedText>
+                <ThemedText style={isRTL ? styles.rtlText : undefined}>
+                  {"label" in item ? item.label : t(item.labelKey)}
+                </ThemedText>
               </View>
-              <View style={[styles.menuItemRight, isRTL && styles.menuItemRightRTL]}>
+              <View
+                style={[styles.menuItemRight, isRTL && styles.menuItemRightRTL]}
+              >
                 {"value" in item && item.value ? (
-                  <ThemedText type="small" style={{ color: theme.textSecondary }}>{item.value}</ThemedText>
+                  <ThemedText
+                    type="small"
+                    style={{ color: theme.textSecondary }}
+                  >
+                    {item.value}
+                  </ThemedText>
                 ) : null}
-                <Feather name={isRTL ? "chevron-left" : "chevron-right"} size={20} color={theme.textSecondary} />
+                <Feather
+                  name={isRTL ? "chevron-left" : "chevron-right"}
+                  size={20}
+                  color={theme.textSecondary}
+                />
               </View>
             </Pressable>
           ))}
@@ -214,10 +347,15 @@ export default function ProfileScreen() {
         onPress={handleLogout}
       >
         <Feather name="log-out" size={20} color={theme.error} />
-        <ThemedText style={{ color: theme.error, marginLeft: Spacing.sm }}>{t("logout")}</ThemedText>
+        <ThemedText style={{ color: theme.error, marginLeft: Spacing.sm }}>
+          {t("logout")}
+        </ThemedText>
       </Pressable>
 
-      <ThemedText type="small" style={[styles.version, { color: theme.textSecondary }]}>
+      <ThemedText
+        type="small"
+        style={[styles.version, { color: theme.textSecondary }]}
+      >
         {isRTL ? "الإصدار 1.0.0" : "Version 1.0.0"}
       </ThemedText>
 
@@ -227,43 +365,143 @@ export default function ProfileScreen() {
         animationType="slide"
         onRequestClose={() => setShowAdModal(false)}
       >
-        <Pressable style={styles.modalOverlay} onPress={() => setShowAdModal(false)}>
-          <Pressable style={[styles.modalContent, { backgroundColor: theme.backgroundRoot, maxHeight: '90%' }]} onPress={e => e.stopPropagation()}>
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowAdModal(false)}
+        >
+          <Pressable
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.backgroundRoot, maxHeight: "90%" },
+            ]}
+            onPress={(e) => e.stopPropagation()}
+          >
             <View style={[styles.modalHeader, isRTL && styles.modalHeaderRTL]}>
-              <Pressable onPress={() => setShowAdModal(false)} style={{ zIndex: 1 }}>
+              <Pressable
+                onPress={() => setShowAdModal(false)}
+                style={{ zIndex: 1 }}
+              >
                 <Feather name="x" size={24} color={theme.text} />
               </Pressable>
-              <ThemedText type="h3" style={styles.modalTitle}>{isRTL ? "أعلن معنا" : "Advertise with Us"}</ThemedText>
+              <ThemedText type="h3" style={styles.modalTitle}>
+                {isRTL ? "أعلن معنا" : "Advertise with Us"}
+              </ThemedText>
               <View style={{ width: 24 }} />
             </View>
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+            >
               <View style={styles.modalBody}>
-                <ThemedText style={{ marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>{isRTL ? "الاسم" : "Name"}</ThemedText>
+                <ThemedText
+                  style={{
+                    marginBottom: 8,
+                    textAlign: isRTL ? "right" : "left",
+                  }}
+                >
+                  {isRTL ? "الاسم" : "Name"}
+                </ThemedText>
                 <TextInput
-                  style={[styles.input, { color: theme.text, borderColor: theme.border, textAlign: isRTL ? 'right' : 'left' }]}
-                  value={adName} onChangeText={setAdName} placeholder={isRTL ? "اسمك الكامل" : "Full Name"} placeholderTextColor={theme.textSecondary}
+                  style={[
+                    styles.input,
+                    {
+                      color: theme.text,
+                      borderColor: theme.border,
+                      textAlign: isRTL ? "right" : "left",
+                    },
+                  ]}
+                  value={adName}
+                  onChangeText={setAdName}
+                  placeholder={isRTL ? "اسمك الكامل" : "Full Name"}
+                  placeholderTextColor={theme.textSecondary}
                 />
 
-                <ThemedText style={{ marginBottom: 8, marginTop: 12, textAlign: isRTL ? 'right' : 'left' }}>{isRTL ? "نوع النشاط" : "Business Type"}</ThemedText>
+                <ThemedText
+                  style={{
+                    marginBottom: 8,
+                    marginTop: 12,
+                    textAlign: isRTL ? "right" : "left",
+                  }}
+                >
+                  {isRTL ? "نوع النشاط" : "Business Type"}
+                </ThemedText>
                 <TextInput
-                  style={[styles.input, { color: theme.text, borderColor: theme.border, textAlign: isRTL ? 'right' : 'left' }]}
-                  value={adBusiness} onChangeText={setAdBusiness} placeholder={isRTL ? "مثال: معرض سيارات" : "e.g. Car Showroom"} placeholderTextColor={theme.textSecondary}
+                  style={[
+                    styles.input,
+                    {
+                      color: theme.text,
+                      borderColor: theme.border,
+                      textAlign: isRTL ? "right" : "left",
+                    },
+                  ]}
+                  value={adBusiness}
+                  onChangeText={setAdBusiness}
+                  placeholder={
+                    isRTL ? "مثال: معرض سيارات" : "e.g. Car Showroom"
+                  }
+                  placeholderTextColor={theme.textSecondary}
                 />
 
-                <ThemedText style={{ marginBottom: 8, marginTop: 12, textAlign: isRTL ? 'right' : 'left' }}>{isRTL ? "تفاصيل الطلب" : "Request Details"}</ThemedText>
+                <ThemedText
+                  style={{
+                    marginBottom: 8,
+                    marginTop: 12,
+                    textAlign: isRTL ? "right" : "left",
+                  }}
+                >
+                  {isRTL ? "تفاصيل الطلب" : "Request Details"}
+                </ThemedText>
                 <TextInput
-                  style={[styles.input, { height: 100, color: theme.text, borderColor: theme.border, textAlignVertical: 'top', textAlign: isRTL ? 'right' : 'left' }]}
-                  value={adMessage} onChangeText={setAdMessage} multiline numberOfLines={4} placeholder={isRTL ? "اكتب تفاصيل إعلانك..." : "Enter details..."} placeholderTextColor={theme.textSecondary}
+                  style={[
+                    styles.input,
+                    {
+                      height: 100,
+                      color: theme.text,
+                      borderColor: theme.border,
+                      textAlignVertical: "top",
+                      textAlign: isRTL ? "right" : "left",
+                    },
+                  ]}
+                  value={adMessage}
+                  onChangeText={setAdMessage}
+                  multiline
+                  numberOfLines={4}
+                  placeholder={
+                    isRTL ? "اكتب تفاصيل إعلانك..." : "Enter details..."
+                  }
+                  placeholderTextColor={theme.textSecondary}
                 />
 
-                <Pressable style={[styles.submitButton, { backgroundColor: "#25D366" }]} onPress={handleSendAdRequest}>
-                  <Feather name="message-circle" size={20} color="white" style={{ marginRight: 8 }} />
-                  <ThemedText style={{ color: "white", fontWeight: "bold" }}>{isRTL ? "إرسال عبر واتساب" : "Send via WhatsApp"}</ThemedText>
+                <Pressable
+                  style={[styles.submitButton, { backgroundColor: "#25D366" }]}
+                  onPress={handleSendAdRequest}
+                >
+                  <Feather
+                    name="message-circle"
+                    size={20}
+                    color="white"
+                    style={{ marginRight: 8 }}
+                  />
+                  <ThemedText style={{ color: "white", fontWeight: "bold" }}>
+                    {isRTL ? "إرسال عبر واتساب" : "Send via WhatsApp"}
+                  </ThemedText>
                 </Pressable>
 
-                <View style={{ marginTop: 16, alignItems: 'center' }}>
-                  <ThemedText type="small" style={{ color: theme.textSecondary }}>{isRTL ? "أرقام التواصل المباشر:" : "Direct Contact Numbers:"}</ThemedText>
-                  <ThemedText type="small" style={{ color: theme.primary, marginTop: 4 }}>00201157155248  |  00249115222228</ThemedText>
+                <View style={{ marginTop: 16, alignItems: "center" }}>
+                  <ThemedText
+                    type="small"
+                    style={{ color: theme.textSecondary }}
+                  >
+                    {isRTL
+                      ? "أرقام التواصل المباشر:"
+                      : "Direct Contact Numbers:"}
+                  </ThemedText>
+                  <ThemedText
+                    type="small"
+                    style={{ color: theme.primary, marginTop: 4 }}
+                  >
+                    00201157155248 | 00249115222228
+                  </ThemedText>
                 </View>
               </View>
             </ScrollView>
@@ -388,18 +626,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: Spacing.lg,
-    width: '100%',
+    width: "100%",
   },
   modalHeaderRTL: {
     flexDirection: "row-reverse",
   },
   modalTitle: {
     flex: 1,
-    textAlign: 'center',
+    textAlign: "center",
   },
-  modalBody: {
-
-  },
+  modalBody: {},
   input: {
     borderWidth: 1,
     borderRadius: BorderRadius.md,

@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { I18nManager } from "react-native";
 
@@ -12,22 +18,43 @@ interface Translations {
 }
 
 export const translations: Translations = {
-  appName: { ar: "سودمارك", en: "Sudmark" },
-  appTagline: { ar: "سوق السيارات السوداني الالكتروني", en: "Sudan's Online Car Marketplace" },
+  appName: { ar: "سودامارك", en: "Sudamark" },
+  appTagline: {
+    ar: "سوق السيارات السوداني الالكتروني",
+    en: "Sudan's Online Car Marketplace",
+  },
 
   // Onboarding
   skip: { ar: "تخطي", en: "Skip" },
   next: { ar: "التالي", en: "Next" },
   getStarted: { ar: "ابدأ الآن", en: "Get Started" },
-  welcomeTitle: { ar: "سودمارك يجمع الكل..بيع واشتري بسهولة", en: "Sudmark Brings Everyone Together..Buy & Sell Easily" },
-  welcomeSubtitle: { ar: "بيع وشراء عربيتك بكل سهولة وأمان!", en: "Buy and sell your car easily and safely!" },
-  welcomeFeature1: { ar: "تصفح وتواصل مع البائعين مباشرة", en: "Browse and connect with sellers directly" },
-  welcomeFeature2: { ar: "فتش حوليك مكانيكي وكهربائي حتى محامي تسجيل عربيتك", en: "Find mechanics, electricians, even lawyers for your car registration" },
+  welcomeTitle: {
+    ar: "سودامارك يجمع الكل..بيع واشتري بسهولة",
+    en: "Sudamark Brings Everyone Together..Buy & Sell Easily",
+  },
+  welcomeSubtitle: {
+    ar: "بيع وشراء عربيتك بكل سهولة وأمان!",
+    en: "Buy and sell your car easily and safely!",
+  },
+  welcomeFeature1: {
+    ar: "تصفح وتواصل مع البائعين مباشرة",
+    en: "Browse and connect with sellers directly",
+  },
+  welcomeFeature2: {
+    ar: "فتش حوليك مكانيكي وكهربائي حتى محامي تسجيل عربيتك",
+    en: "Find mechanics, electricians, even lawyers for your car registration",
+  },
 
   // Official Sponsor
-  officialSponsor: { ar: "الراعي الرسمي لهذا الشهر", en: "Official Sponsor of the Month" },
+  officialSponsor: {
+    ar: "الراعي الرسمي لهذا الشهر",
+    en: "Official Sponsor of the Month",
+  },
   sponsorName: { ar: "ارشمود الهندسية", en: "Arshmood Engineering" },
-  sponsorDesc: { ar: "نبني مشاريع هندسية بشكل ذكي، متكامل، ومستدام يلبي طموحاتك", en: "We build smart, integrated, and sustainable engineering projects that meet your ambitions" },
+  sponsorDesc: {
+    ar: "نبني مشاريع هندسية بشكل ذكي، متكامل، ومستدام يلبي طموحاتك",
+    en: "We build smart, integrated, and sustainable engineering projects that meet your ambitions",
+  },
 
   // Search Filters
   filterPrice: { ar: "السعر", en: "Price" },
@@ -43,27 +70,66 @@ export const translations: Translations = {
   body: { ar: "هيكل", en: "Body" },
 
   // Onboarding Features
-  feature1Title: { ar: "اعثر على سيارتك المثالية", en: "Find Your Perfect Car" },
-  feature1Desc: { ar: "تصفح آلاف السيارات من بائعين موثوقين", en: "Browse thousands of cars from trusted sellers" },
-  feature2Title: { ar: "خدمات موثوقة ومضمونة", en: "Verified & Trusted Services" },
-  feature2Desc: { ar: "ميكانيكيين وكهربائيين ومحامين موثقين", en: "Certified mechanics, electricians, and lawyers" },
+  feature1Title: {
+    ar: "اعثر على سيارتك المثالية",
+    en: "Find Your Perfect Car",
+  },
+  feature1Desc: {
+    ar: "تصفح آلاف السيارات من بائعين موثوقين",
+    en: "Browse thousands of cars from trusted sellers",
+  },
+  feature2Title: {
+    ar: "خدمات موثوقة ومضمونة",
+    en: "Verified & Trusted Services",
+  },
+  feature2Desc: {
+    ar: "ميكانيكيين وكهربائيين ومحامين موثقين",
+    en: "Certified mechanics, electricians, and lawyers",
+  },
   feature3Title: { ar: "توصيل وشحن السيارات", en: "Car Delivery & Shipping" },
-  feature3Desc: { ar: "خدمات نقل السيارات لجميع أنحاء السودان", en: "Car transport services across Sudan" },
+  feature3Desc: {
+    ar: "خدمات نقل السيارات لجميع أنحاء السودان",
+    en: "Car transport services across Sudan",
+  },
   feature4Title: { ar: "صيانة وإصلاح", en: "Maintenance & Repair" },
-  feature4Desc: { ar: "أفضل ورش الصيانة والإصلاح", en: "Best maintenance and repair workshops" },
-  feature5Title: { ar: "فحص شامل للسيارات", en: "Comprehensive Car Inspection" },
-  feature5Desc: { ar: "مراكز فحص معتمدة وموثوقة", en: "Certified and trusted inspection centers" },
+  feature4Desc: {
+    ar: "أفضل ورش الصيانة والإصلاح",
+    en: "Best maintenance and repair workshops",
+  },
+  feature5Title: {
+    ar: "فحص شامل للسيارات",
+    en: "Comprehensive Car Inspection",
+  },
+  feature5Desc: {
+    ar: "مراكز فحص معتمدة وموثوقة",
+    en: "Certified and trusted inspection centers",
+  },
   feature6Title: { ar: "احفظ سياراتك المفضلة", en: "Save Your Favorites" },
-  feature6Desc: { ar: "تابع السيارات التي تعجبك بسهولة", en: "Easily track cars you like" },
+  feature6Desc: {
+    ar: "تابع السيارات التي تعجبك بسهولة",
+    en: "Easily track cars you like",
+  },
   feature7Title: { ar: "تقييمات حقيقية", en: "Real Reviews" },
-  feature7Desc: { ar: "آراء المستخدمين لمساعدتك في الاختيار", en: "User reviews to help you decide" },
+  feature7Desc: {
+    ar: "آراء المستخدمين لمساعدتك في الاختيار",
+    en: "User reviews to help you decide",
+  },
 
   // Login
   phoneNumber: { ar: "رقم الهاتف", en: "Phone Number" },
-  enterPhoneToStart: { ar: "أدخل رقم هاتفك للبدء", en: "Enter your phone number to get started" },
-  enterVerificationCode: { ar: "أدخل رمز التحقق", en: "Enter the verification code" },
+  enterPhoneToStart: {
+    ar: "أدخل رقم هاتفك للبدء",
+    en: "Enter your phone number to get started",
+  },
+  enterVerificationCode: {
+    ar: "أدخل رمز التحقق",
+    en: "Enter the verification code",
+  },
   completeProfile: { ar: "أكمل ملفك الشخصي", en: "Complete your profile" },
-  sendVerificationCode: { ar: "إرسال رمز التحقق", en: "Send Verification Code" },
+  sendVerificationCode: {
+    ar: "إرسال رمز التحقق",
+    en: "Send Verification Code",
+  },
   sending: { ar: "جاري الإرسال...", en: "Sending..." },
   verificationCode: { ar: "رمز التحقق", en: "Verification Code" },
   demoCode: { ar: "تجريبي: استخدم الرمز 123456", en: "Demo: Use code 123456" },
@@ -72,7 +138,10 @@ export const translations: Translations = {
   changePhoneNumber: { ar: "تغيير رقم الهاتف", en: "Change phone number" },
   yourName: { ar: "اسمك", en: "Your Name" },
   enterYourName: { ar: "أدخل اسمك", en: "Enter your name" },
-  selectYourRole: { ar: "اختر أدوارك (يمكنك اختيار أكثر من واحد)", en: "Select Your Roles (you can choose multiple)" },
+  selectYourRole: {
+    ar: "اختر أدوارك (يمكنك اختيار أكثر من واحد)",
+    en: "Select Your Roles (you can choose multiple)",
+  },
   creatingAccount: { ar: "جاري إنشاء الحساب...", en: "Creating Account..." },
   selectCountry: { ar: "اختر البلد", en: "Select Country" },
 
@@ -108,7 +177,10 @@ export const translations: Translations = {
   // Search
   searchCars: { ar: "ابحث عن سيارات...", en: "Search cars..." },
   noCarsFound: { ar: "لم يتم العثور على سيارات", en: "No cars found" },
-  adjustFilters: { ar: "حاول تعديل الفلاتر أو البحث", en: "Try adjusting your filters or search query" },
+  adjustFilters: {
+    ar: "حاول تعديل الفلاتر أو البحث",
+    en: "Try adjusting your filters or search query",
+  },
 
   // Services
   all: { ar: "الكل", en: "All" },
@@ -116,8 +188,14 @@ export const translations: Translations = {
   electricians: { ar: "كهربائيين", en: "Electricians" },
   lawyers: { ar: "محامين", en: "Lawyers" },
   inspection: { ar: "مراكز فحص", en: "Inspection" },
-  noProvidersFound: { ar: "لم يتم العثور على مزودي خدمات", en: "No providers found" },
-  checkBackLater: { ar: "تحقق لاحقاً من مزودي الخدمات في هذه الفئة", en: "Check back later for service providers in this category" },
+  noProvidersFound: {
+    ar: "لم يتم العثور على مزودي خدمات",
+    en: "No providers found",
+  },
+  checkBackLater: {
+    ar: "تحقق لاحقاً من مزودي الخدمات في هذه الفئة",
+    en: "Check back later for service providers in this category",
+  },
 
   // Profile
   myListings: { ar: "إعلاناتي", en: "My Listings" },
@@ -157,7 +235,10 @@ export const translations: Translations = {
   // Post Car
   newListing: { ar: "إعلان جديد", en: "New Listing" },
   carTitle: { ar: "عنوان السيارة", en: "Car Title" },
-  titlePlaceholder: { ar: "مثال: تويوتا كامري 2022 - حالة ممتازة", en: "e.g. Toyota Camry 2022 - Excellent Condition" },
+  titlePlaceholder: {
+    ar: "مثال: تويوتا كامري 2022 - حالة ممتازة",
+    en: "e.g. Toyota Camry 2022 - Excellent Condition",
+  },
   make: { ar: "الشركة المصنعة", en: "Make" },
   model: { ar: "الموديل", en: "Model" },
   price: { ar: "السعر", en: "Price" },
@@ -182,25 +263,52 @@ export const translations: Translations = {
   // Email Magic Link Auth
   email: { ar: "البريد الإلكتروني", en: "Email" },
   enterEmail: { ar: "أدخل بريدك الإلكتروني", en: "Enter your email" },
-  enterPhoneAndEmail: { ar: "أدخل رقم هاتفك وبريدك الإلكتروني", en: "Enter your phone number and email" },
+  enterPhoneAndEmail: {
+    ar: "أدخل رقم هاتفك وبريدك الإلكتروني",
+    en: "Enter your phone number and email",
+  },
   sendMagicLink: { ar: "إرسال رابط الدخول", en: "Send Login Link" },
   sendingLink: { ar: "جاري الإرسال...", en: "Sending..." },
   checkEmail: { ar: "تحقق من بريدك الإلكتروني", en: "Check Your Email" },
-  magicLinkSent: { ar: "تم إرسال رابط تسجيل الدخول إلى بريدك الإلكتروني", en: "A login link has been sent to your email" },
+  magicLinkSent: {
+    ar: "تم إرسال رابط تسجيل الدخول إلى بريدك الإلكتروني",
+    en: "A login link has been sent to your email",
+  },
   enterToken: { ar: "أو أدخل الرمز هنا", en: "Or enter the token here" },
   verifyToken: { ar: "تحقق", en: "Verify" },
   resendLink: { ar: "إعادة إرسال الرابط", en: "Resend Link" },
-  invalidEmail: { ar: "يرجى إدخال بريد إلكتروني صحيح", en: "Please enter a valid email" },
-  tokenExpired: { ar: "انتهت صلاحية الرمز. أعد إرسال الرابط", en: "Token expired. Please resend the link" },
-  demoTokenHint: { ar: "تجريبي: انسخ الرمز من الأعلى", en: "Demo: Copy the token above" },
+  invalidEmail: {
+    ar: "يرجى إدخال بريد إلكتروني صحيح",
+    en: "Please enter a valid email",
+  },
+  tokenExpired: {
+    ar: "انتهت صلاحية الرمز. أعد إرسال الرابط",
+    en: "Token expired. Please resend the link",
+  },
+  demoTokenHint: {
+    ar: "تجريبي: انسخ الرمز من الأعلى",
+    en: "Demo: Copy the token above",
+  },
 
   // Errors
-  invalidPhoneNumber: { ar: "يرجى إدخال رقم هاتف صحيح", en: "Please enter a valid phone number" },
-  invalidCode: { ar: "رمز غير صحيح. جرب 123456", en: "Invalid code. Try 123456" },
+  invalidPhoneNumber: {
+    ar: "يرجى إدخال رقم هاتف صحيح",
+    en: "Please enter a valid phone number",
+  },
+  invalidCode: {
+    ar: "رمز غير صحيح. جرب 123456",
+    en: "Invalid code. Try 123456",
+  },
   enterName: { ar: "يرجى إدخال اسمك", en: "Please enter your name" },
   selectRole: { ar: "يرجى اختيار دور", en: "Please select a role" },
-  enter6DigitCode: { ar: "يرجى إدخال الرمز المكون من 6 أرقام", en: "Please enter the 6-digit code" },
-  fillRequiredFields: { ar: "يرجى ملء جميع الحقول المطلوبة", en: "Please fill in all required fields" },
+  enter6DigitCode: {
+    ar: "يرجى إدخال الرمز المكون من 6 أرقام",
+    en: "Please enter the 6-digit code",
+  },
+  fillRequiredFields: {
+    ar: "يرجى ملء جميع الحقول المطلوبة",
+    en: "Please fill in all required fields",
+  },
   error: { ar: "خطأ", en: "Error" },
 
   // Currency
@@ -214,11 +322,20 @@ export const translations: Translations = {
 
   // Advertisements
   adTitle1: { ar: "أسعار لا تُضاهى!", en: "Unbeatable Prices!" },
-  adDesc1: { ar: "اكتشف أفضل العروض على السيارات المستعملة في السودان", en: "Discover the best deals on used cars in Sudan" },
+  adDesc1: {
+    ar: "اكتشف أفضل العروض على السيارات المستعملة في السودان",
+    en: "Discover the best deals on used cars in Sudan",
+  },
   adTitle2: { ar: "بيع سيارتك بسرعة", en: "Sell Your Car Fast" },
-  adDesc2: { ar: "أعلن مجاناً واحصل على مشترين اليوم", en: "List for free and get buyers today" },
+  adDesc2: {
+    ar: "أعلن مجاناً واحصل على مشترين اليوم",
+    en: "List for free and get buyers today",
+  },
   adTitle3: { ar: "فحص سيارات معتمد", en: "Certified Car Inspection" },
-  adDesc3: { ar: "تأكد من حالة سيارتك قبل الشراء مع مراكز الفحص الموثوقة", en: "Verify car condition before buying with trusted inspection centers" },
+  adDesc3: {
+    ar: "تأكد من حالة سيارتك قبل الشراء مع مراكز الفحص الموثوقة",
+    en: "Verify car condition before buying with trusted inspection centers",
+  },
   learnMore: { ar: "اعرف المزيد", en: "Learn More" },
   advertisement: { ar: "إعلان", en: "Ad" },
 
@@ -227,15 +344,27 @@ export const translations: Translations = {
   chooseLocation: { ar: "اختر المكان", en: "Choose Location" },
   sellerLocation: { ar: "مكان البائع", en: "Seller's Location" },
   agreedLocation: { ar: "مكان يتفق عليه", en: "Agreed Location" },
-  enterAgreedLocation: { ar: "أدخل المكان المتفق عليه...", en: "Enter the agreed location..." },
-  sellerContact: { ar: "تفاصيل التواصل مع البائع", en: "Seller Contact Details" },
+  enterAgreedLocation: {
+    ar: "أدخل المكان المتفق عليه...",
+    en: "Enter the agreed location...",
+  },
+  sellerContact: {
+    ar: "تفاصيل التواصل مع البائع",
+    en: "Seller Contact Details",
+  },
   callSeller: { ar: "اتصال", en: "Call" },
   whatsappSeller: { ar: "واتساب", en: "WhatsApp" },
-  inspectionInfo: { ar: "تم ارسال طلبك للمشتري للموافقة عليه يرجى الانتظار حتى تأكيده", en: "Your request has been sent to the buyer for approval. Please wait for confirmation." },
+  inspectionInfo: {
+    ar: "تم ارسال طلبك للمشتري للموافقة عليه يرجى الانتظار حتى تأكيده",
+    en: "Your request has been sent to the buyer for approval. Please wait for confirmation.",
+  },
   submitRequest: { ar: "إرسال الطلب", en: "Submit Request" },
   submitting: { ar: "جاري الإرسال...", en: "Submitting..." },
   requestSubmitted: { ar: "تم إرسال الطلب", en: "Request Submitted" },
-  requestSubmittedMessage: { ar: "تم ارسال طلبك للمشتري للموافقة عليه يرجى الانتظار حتى تأكيده", en: "Your request has been sent to the buyer for approval. Please wait for confirmation." },
+  requestSubmittedMessage: {
+    ar: "تم ارسال طلبك للمشتري للموافقة عليه يرجى الانتظار حتى تأكيده",
+    en: "Your request has been sent to the buyer for approval. Please wait for confirmation.",
+  },
   ok: { ar: "حسناً", en: "OK" },
   selectDateRequired: { ar: "يرجى اختيار التاريخ", en: "Please select a date" },
   shareAd: { ar: "مشاركة الإعلان", en: "Share Ad" },
@@ -249,13 +378,19 @@ export const translations: Translations = {
   friday: { ar: "الجمعة", en: "Fri" },
   december: { ar: "ديسمبر", en: "Dec" },
   january: { ar: "يناير", en: "Jan" },
-  whatsappNotAvailable: { ar: "تطبيق واتساب غير متوفر على هذا الجهاز", en: "WhatsApp is not available on this device" },
+  whatsappNotAvailable: {
+    ar: "تطبيق واتساب غير متوفر على هذا الجهاز",
+    en: "WhatsApp is not available on this device",
+  },
 
   // Notifications
   notifications: { ar: "الإشعارات", en: "Notifications" },
   enableNotifications: { ar: "تفعيل الإشعارات", en: "Enable Notifications" },
   notificationsEnabled: { ar: "الإشعارات مفعلة", en: "Notifications Enabled" },
-  notificationsDisabled: { ar: "الإشعارات معطلة", en: "Notifications Disabled" },
+  notificationsDisabled: {
+    ar: "الإشعارات معطلة",
+    en: "Notifications Disabled",
+  },
 };
 
 interface LanguageContextType {
@@ -265,7 +400,9 @@ interface LanguageContextType {
   isRTL: boolean;
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextType | undefined>(
+  undefined,
+);
 
 const LANGUAGE_STORAGE_KEY = "@car_marketplace_language";
 

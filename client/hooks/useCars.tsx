@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Car } from "@/components/CarCard";
 import { getApiUrl, apiRequest } from "@/lib/query-client";
@@ -112,7 +119,9 @@ export function CarsProvider({ children }: { children: ReactNode }) {
     await loadCars();
   };
 
-  const addCar = async (carData: Omit<Car, "id" | "createdAt">): Promise<Car | null> => {
+  const addCar = async (
+    carData: Omit<Car, "id" | "createdAt">,
+  ): Promise<Car | null> => {
     try {
       const processedImages = await Promise.all(
         (carData.images || []).map(async (img) => {
@@ -128,7 +137,7 @@ export function CarsProvider({ children }: { children: ReactNode }) {
             }
           }
           return img;
-        })
+        }),
       );
 
       const response = await apiRequest("POST", "/api/cars", {
@@ -160,15 +169,13 @@ export function CarsProvider({ children }: { children: ReactNode }) {
         createdAt: newCar.createdAt,
       };
 
-      setCars(prev => [formattedCar, ...prev]);
+      setCars((prev) => [formattedCar, ...prev]);
       return formattedCar;
     } catch (error) {
       console.error("Error adding car:", error);
       return null;
     }
   };
-
-
 
   const searchCars = async (filters: CarFilters): Promise<Car[]> => {
     try {
@@ -177,8 +184,10 @@ export function CarsProvider({ children }: { children: ReactNode }) {
 
       if (filters.category) params.append("category", filters.category);
       if (filters.city) params.append("city", filters.city);
-      if (filters.minPrice) params.append("minPrice", filters.minPrice.toString());
-      if (filters.maxPrice) params.append("maxPrice", filters.maxPrice.toString());
+      if (filters.minPrice)
+        params.append("minPrice", filters.minPrice.toString());
+      if (filters.maxPrice)
+        params.append("maxPrice", filters.maxPrice.toString());
       if (filters.search) params.append("search", filters.search);
 
       const response = await fetch(`${baseUrl}api/cars?${params.toString()}`);
@@ -203,16 +212,18 @@ export function CarsProvider({ children }: { children: ReactNode }) {
       return cars;
     } catch (error) {
       console.error("Search error:", error);
-      return cars.filter(car => {
+      return cars.filter((car) => {
         if (filters.category && car.category !== filters.category) return false;
         if (filters.city && car.city !== filters.city) return false;
         if (filters.minPrice && car.price < filters.minPrice) return false;
         if (filters.maxPrice && car.price > filters.maxPrice) return false;
         if (filters.search) {
           const searchLower = filters.search.toLowerCase();
-          if (!car.title.toLowerCase().includes(searchLower) &&
+          if (
+            !car.title.toLowerCase().includes(searchLower) &&
             !car.make.toLowerCase().includes(searchLower) &&
-            !car.model.toLowerCase().includes(searchLower)) {
+            !car.model.toLowerCase().includes(searchLower)
+          ) {
             return false;
           }
         }
@@ -227,7 +238,10 @@ export function CarsProvider({ children }: { children: ReactNode }) {
         ? favorites.filter((id) => id !== carId)
         : [...favorites, carId];
       setFavorites(newFavorites);
-      await AsyncStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(newFavorites));
+      await AsyncStorage.setItem(
+        FAVORITES_STORAGE_KEY,
+        JSON.stringify(newFavorites),
+      );
 
       if (token) {
         try {
@@ -247,7 +261,7 @@ export function CarsProvider({ children }: { children: ReactNode }) {
 
   const isFavorite = (carId: string) => favorites.includes(carId);
 
-  const featuredCars = cars.filter(car => car.category === "new").slice(0, 4);
+  const featuredCars = cars.filter((car) => car.category === "new").slice(0, 4);
 
   return (
     <CarsContext.Provider

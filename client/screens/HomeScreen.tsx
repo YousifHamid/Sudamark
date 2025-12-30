@@ -1,5 +1,12 @@
 import React from "react";
-import { View, StyleSheet, ScrollView, Pressable, Dimensions } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  Dimensions,
+  Image,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -7,7 +14,6 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -18,7 +24,6 @@ import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { useCars } from "@/hooks/useCars";
 import { useQuery } from "@tanstack/react-query";
 import { getApiUrl } from "@/lib/query-client";
-import { Image } from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -28,27 +33,36 @@ export default function HomeScreen() {
   const tabBarHeight = useBottomTabBarHeight();
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { cars, featuredCars } = useCars();
 
   const { data: sliderImages = [] } = useQuery({
-    queryKey: ['slider-images'],
+    queryKey: ["slider-images"],
     queryFn: async () => {
       try {
-        const response = await fetch(new URL("/api/slider-images", getApiUrl()).toString());
+        const response = await fetch(
+          new URL("/api/slider-images", getApiUrl()).toString(),
+        );
         if (!response.ok) return [];
         return await response.json();
       } catch (e) {
         return [];
       }
-    }
+    },
   });
 
-  const displaySlides = sliderImages.length > 0 ? sliderImages : Array.from({ length: 3 }).map((_, i) => ({
-    id: `placeholder-${i}`,
-    title: t("ad") + " " + (i + 1),
-    isPlaceholder: true
-  }));
+  const displaySlides =
+    sliderImages.length > 0
+      ? sliderImages
+      : [
+        {
+          id: "default-placeholder",
+          title: isRTL ? "أعلن معنا في سودمارك" : "Advertise with Sudamark",
+          isPlaceholder: true,
+          imageUrl: null, // Trigger gradient fallback
+        },
+      ];
 
   const [currentSlideIndex, setCurrentSlideIndex] = React.useState(0);
   const scrollRef = React.useRef<ScrollView>(null);
@@ -59,7 +73,10 @@ export default function HomeScreen() {
     const timer = setInterval(() => {
       const nextIndex = (currentSlideIndex + 1) % displaySlides.length;
       setCurrentSlideIndex(nextIndex);
-      scrollRef.current?.scrollTo({ x: nextIndex * SCREEN_WIDTH, animated: true });
+      scrollRef.current?.scrollTo({
+        x: nextIndex * SCREEN_WIDTH,
+        animated: true,
+      });
     }, 4000);
     return () => clearInterval(timer);
   }, [currentSlideIndex, displaySlides.length]);
@@ -84,21 +101,46 @@ export default function HomeScreen() {
       scrollIndicatorInsets={{ bottom: insets.bottom }}
       showsVerticalScrollIndicator={false}
     >
-      <View style={[styles.searchBarContainer, { paddingHorizontal: Spacing.lg }]}>
-        <View style={[styles.searchBar, { backgroundColor: theme.backgroundSecondary }, isRTL && styles.searchBarRTL]}>
+      <View
+        style={[styles.searchBarContainer, { paddingHorizontal: Spacing.lg }]}
+      >
+        <View
+          style={[
+            styles.searchBar,
+            { backgroundColor: theme.backgroundSecondary },
+            isRTL && styles.searchBarRTL,
+          ]}
+        >
           <Pressable
             onPress={() => navigation.navigate("Search", {})}
-            style={[styles.filterButton, { backgroundColor: theme.primary + "15" }]}
+            style={[
+              styles.filterButton,
+              { backgroundColor: theme.primary + "15" },
+            ]}
           >
             <Feather name="sliders" size={20} color={theme.primary} />
           </Pressable>
 
           <Pressable
             onPress={handleSearchPress}
-            style={{ flex: 1, flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 8, height: '100%' }}
+            style={{
+              flex: 1,
+              flexDirection: isRTL ? "row-reverse" : "row",
+              alignItems: "center",
+              gap: 8,
+              height: "100%",
+            }}
           >
-            <View style={{ flex: 1, justifyContent: 'center' }}>
-              <ThemedText style={[styles.searchPlaceholder, { color: theme.textSecondary, textAlign: isRTL ? 'right' : 'left' }]}>
+            <View style={{ flex: 1, justifyContent: "center" }}>
+              <ThemedText
+                style={[
+                  styles.searchPlaceholder,
+                  {
+                    color: theme.textSecondary,
+                    textAlign: isRTL ? "right" : "left",
+                  },
+                ]}
+              >
                 {t("searchCars")}
               </ThemedText>
             </View>
@@ -114,7 +156,9 @@ export default function HomeScreen() {
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={(e) => {
-              const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+              const index = Math.round(
+                e.nativeEvent.contentOffset.x / SCREEN_WIDTH,
+              );
               setCurrentSlideIndex(index);
             }}
             ref={scrollRef}
@@ -123,17 +167,31 @@ export default function HomeScreen() {
             {displaySlides.map((slide: any, index: number) => (
               <Pressable
                 key={slide.id}
-                style={[styles.singleSlide, { backgroundColor: theme.cardBackground }]}
-                onPress={() => slide.linkUrl ? console.log('Open Link', slide.linkUrl) : navigation.navigate("Search", { category: "all" })}
+                style={[
+                  styles.singleSlide,
+                  { backgroundColor: theme.cardBackground },
+                ]}
+                onPress={() =>
+                  slide.linkUrl
+                    ? console.log("Open Link", slide.linkUrl)
+                    : navigation.navigate("Search", { category: "all" })
+                }
               >
                 {slide.imageUrl ? (
-                  <Image source={{ uri: slide.imageUrl }} style={styles.slideImage} resizeMode="cover" />
+                  <Image
+                    source={{ uri: slide.imageUrl }}
+                    style={styles.slideImage}
+                    resizeMode="cover"
+                  />
                 ) : (
                   <LinearGradient
                     colors={[theme.primary, theme.secondary]}
                     style={styles.adGradient}
                   >
-                    <ThemedText style={styles.adText}>{slide.title || (isRTL ? `إعلان ${index + 1}` : `Ad ${index + 1}`)}</ThemedText>
+                    <ThemedText style={styles.adText}>
+                      {slide.title ||
+                        (isRTL ? `إعلان ${index + 1}` : `Ad ${index + 1}`)}
+                    </ThemedText>
                   </LinearGradient>
                 )}
               </Pressable>
@@ -145,8 +203,13 @@ export default function HomeScreen() {
                 key={index}
                 style={[
                   styles.sliderDot,
-                  { backgroundColor: index === currentSlideIndex ? theme.primary : theme.border },
-                  index === currentSlideIndex && { width: 20 }
+                  {
+                    backgroundColor:
+                      index === currentSlideIndex
+                        ? theme.primary
+                        : theme.border,
+                  },
+                  index === currentSlideIndex && { width: 20 },
                 ]}
               />
             ))}
@@ -161,7 +224,7 @@ export default function HomeScreen() {
           contentContainerStyle={[
             styles.categoriesScrollContent,
             isRTL && styles.categoriesScrollContentRTL,
-            { paddingHorizontal: Spacing.lg } // explicit padding
+            { paddingHorizontal: Spacing.lg }, // explicit padding
           ]}
           style={{ marginBottom: Spacing.sm }}
         >
@@ -170,12 +233,19 @@ export default function HomeScreen() {
               key={cat.id}
               style={[
                 styles.categoryChip,
-                { backgroundColor: theme.backgroundSecondary, borderColor: theme.border },
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor: theme.border,
+                },
               ]}
-              onPress={() => navigation.navigate("Search", { category: cat.id })}
+              onPress={() =>
+                navigation.navigate("Search", { category: cat.id })
+              }
             >
               <Feather name={cat.icon} size={14} color={theme.textSecondary} />
-              <ThemedText style={{ fontSize: 13, color: theme.text }}>{t(cat.labelKey)}</ThemedText>
+              <ThemedText style={{ fontSize: 13, color: theme.text }}>
+                {t(cat.labelKey)}
+              </ThemedText>
             </Pressable>
           ))}
         </ScrollView>
@@ -183,9 +253,13 @@ export default function HomeScreen() {
 
       <View style={styles.section}>
         <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRTL]}>
-          <ThemedText type="h4" style={isRTL ? styles.rtlText : undefined}>{t("featuredCars")}</ThemedText>
+          <ThemedText type="h4" style={isRTL ? styles.rtlText : undefined}>
+            {t("featuredCars")}
+          </ThemedText>
           <Pressable onPress={() => navigation.navigate("Search", {})}>
-            <ThemedText type="link" style={{ fontSize: 14 }}>{t("seeAll")}</ThemedText>
+            <ThemedText type="link" style={{ fontSize: 14 }}>
+              {t("seeAll")}
+            </ThemedText>
           </Pressable>
         </View>
         <ScrollView
@@ -198,7 +272,9 @@ export default function HomeScreen() {
               key={car.id}
               car={car}
               horizontal
-              onPress={() => navigation.navigate("CarDetail", { carId: car.id })}
+              onPress={() =>
+                navigation.navigate("CarDetail", { carId: car.id })
+              }
             />
           ))}
         </ScrollView>
@@ -206,9 +282,13 @@ export default function HomeScreen() {
 
       <View style={styles.section}>
         <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRTL]}>
-          <ThemedText type="h4" style={isRTL ? styles.rtlText : undefined}>{t("recentListings")}</ThemedText>
+          <ThemedText type="h4" style={isRTL ? styles.rtlText : undefined}>
+            {t("recentListings")}
+          </ThemedText>
           <Pressable onPress={() => navigation.navigate("Search", {})}>
-            <ThemedText type="link" style={{ fontSize: 14 }}>{t("seeAll")}</ThemedText>
+            <ThemedText type="link" style={{ fontSize: 14 }}>
+              {t("seeAll")}
+            </ThemedText>
           </Pressable>
         </View>
         <ScrollView
@@ -221,14 +301,16 @@ export default function HomeScreen() {
               key={car.id}
               car={car}
               horizontal
-              onPress={() => navigation.navigate("CarDetail", { carId: car.id })}
+              onPress={() =>
+                navigation.navigate("CarDetail", { carId: car.id })
+              }
             />
           ))}
         </ScrollView>
       </View>
 
       <View style={{ height: Spacing.xl }} />
-    </ScrollView >
+    </ScrollView>
   );
 }
 
@@ -309,7 +391,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   searchBarContainer: {
-    width: '100%',
+    width: "100%",
     marginBottom: Spacing.md,
   },
   filterButton: {
@@ -369,13 +451,13 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   slideImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   sliderIndicators: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: Spacing.sm,
     gap: 6,
   },

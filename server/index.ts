@@ -4,6 +4,8 @@ import type { Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import * as fs from "fs";
 import * as path from "path";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 
 const app = express();
 const log = console.log;
@@ -12,6 +14,28 @@ declare module "http" {
   interface IncomingMessage {
     rawBody: unknown;
   }
+}
+
+function setupSecurity(app: express.Application) {
+  // Use Helmet for security headers
+  app.use(
+    helmet({
+      contentSecurityPolicy: false, // Disabled for now to avoiding breaking Expo web logic/images
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
+
+  // Global rate limiter
+  const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 200, // Limit each IP to 200 requests per window
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Too many requests, please try again later." },
+  });
+
+  // Apply to all API routes
+  app.use("/api", globalLimiter);
 }
 
 function setupCors(app: express.Application) {
@@ -36,11 +60,16 @@ function setupCors(app: express.Application) {
         "Access-Control-Allow-Methods",
         "GET, POST, PUT, DELETE, OPTIONS",
       );
-      res.header("Access-Control-Allow-Headers", "Content-Type");
+      res.header("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Added Authorization
       res.header("Access-Control-Allow-Credentials", "true");
     }
 
     if (req.method === "OPTIONS") {
+      res.header(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, DELETE, OPTIONS",
+      );
+      res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
       return res.sendStatus(200);
     }
 
@@ -54,10 +83,11 @@ function setupBodyParsing(app: express.Application) {
       verify: (req, _res, buf) => {
         req.rawBody = buf;
       },
+      limit: "10mb", // Increased limit for base64 images if needed
     }),
   );
 
-  app.use(express.urlencoded({ extended: false }));
+  app.use(express.urlencoded({ extended: false, limit: "10mb" }));
 }
 
 function setupRequestLogging(app: express.Application) {
@@ -231,6 +261,7 @@ function setupErrorHandler(app: express.Application) {
 
 (async () => {
   setupCors(app);
+  setupSecurity(app);
   setupBodyParsing(app);
   setupRequestLogging(app);
 

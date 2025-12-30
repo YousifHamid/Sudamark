@@ -36,7 +36,9 @@ interface OnboardingScreenProps {
   onComplete: () => void;
 }
 
-export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
+export default function OnboardingScreen({
+  onComplete,
+}: OnboardingScreenProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
@@ -54,7 +56,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
           {
             paddingTop: insets.top + Spacing.xl,
             paddingBottom: insets.bottom + Spacing.xl,
-          }
+          },
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -66,10 +68,19 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
           />
         </View>
 
-        <ThemedText type="h1" style={[styles.welcomeTitle, isRTL && styles.rtlText]}>
+        <ThemedText
+          type="h1"
+          style={[styles.welcomeTitle, isRTL && styles.rtlText]}
+        >
           {t("welcomeTitle")}
         </ThemedText>
-        <ThemedText style={[styles.welcomeSubtitle, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+        <ThemedText
+          style={[
+            styles.welcomeSubtitle,
+            { color: theme.textSecondary },
+            isRTL && styles.rtlText,
+          ]}
+        >
           {t("welcomeSubtitle")}
         </ThemedText>
 
@@ -79,10 +90,15 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
               key={feature.id}
               style={[
                 styles.featureCard,
-                { backgroundColor: theme.primary + "10" }
+                { backgroundColor: theme.primary + "10" },
               ]}
             >
-              <View style={[styles.featureIconCircle, { backgroundColor: theme.primary }]}>
+              <View
+                style={[
+                  styles.featureIconCircle,
+                  { backgroundColor: theme.primary },
+                ]}
+              >
                 <Feather name={feature.icon} size={20} color="#FFFFFF" />
               </View>
               <ThemedText style={[styles.featureText, isRTL && styles.rtlText]}>

@@ -1,8 +1,20 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getApiUrl } from "@/lib/query-client";
 
-export type UserRole = "buyer" | "seller" | "mechanic" | "electrician" | "lawyer" | "inspection_center";
+export type UserRole =
+  | "buyer"
+  | "seller"
+  | "mechanic"
+  | "electrician"
+  | "lawyer"
+  | "inspection_center";
 
 export interface User {
   id: string;
@@ -23,14 +35,19 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   hasSeenOnboarding: boolean;
-  loginWithPhone: (phone: string, countryCode?: string) => Promise<{ isNewUser: boolean; user?: User }>;
-  sendMagicLink: (email: string, phone: string, countryCode?: string) => Promise<{ success: boolean; demoToken?: string }>;
-  verifyMagicToken: (magicToken: string) => Promise<{ isNewUser: boolean; user?: User; email?: string; phone?: string }>;
-  setUserRoles: (roles: UserRole[], name: string, email?: string, city?: string) => Promise<void>;
+  loginWithPhone: (
+    phone: string,
+    countryCode?: string,
+  ) => Promise<{ isNewUser: boolean; user?: User }>;
+  setUserRoles: (
+    roles: UserRole[],
+    name: string,
+    email?: string,
+    city?: string,
+  ) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<User>) => Promise<void>;
   completeOnboarding: () => Promise<void>;
-  pendingEmail: string | null;
   pendingPhoneNumber: string | null;
   pendingCountryCode: string;
 }
@@ -46,8 +63,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
-  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
-  const [pendingPhoneNumber, setPendingPhoneNumber] = useState<string | null>(null);
+  const [pendingPhoneNumber, setPendingPhoneNumber] = useState<string | null>(
+    null,
+  );
   const [pendingCountryCode, setPendingCountryCode] = useState<string>("+249");
 
   useEffect(() => {
@@ -80,7 +98,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setHasSeenOnboarding(true);
   };
 
-  const loginWithPhone = async (phone: string, countryCode: string = "+249"): Promise<{ isNewUser: boolean; user?: User }> => {
+  const loginWithPhone = async (
+    phone: string,
+    countryCode: string = "+249",
+  ): Promise<{ isNewUser: boolean; user?: User }> => {
     try {
       const fullPhone = `${countryCode}${phone.replace(/\s/g, "")}`;
       const baseUrl = getApiUrl();
@@ -117,70 +138,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const sendMagicLink = async (email: string, phone: string, countryCode: string = "+249"): Promise<{ success: boolean; demoToken?: string }> => {
-    try {
-      const baseUrl = getApiUrl();
-      const response = await fetch(`${baseUrl}api/auth/send-magic-link`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, phone, countryCode }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to send magic link");
-      }
-
-      setPendingEmail(email);
-      setPendingPhoneNumber(phone);
-      setPendingCountryCode(countryCode);
-
-      return { success: true, demoToken: data.demoToken };
-    } catch (error) {
-      console.error("Send magic link error:", error);
-      throw error;
-    }
-  };
-
-  const verifyMagicToken = async (magicToken: string): Promise<{ isNewUser: boolean; user?: User; email?: string; phone?: string }> => {
-    try {
-      const baseUrl = getApiUrl();
-      const response = await fetch(`${baseUrl}api/auth/verify-token`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: magicToken }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Invalid token");
-      }
-
-      if (data.isNewUser) {
-        setPendingEmail(data.email);
-        setPendingPhoneNumber(data.phone);
-        return { isNewUser: true, email: data.email, phone: data.phone };
-      }
-
-      const userData: User = {
-        ...data.user,
-        phoneNumber: data.user.phone,
-      };
-      await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userData));
-      await AsyncStorage.setItem(TOKEN_STORAGE_KEY, data.token);
-      setUser(userData);
-      setToken(data.token);
-      setPendingEmail(null);
-      setPendingPhoneNumber(null);
-
-      return { isNewUser: false, user: userData };
-    } catch (error) {
-      console.error("Token verification error:", error);
-      throw error;
-    }
-  };
-
-  const setUserRoles = async (roles: UserRole[], name: string, email?: string, city?: string) => {
+  const setUserRoles = async (
+    roles: UserRole[],
+    name: string,
+    email?: string,
+    city?: string,
+  ) => {
     if (!pendingPhoneNumber) return;
 
     try {
@@ -191,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           phone,
-          email: email || pendingEmail,
+          email: email || null,
           name,
           roles,
           countryCode: pendingCountryCode,
@@ -213,7 +176,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(userData);
       setToken(data.token);
       setPendingPhoneNumber(null);
-      setPendingEmail(null);
     } catch (error) {
       console.error("Registration error:", error);
       throw error;
@@ -235,7 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(updates),
       });
@@ -265,13 +227,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         hasSeenOnboarding,
         loginWithPhone,
-        sendMagicLink,
-        verifyMagicToken,
         setUserRoles,
         logout,
         updateProfile,
         completeOnboarding,
-        pendingEmail,
         pendingPhoneNumber,
         pendingCountryCode,
       }}

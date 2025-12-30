@@ -26,7 +26,7 @@
     <div id="login-page" class="min-h-screen flex items-center justify-center p-4">
       <div class="glass rounded-2xl p-8 w-full max-w-md border border-gray-700">
         <div class="text-center mb-8">
-          <h1 class="text-4xl font-bold text-orange-500 mb-2">SUDMARK</h1>
+          <h1 class="text-4xl font-bold text-orange-500 mb-2">SUDAMARK</h1>
           <p class="text-gray-400">لوحة تحكم المدير</p>
         </div>
         <div id="login-form">
@@ -46,7 +46,7 @@
       <nav class="bg-gray-800 border-b border-gray-700 p-4">
         <div class="container mx-auto flex justify-between items-center">
           <div class="flex items-center gap-3">
-            <span class="text-2xl font-bold text-orange-500">SUDMARK</span>
+            <span class="text-2xl font-bold text-orange-500">SUDAMARK</span>
             <span class="text-xl text-gray-400">|</span>
             <span class="text-xl font-bold text-white">لوحة التحكم</span>
           </div>
@@ -87,189 +87,381 @@
             class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">مزودي الخدمات</button>
           <button onclick="showTab('payments')"
             class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">المدفوعات</button>
+          <button onclick="showTab('slider')" class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">إعلانات
+            البانر</button>
         </div>
 
         <div id="users-tab" class="tab-content hidden">
-          <div class="glass rounded-xl border border-gray-700 overflow-hidden">
-            <table class="w-full">
-              <thead class="bg-gray-800">
-                <tr>
-                  <th class="p-4 text-right">الاسم</th>
-                  <th class="p-4 text-right">الهاتف</th>
-                  <th class="p-4 text-right">الموقع</th>
-                  <th class="p-4 text-right">الأدوار</th>
-                  <th class="p-4 text-right">التاريخ</th>
-                </tr>
-              </thead>
-              <tbody id="users-table"></tbody>
-            </table>
-          </div>
+          <!-- ... existing users tab ... -->
         </div>
 
-        <div id="cars-tab" class="tab-content hidden">
+        <!-- ... existing other tabs ... -->
+
+        <div id="slider-tab" class="tab-content hidden">
           <div class="flex justify-end mb-4">
-            <button onclick="showAddCar()" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg">إضافة
-              سيارة</button>
+            <button onclick="showAddSlider()" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg">إضافة
+              بانر</button>
           </div>
-          <div class="glass rounded-xl border border-gray-700 overflow-hidden">
+          <div class="glass rounded-xl border border-gray-700 overflow-hidden overflow-x-auto">
             <table class="w-full">
               <thead class="bg-gray-800">
                 <tr>
-                  <th class="p-4 text-right">السيارة</th>
-                  <th class="p-4 text-right">السعر</th>
-                  <th class="p-4 text-right">المدينة</th>
-                  <th class="p-4 text-right">المالك</th>
-                  <th class="p-4 text-right">الحالة</th>
+                  <th class="p-4 text-right">الصورة</th>
+                  <th class="p-4 text-right">العنوان</th>
+                  <th class="p-4 text-right">الرابط</th>
+                  <th class="p-4 text-right">الترتيب</th>
                   <th class="p-4 text-right">الإجراءات</th>
                 </tr>
               </thead>
-              <tbody id="cars-table"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div id="providers-tab" class="tab-content hidden">
-          <div class="flex justify-end mb-4">
-            <button onclick="showAddProvider()" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg">إضافة مزود
-              خدمة</button>
-          </div>
-          <div class="glass rounded-xl border border-gray-700 overflow-hidden">
-            <table class="w-full">
-              <thead class="bg-gray-800">
-                <tr>
-                  <th class="p-4 text-right">الاسم</th>
-                  <th class="p-4 text-right">النوع</th>
-                  <th class="p-4 text-right">الهاتف</th>
-                  <th class="p-4 text-right">المدينة</th>
-                  <th class="p-4 text-right">الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody id="providers-table"></tbody>
+              <tbody id="slider-table"></tbody>
             </table>
           </div>
         </div>
 
         <div id="payments-tab" class="tab-content hidden">
-          <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
-            <div class="flex items-center gap-3">
-              <span class="text-gray-400">الموافقة التلقائية:</span>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="auto-approve-toggle" class="sr-only peer" onchange="toggleAutoApprove()"
-                  aria-label="تبديل الموافقة التلقائية">
-                <div
-                  class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500">
-                </div>
-              </label>
-            </div>
-            <div class="text-sm text-gray-400">
-              أول 1000 إعلان مجاني - بعدها 10,000 جنيه لكل إعلان
-            </div>
+          <!-- ... existing payments tab ... -->
+        </div>
+        <div class="glass rounded-xl border border-gray-700 overflow-hidden overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-800">
+              <tr>
+                <th class="p-4 text-right">الاسم</th>
+                <th class="p-4 text-right">الهاتف</th>
+                <th class="p-4 text-right">الموقع</th>
+                <th class="p-4 text-right">الأدوار</th>
+                <th class="p-4 text-right">التاريخ</th>
+              </tr>
+            </thead>
+            <tbody id="users-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="cars-tab" class="tab-content hidden">
+        <div class="flex justify-end mb-4">
+          <button onclick="showAddCar()" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg">إضافة
+            سيارة</button>
+        </div>
+        <div class="glass rounded-xl border border-gray-700 overflow-hidden overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-800">
+              <tr>
+                <th class="p-4 text-right">السيارة</th>
+                <th class="p-4 text-right">السعر</th>
+                <th class="p-4 text-right">المدينة</th>
+                <th class="p-4 text-right">المالك</th>
+                <th class="p-4 text-right">الحالة</th>
+                <th class="p-4 text-right">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="cars-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="providers-tab" class="tab-content hidden">
+        <div class="flex justify-end mb-4">
+          <button onclick="showAddProvider()" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg">إضافة مزود
+            خدمة</button>
+        </div>
+        <div class="glass rounded-xl border border-gray-700 overflow-hidden overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-800">
+              <tr>
+                <th class="p-4 text-right">الاسم</th>
+                <th class="p-4 text-right">النوع</th>
+                <th class="p-4 text-right">الهاتف</th>
+                <th class="p-4 text-right">المدينة</th>
+                <th class="p-4 text-right">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="providers-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="payments-tab" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
+          <div class="flex items-center gap-3">
+            <span class="text-gray-400">الموافقة التلقائية:</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="auto-approve-toggle" class="sr-only peer" onchange="toggleAutoApprove()"
+                aria-label="تبديل الموافقة التلقائية">
+              <div
+                class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500">
+              </div>
+            </label>
           </div>
-          <div class="glass rounded-xl border border-gray-700 overflow-hidden">
-            <table class="w-full">
-              <thead class="bg-gray-800">
-                <tr>
-                  <th class="p-4 text-right">المستخدم</th>
-                  <th class="p-4 text-right">رقم العملية</th>
-                  <th class="p-4 text-right">المبلغ</th>
-                  <th class="p-4 text-right">تاريخ الدفع</th>
-                  <th class="p-4 text-right">الحالة</th>
-                  <th class="p-4 text-right">تاريخ الطلب</th>
-                  <th class="p-4 text-right">الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody id="payments-table"></tbody>
-            </table>
+          <div class="text-sm text-gray-400">
+            أول 1000 إعلان مجاني - بعدها 10,000 جنيه لكل إعلان
           </div>
+        </div>
+        <div class="glass rounded-xl border border-gray-700 overflow-hidden overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-800">
+              <tr>
+                <th class="p-4 text-right">المستخدم</th>
+                <th class="p-4 text-right">رقم العملية</th>
+                <th class="p-4 text-right">المبلغ</th>
+                <th class="p-4 text-right">تاريخ الدفع</th>
+                <th class="p-4 text-right">الحالة</th>
+                <th class="p-4 text-right">تاريخ الطلب</th>
+                <th class="p-4 text-right">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="payments-table"></tbody>
+          </table>
         </div>
       </div>
     </div>
+  </div>
 
-    <div id="add-car-modal"
-      class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div class="glass rounded-2xl p-6 w-full max-w-lg border border-gray-700 max-h-screen overflow-y-auto">
-        <h2 class="text-xl font-bold mb-4" id="car-modal-title">إضافة سيارة</h2>
-        <input type="hidden" id="edit-car-id">
-        <div class="grid grid-cols-2 gap-3">
-          <input type="text" id="car-make" placeholder="الماركة (مثال: تويوتا)"
-            class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
-          <input type="text" id="car-model" placeholder="الموديل (مثال: كامري)"
-            class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
-          <input type="number" id="car-year" placeholder="السنة"
-            class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
-          <input type="number" id="car-price" placeholder="السعر (SDG)"
-            class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
-          <input type="number" id="car-mileage" placeholder="المسافة المقطوعة (كم)"
-            class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
-          <select id="car-city" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3" aria-label="المدينة">
-            <option value="الخرطوم">الخرطوم</option>
-            <option value="أم درمان">أم درمان</option>
-            <option value="بحري">بحري</option>
-            <option value="بورتسودان">بورتسودان</option>
-            <option value="كسلا">كسلا</option>
-          </select>
-          <select id="car-transmission" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3"
-            aria-label="ناقل الحركة">
-            <option value="automatic">أوتوماتيك</option>
-            <option value="manual">عادي</option>
-          </select>
-          <select id="car-fuel" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3"
-            aria-label="نوع الوقود">
-            <option value="petrol">بنزين</option>
-            <option value="diesel">ديزل</option>
-            <option value="electric">كهرباء</option>
-            <option value="hybrid">هايبرد</option>
-          </select>
-        </div>
-        <textarea id="car-description" placeholder="الوصف"
-          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mt-3" rows="3"></textarea>
-        <div class="flex gap-3 mt-4">
-          <button onclick="saveCar()" class="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-lg">حفظ</button>
-          <button onclick="hideAddCar()" class="flex-1 bg-gray-600 hover:bg-gray-700 py-3 rounded-lg">إلغاء</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="add-provider-modal"
-      class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div class="glass rounded-2xl p-6 w-full max-w-md border border-gray-700">
-        <h2 class="text-xl font-bold mb-4">إضافة مزود خدمة</h2>
-        <input type="text" id="provider-name" placeholder="الاسم"
-          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
-        <select id="provider-type" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3"
-          aria-label="نوع المزود">
-          <option value="mechanic">ميكانيكي</option>
-          <option value="electrician">كهربائي</option>
-          <option value="lawyer">محامي</option>
-          <option value="inspection">مركز فحص</option>
-        </select>
-        <input type="text" id="provider-phone" placeholder="الهاتف"
-          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
-        <select id="provider-city" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3"
-          aria-label="المدينة">
+  <div id="add-car-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="glass rounded-2xl p-6 w-full max-w-lg border border-gray-700 max-h-screen overflow-y-auto">
+      <h2 class="text-xl font-bold mb-4" id="car-modal-title">إضافة سيارة</h2>
+      <input type="hidden" id="edit-car-id">
+      <div class="grid grid-cols-2 gap-3">
+        <input type="text" id="car-make" placeholder="الماركة (مثال: تويوتا)"
+          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+        <input type="text" id="car-model" placeholder="الموديل (مثال: كامري)"
+          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+        <input type="number" id="car-year" placeholder="السنة"
+          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+        <input type="number" id="car-price" placeholder="السعر (SDG)"
+          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+        <input type="number" id="car-mileage" placeholder="المسافة المقطوعة (كم)"
+          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+        <select id="car-city" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3" aria-label="المدينة">
           <option value="الخرطوم">الخرطوم</option>
           <option value="أم درمان">أم درمان</option>
           <option value="بحري">بحري</option>
           <option value="بورتسودان">بورتسودان</option>
           <option value="كسلا">كسلا</option>
         </select>
-        <input type="text" id="provider-address" placeholder="العنوان"
-          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
-        <textarea id="provider-description" placeholder="الوصف"
-          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-4"></textarea>
-        <div class="flex gap-3">
-          <button onclick="addProvider()" class="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-lg">إضافة</button>
-          <button onclick="hideAddProvider()"
-            class="flex-1 bg-gray-600 hover:bg-gray-700 py-3 rounded-lg">إلغاء</button>
-        </div>
+        <select id="car-transmission" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3"
+          aria-label="ناقل الحركة">
+          <option value="automatic">أوتوماتيك</option>
+          <option value="manual">عادي</option>
+        </select>
+        <select id="car-fuel" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3" aria-label="نوع الوقود">
+          <option value="petrol">بنزين</option>
+          <option value="diesel">ديزل</option>
+          <option value="electric">كهرباء</option>
+          <option value="hybrid">هايبرد</option>
+        </select>
+      </div>
+      <textarea id="car-description" placeholder="الوصف"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mt-3" rows="3"></textarea>
+      <div class="flex gap-3 mt-4">
+        <button onclick="saveCar()" class="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-lg">حفظ</button>
+        <button onclick="hideAddCar()" class="flex-1 bg-gray-600 hover:bg-gray-700 py-3 rounded-lg">إلغاء</button>
       </div>
     </div>
+  </div>
+
+  <div id="add-provider-modal"
+    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="glass rounded-2xl p-6 w-full max-w-md border border-gray-700">
+      <h2 class="text-xl font-bold mb-4">إضافة مزود خدمة</h2>
+      <input type="text" id="provider-name" placeholder="الاسم"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
+      <select id="provider-type" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3"
+        aria-label="نوع المزود">
+        <option value="mechanic">ميكانيكي</option>
+        <option value="electrician">كهربائي</option>
+        <option value="lawyer">محامي</option>
+        <option value="inspection">مركز فحص</option>
+      </select>
+      <input type="text" id="provider-phone" placeholder="الهاتف"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
+      <select id="provider-city" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3"
+        aria-label="المدينة">
+        <option value="الخرطوم">الخرطوم</option>
+        <option value="أم درمان">أم درمان</option>
+        <option value="بحري">بحري</option>
+        <option value="بورتسودان">بورتسودان</option>
+        <option value="كسلا">كسلا</option>
+      </select>
+      <input type="text" id="provider-address" placeholder="العنوان"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
+      <textarea id="provider-description" placeholder="الوصف"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-4"></textarea>
+      <div class="flex gap-3">
+        <button onclick="addProvider()" class="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-lg">إضافة</button>
+        <button onclick="hideAddProvider()" class="flex-1 bg-gray-600 hover:bg-gray-700 py-3 rounded-lg">إلغاء</button>
+      </div>
+    </div>
+  </div>
+  <div id="add-slider-modal"
+    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="glass rounded-2xl p-6 w-full max-w-md border border-gray-700">
+      <h2 class="text-xl font-bold mb-4">إضافة إعلان بانر</h2>
+      <input type="text" id="slider-title" placeholder="العنوان" aria-label="العنوان"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
+
+      <div class="mb-3">
+        <label class="block text-gray-400 text-sm mb-2">الصورة (الحد الأقصى 5MB)</label>
+        <input type="file" id="slider-image-file" accept="image/*" aria-label="صورة البانر"
+          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3" onchange="handleImageUpload(this)">
+        <input type="hidden" id="slider-image-base64">
+        <div id="image-preview" class="mt-2 hidden">
+          <img src="" alt="معاينة الصورة" class="w-full h-32 object-cover rounded-lg border border-gray-600">
+        </div>
+        <p id="upload-status" class="text-xs text-blue-400 mt-1 hidden">جاري المعالجة...</p>
+      </div>
+
+      <input type="text" id="slider-link" placeholder="رابط التوجيه (اختياري)" aria-label="رابط التوجيه"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
+      <input type="number" id="slider-order" placeholder="الترتيب (مثال: 1)" aria-label="الترتيب"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-4">
+      <div class="flex gap-3">
+        <button onclick="addSlider()" class="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-lg">إضافة</button>
+        <button onclick="hideAddSlider()" class="flex-1 bg-gray-600 hover:bg-gray-700 py-3 rounded-lg">إلغاء</button>
+      </div>
+    </div>
+  </div>
   </div>
 
   <script>
     const API_BASE = window.location.origin;
     let token = localStorage.getItem('adminToken');
     let adminData = JSON.parse(localStorage.getItem('adminData') || 'null');
+
+    // ... (existing api, login, logout functions) ...
+
+    function showTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('bg-orange-500'));
+      document.getElementById(`${tab}-tab`).classList.remove('hidden');
+      event?.target?.classList.add('bg-orange-500');
+      if (tab === 'users') loadUsers();
+      if (tab === 'cars') loadCars();
+      if (tab === 'providers') loadProviders();
+      if (tab === 'payments') loadPayments();
+      if (tab === 'slider') loadSlider();
+    }
+
+    async function loadSlider() {
+      try {
+        const sliders = await api('/api/admin/slider-images');
+        const tbody = document.getElementById('slider-table');
+        if (sliders.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-400">لا توجد إعلانات. سيتم إخفاء السلايدر في التطبيق.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = sliders.map(s => `
+          <tr class="border-t border-gray-700">
+            <td class="p-4"><img src="${s.imageUrl}" class="w-20 h-10 object-cover rounded"></td>
+            <td class="p-4">${s.title || '-'}</td>
+            <td class="p-4 text-xs text-gray-400 truncate max-w-[150px]">${s.linkUrl || '-'}</td>
+            <td class="p-4">${s.order}</td>
+            <td class="p-4">
+              <button onclick="deleteSlider('${s.id}')" class="text-red-400 hover:underline">حذف</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load slider images:', err);
+      }
+    }
+
+    function showAddSlider() {
+      document.getElementById('add-slider-modal').classList.remove('hidden');
+    }
+
+    function hideAddSlider() {
+      document.getElementById('add-slider-modal').classList.add('hidden');
+    }
+
+    async function addSlider() {
+      try {
+        const imageBase64 = document.getElementById('slider-image-base64').value;
+        if (!imageBase64) return alert('يرجى اختيار صورة');
+
+        const data = {
+          title: document.getElementById('slider-title').value,
+          imageUrl: imageBase64,
+          linkUrl: document.getElementById('slider-link').value,
+          order: parseInt(document.getElementById('slider-order').value) || 0,
+          isActive: true
+        };
+        await api('/api/admin/slider-images', { method: 'POST', body: JSON.stringify(data) });
+        hideAddSlider();
+        loadSlider();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function handleImageUpload(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        if (file.size > 5 * 1024 * 1024) {
+          alert('حجم الملف كبير جداً. الحد الأقصى 5 ميجابايت');
+          input.value = '';
+          return;
+        }
+
+        const statusEl = document.getElementById('upload-status');
+        statusEl.classList.remove('hidden');
+        statusEl.textContent = 'جاري ضغط ومعالجة الصورة...';
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = new Image();
+          img.src = e.target.result;
+          img.onload = function () {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Resize logic
+            const MAX_WIDTH = 1024;
+            const MAX_HEIGHT = 1024;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Compress to JPEG with 0.7 quality
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+            document.getElementById('slider-image-base64').value = dataUrl;
+
+            const preview = document.getElementById('image-preview');
+            preview.classList.remove('hidden');
+            preview.querySelector('img').src = dataUrl;
+
+            statusEl.textContent = 'تمت معالجة الصورة بنجاح';
+            setTimeout(() => statusEl.classList.add('hidden'), 2000);
+          };
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function deleteSlider(id) {
+      if (!confirm('هل أنت متأكد من حذف هذا الإعلان؟')) return;
+      try {
+        await api(`/api/admin/slider-images/${id}`, { method: 'DELETE' });
+        loadSlider();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
 
     async function api(endpoint, options = {}) {
       const headers = { 'Content-Type': 'application/json' };
@@ -329,16 +521,7 @@
       }
     }
 
-    function showTab(tab) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('bg-orange-500'));
-      document.getElementById(`${tab}-tab`).classList.remove('hidden');
-      event?.target?.classList.add('bg-orange-500');
-      if (tab === 'users') loadUsers();
-      if (tab === 'cars') loadCars();
-      if (tab === 'providers') loadProviders();
-      if (tab === 'payments') loadPayments();
-    }
+
 
     async function loadUsers() {
       try {

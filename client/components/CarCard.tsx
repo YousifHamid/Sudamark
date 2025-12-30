@@ -94,13 +94,19 @@ export function CarCard({ car, onPress, horizontal = false }: CarCardProps) {
         <View style={styles.details}>
           <View style={styles.detailItem}>
             <Feather name="calendar" size={12} color={theme.textSecondary} />
-            <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: 4 }}>
+            <ThemedText
+              type="small"
+              style={{ color: theme.textSecondary, marginLeft: 4 }}
+            >
               {car.year}
             </ThemedText>
           </View>
           <View style={styles.detailItem}>
             <Feather name="map-pin" size={12} color={theme.textSecondary} />
-            <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: 4 }}>
+            <ThemedText
+              type="small"
+              style={{ color: theme.textSecondary, marginLeft: 4 }}
+            >
               {car.city}
             </ThemedText>
           </View>

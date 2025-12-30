@@ -1,5 +1,12 @@
 import React, { useRef, useEffect, useState } from "react";
-import { View, StyleSheet, Dimensions, ScrollView, Pressable, Image } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  ScrollView,
+  Pressable,
+  Image,
+} from "react-native";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 
@@ -17,7 +24,10 @@ interface ImageSliderProps {
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SLIDER_HEIGHT = 180;
 
-export function ImageSlider({ images, autoPlayInterval = 4000 }: ImageSliderProps) {
+export function ImageSlider({
+  images,
+  autoPlayInterval = 4000,
+}: ImageSliderProps) {
   const { theme } = useTheme();
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -76,7 +86,8 @@ export function ImageSlider({ images, autoPlayInterval = 4000 }: ImageSliderProp
             style={[
               styles.indicator,
               {
-                backgroundColor: index === currentIndex ? theme.primary : theme.textSecondary,
+                backgroundColor:
+                  index === currentIndex ? theme.primary : theme.textSecondary,
                 opacity: index === currentIndex ? 1 : 0.4,
               },
             ]}

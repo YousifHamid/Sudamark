@@ -1,5 +1,13 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  varchar,
+  integer,
+  timestamp,
+  boolean,
+  jsonb,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -35,7 +43,10 @@ export const users = pgTable("users", {
   email: text("email").unique(),
   emailVerified: boolean("email_verified").default(false),
   name: text("name").notNull(),
-  roles: jsonb("roles").$type<string[]>().notNull().default(sql`'["buyer"]'::jsonb`),
+  roles: jsonb("roles")
+    .$type<string[]>()
+    .notNull()
+    .default(sql`'["buyer"]'::jsonb`),
   countryCode: text("country_code").default("+249"),
   city: text("city"),
   latitude: text("latitude"),
@@ -60,7 +71,9 @@ export const cars = pgTable("cars", {
   id: varchar("id")
     .primaryKey()
     .default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").references(() => users.id).notNull(),
+  userId: varchar("user_id")
+    .references(() => users.id)
+    .notNull(),
   make: text("make").notNull(),
   model: text("model").notNull(),
   year: integer("year").notNull(),
@@ -71,7 +84,9 @@ export const cars = pgTable("cars", {
   color: text("color"),
   city: text("city").notNull(),
   description: text("description"),
-  images: jsonb("images").$type<string[]>().default(sql`'[]'::jsonb`),
+  images: jsonb("images")
+    .$type<string[]>()
+    .default(sql`'[]'::jsonb`),
   category: text("category").default("sedan"),
   isFeatured: boolean("is_featured").default(false),
   isActive: boolean("is_active").default(true),
@@ -93,7 +108,9 @@ export const serviceProviders = pgTable("service_providers", {
   latitude: text("latitude"),
   longitude: text("longitude"),
   description: text("description"),
-  services: jsonb("services").$type<string[]>().default(sql`'[]'::jsonb`),
+  services: jsonb("services")
+    .$type<string[]>()
+    .default(sql`'[]'::jsonb`),
   price: text("price"),
   rating: integer("rating").default(0),
   reviewCount: integer("review_count").default(0),
@@ -105,8 +122,12 @@ export const buyerOffers = pgTable("buyer_offers", {
   id: varchar("id")
     .primaryKey()
     .default(sql`gen_random_uuid()`),
-  carId: varchar("car_id").references(() => cars.id).notNull(),
-  buyerId: varchar("buyer_id").references(() => users.id).notNull(),
+  carId: varchar("car_id")
+    .references(() => cars.id)
+    .notNull(),
+  buyerId: varchar("buyer_id")
+    .references(() => users.id)
+    .notNull(),
   offerPrice: integer("offer_price").notNull(),
   message: text("message"),
   status: text("status").default("pending"),
@@ -117,22 +138,49 @@ export const inspectionRequests = pgTable("inspection_requests", {
   id: varchar("id")
     .primaryKey()
     .default(sql`gen_random_uuid()`),
-  carId: varchar("car_id").references(() => cars.id).notNull(),
-  buyerId: varchar("buyer_id").references(() => users.id).notNull(),
-  sellerId: varchar("seller_id").references(() => users.id).notNull(),
+  carId: varchar("car_id")
+    .references(() => cars.id)
+    .notNull(),
+  buyerId: varchar("buyer_id")
+    .references(() => users.id)
+    .notNull(),
+  sellerId: varchar("seller_id")
+    .references(() => users.id)
+    .notNull(),
   status: text("status").default("pending"),
   message: text("message"),
+  scheduledAt: text("scheduled_at"),
+  location: text("location"),
   sellerResponse: text("seller_response"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const reports = pgTable("reports", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id") // The reporter
+    .references(() => users.id)
+    .notNull(),
+  targetId: varchar("target_id").notNull(), // The ID of the user/car being reported
+  targetType: text("target_type").notNull(), // 'user' or 'car'
+  reason: text("reason").notNull(),
+  details: text("details"),
+  status: text("status").default("pending"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const favorites = pgTable("favorites", {
   id: varchar("id")
     .primaryKey()
     .default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").references(() => users.id).notNull(),
-  carId: varchar("car_id").references(() => cars.id).notNull(),
+  userId: varchar("user_id")
+    .references(() => users.id)
+    .notNull(),
+  carId: varchar("car_id")
+    .references(() => cars.id)
+    .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -152,7 +200,9 @@ export const payments = pgTable("payments", {
   id: varchar("id")
     .primaryKey()
     .default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").references(() => users.id).notNull(),
+  userId: varchar("user_id")
+    .references(() => users.id)
+    .notNull(),
   carId: varchar("car_id").references(() => cars.id),
   trxNo: text("trx_no").notNull(),
   amount: integer("amount").notNull(),
@@ -189,8 +239,12 @@ export const couponUsages = pgTable("coupon_usages", {
   id: varchar("id")
     .primaryKey()
     .default(sql`gen_random_uuid()`),
-  couponId: varchar("coupon_id").references(() => couponCodes.id).notNull(),
-  userId: varchar("user_id").references(() => users.id).notNull(),
+  couponId: varchar("coupon_id")
+    .references(() => couponCodes.id)
+    .notNull(),
+  userId: varchar("user_id")
+    .references(() => users.id)
+    .notNull(),
   carId: varchar("car_id").references(() => cars.id),
   usedAt: timestamp("used_at").defaultNow().notNull(),
 });
@@ -207,7 +261,9 @@ export const insertCarSchema = createInsertSchema(cars).omit({
   updatedAt: true,
 });
 
-export const insertServiceProviderSchema = createInsertSchema(serviceProviders).omit({
+export const insertServiceProviderSchema = createInsertSchema(
+  serviceProviders,
+).omit({
   id: true,
   createdAt: true,
 });
@@ -266,7 +322,9 @@ export const insertBuyerOfferSchema = createInsertSchema(buyerOffers).omit({
   createdAt: true,
 });
 
-export const insertInspectionRequestSchema = createInsertSchema(inspectionRequests).omit({
+export const insertInspectionRequestSchema = createInsertSchema(
+  inspectionRequests,
+).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -275,8 +333,18 @@ export const insertInspectionRequestSchema = createInsertSchema(inspectionReques
 export type InsertBuyerOffer = z.infer<typeof insertBuyerOfferSchema>;
 export type BuyerOffer = typeof buyerOffers.$inferSelect;
 
-export type InsertInspectionRequest = z.infer<typeof insertInspectionRequestSchema>;
+export type InsertInspectionRequest = z.infer<
+  typeof insertInspectionRequestSchema
+>;
 export type InspectionRequest = typeof inspectionRequests.$inferSelect;
+
+export const insertReportSchema = createInsertSchema(reports).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertReport = z.infer<typeof insertReportSchema>;
+export type Report = typeof reports.$inferSelect;
 
 export const insertPaymentSchema = createInsertSchema(payments).omit({
   id: true,
@@ -322,7 +390,9 @@ export const messages = pgTable("messages", {
   id: varchar("id")
     .primaryKey()
     .default(sql`gen_random_uuid()`),
-  conversationId: varchar("conversation_id").references(() => conversations.id, { onDelete: "cascade" }).notNull(),
+  conversationId: varchar("conversation_id")
+    .references(() => conversations.id, { onDelete: "cascade" })
+    .notNull(),
   role: text("role").notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),

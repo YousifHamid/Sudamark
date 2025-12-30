@@ -15,7 +15,12 @@ import { Spacing, BorderRadius } from "@/constants/theme";
 export interface ServiceProvider {
   id: string;
   name: string;
-  role: "mechanic" | "electrician" | "lawyer" | "inspection_center" | "spare_parts";
+  role:
+    | "mechanic"
+    | "electrician"
+    | "lawyer"
+    | "inspection_center"
+    | "spare_parts";
   city: string;
   rating: number;
   reviewCount: number;
@@ -53,7 +58,10 @@ const springConfig: WithSpringConfig = {
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export function ServiceProviderCard({ provider, onPress }: ServiceProviderCardProps) {
+export function ServiceProviderCard({
+  provider,
+  onPress,
+}: ServiceProviderCardProps) {
   const { theme } = useTheme();
   const scale = useSharedValue(1);
 
@@ -76,14 +84,27 @@ export function ServiceProviderCard({ provider, onPress }: ServiceProviderCardPr
       onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      style={[styles.card, { backgroundColor: theme.cardBackground }, animatedStyle]}
+      style={[
+        styles.card,
+        { backgroundColor: theme.cardBackground },
+        animatedStyle,
+      ]}
     >
-      <View style={[styles.iconContainer, { backgroundColor: theme.backgroundSecondary }]}>
+      <View
+        style={[
+          styles.iconContainer,
+          { backgroundColor: theme.backgroundSecondary },
+        ]}
+      >
         <Feather name={iconName as any} size={24} color={theme.primary} />
       </View>
       <View style={styles.content}>
-        <ThemedText type="body" style={styles.name}>{provider.name}</ThemedText>
-        <View style={[styles.roleBadge, { backgroundColor: theme.primary + "15" }]}>
+        <ThemedText type="body" style={styles.name}>
+          {provider.name}
+        </ThemedText>
+        <View
+          style={[styles.roleBadge, { backgroundColor: theme.primary + "15" }]}
+        >
           <ThemedText type="small" style={{ color: theme.primary }}>
             {ROLE_LABELS[provider.role]}
           </ThemedText>
@@ -94,19 +115,27 @@ export function ServiceProviderCard({ provider, onPress }: ServiceProviderCardPr
             <ThemedText type="small" style={{ marginLeft: 4 }}>
               {provider.rating.toFixed(1)}
             </ThemedText>
-            <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: 2 }}>
+            <ThemedText
+              type="small"
+              style={{ color: theme.textSecondary, marginLeft: 2 }}
+            >
               ({provider.reviewCount})
             </ThemedText>
           </View>
           <View style={styles.locationContainer}>
             <Feather name="map-pin" size={12} color={theme.textSecondary} />
-            <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: 4 }}>
+            <ThemedText
+              type="small"
+              style={{ color: theme.textSecondary, marginLeft: 4 }}
+            >
               {provider.city}
             </ThemedText>
           </View>
         </View>
       </View>
-      <Pressable style={[styles.contactButton, { backgroundColor: theme.primary }]}>
+      <Pressable
+        style={[styles.contactButton, { backgroundColor: theme.primary }]}
+      >
         <Feather name="phone" size={18} color="#FFFFFF" />
       </Pressable>
     </AnimatedPressable>

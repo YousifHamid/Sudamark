@@ -1,6 +1,9 @@
 import React from "react";
 import { View, Pressable, StyleSheet, Text } from "react-native";
-import { createBottomTabNavigator, BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import {
+  createBottomTabNavigator,
+  BottomTabBarProps,
+} from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -41,7 +44,12 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   ];
 
   return (
-    <View style={[styles.floatingNavContainer, { bottom: insets.bottom + Spacing.md }]}>
+    <View
+      style={[
+        styles.floatingNavContainer,
+        { bottom: insets.bottom + Spacing.md },
+      ]}
+    >
       <LinearGradient
         colors={[theme.primary, theme.secondary]}
         start={{ x: 0, y: 0 }}
@@ -62,11 +70,35 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           };
 
           return (
-            <Pressable key={tab.name} onPress={handlePress} style={styles.navButton}>
-              <View style={[styles.navIconContainer, isActive && { backgroundColor: "rgba(255,255,255,0.25)" }]}>
-                <Feather name={tab.icon} size={28} color="#FFFFFF" style={{ opacity: isActive ? 1 : 0.9 }} />
+            <Pressable
+              key={tab.name}
+              onPress={handlePress}
+              style={styles.navButton}
+            >
+              <View
+                style={[
+                  styles.navIconContainer,
+                  isActive && { backgroundColor: "rgba(255,255,255,0.25)" },
+                ]}
+              >
+                <Feather
+                  name={tab.icon}
+                  size={28}
+                  color="#FFFFFF"
+                  style={{ opacity: isActive ? 1 : 0.9 }}
+                />
               </View>
-              <Text style={[styles.navLabel, { color: "#FFFFFF", fontWeight: "700", opacity: isActive ? 1 : 0.9, fontSize: 12 }]}>
+              <Text
+                style={[
+                  styles.navLabel,
+                  {
+                    color: "#FFFFFF",
+                    fontWeight: "700",
+                    opacity: isActive ? 1 : 0.9,
+                    fontSize: 12,
+                  },
+                ]}
+              >
                 {t(tab.labelKey)}
               </Text>
             </Pressable>

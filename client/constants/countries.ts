@@ -1,0 +1,123 @@
+export interface Country {
+    id: string; // ISO country code lowercased
+    name: string;
+    nameAr: string; // Added Arabic name for easy access
+    dialCode: string;
+    flag: string;
+    placeholder: string;
+    minLength: number;
+    maxLength: number;
+}
+
+export const SUPPORTED_COUNTRIES: Country[] = [
+    {
+        id: "sd",
+        name: "Sudan",
+        nameAr: "السودان",
+        dialCode: "+249",
+        flag: "SD",
+        placeholder: "9X XXX XXXX",
+        minLength: 9,
+        maxLength: 9,
+    },
+    {
+        id: "sa",
+        name: "Saudi Arabia",
+        nameAr: "السعودية",
+        dialCode: "+966",
+        flag: "SA",
+        placeholder: "5X XXX XXXX",
+        minLength: 9,
+        maxLength: 9,
+    },
+    {
+        id: "om",
+        name: "Oman",
+        nameAr: "عمان",
+        dialCode: "+968",
+        flag: "OM",
+        placeholder: "9XXX XXXX",
+        minLength: 8,
+        maxLength: 8,
+    },
+    {
+        id: "qa",
+        name: "Qatar",
+        nameAr: "قطر",
+        dialCode: "+974",
+        flag: "QA",
+        placeholder: "XXXX XXXX",
+        minLength: 8,
+        maxLength: 8,
+    },
+    {
+        id: "us",
+        name: "USA",
+        nameAr: "أمريكا",
+        dialCode: "+1",
+        flag: "US",
+        placeholder: "XXX XXX XXXX",
+        minLength: 10,
+        maxLength: 10,
+    },
+    {
+        id: "gb",
+        name: "UK",
+        nameAr: "بريطانيا",
+        dialCode: "+44",
+        flag: "GB",
+        placeholder: "XXXX XXXXXX",
+        minLength: 10,
+        maxLength: 11,
+    },
+    {
+        id: "ca",
+        name: "Canada",
+        nameAr: "كندا",
+        dialCode: "+1",
+        flag: "CA",
+        placeholder: "XXX XXX XXXX",
+        minLength: 10,
+        maxLength: 10,
+    },
+    {
+        id: "eg",
+        name: "Egypt",
+        nameAr: "مصر",
+        dialCode: "+20",
+        flag: "EG",
+        placeholder: "1X XXXX XXXX",
+        minLength: 10,
+        maxLength: 11,
+    },
+    {
+        id: "ie",
+        name: "Ireland",
+        nameAr: "أيرلندا",
+        dialCode: "+353",
+        flag: "IE",
+        placeholder: "8X XXX XXXX",
+        minLength: 9,
+        maxLength: 9,
+    },
+    {
+        id: "ly",
+        name: "Libya",
+        nameAr: "ليبيا",
+        dialCode: "+218",
+        flag: "LY",
+        placeholder: "9X XXX XXXX",
+        minLength: 9,
+        maxLength: 9,
+    },
+    {
+        id: "ye",
+        name: "Yemen",
+        nameAr: "اليمن",
+        dialCode: "+967",
+        flag: "YE",
+        placeholder: "7X XXX XXXX",
+        minLength: 9,
+        maxLength: 9,
+    },
+];
