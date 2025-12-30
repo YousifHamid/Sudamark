@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { View, StyleSheet, TextInput, Pressable, Modal, FlatList, Platform } from "react-native";
+import { View, StyleSheet, TextInput, Pressable, Modal, FlatList, Platform, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import * as Location from "expo-location";
 
@@ -73,7 +72,6 @@ export default function LoginScreen() {
     { id: "seller", labelKey: "seller", icon: "tag" as const },
     { id: "mechanic", labelKey: "mechanic", icon: "tool" as const },
     { id: "electrician", labelKey: "electrician", icon: "zap" as const },
-    { id: "lawyer", labelKey: "lawyer", icon: "briefcase" as const },
     { id: "inspection_center", labelKey: "inspectionCenter", icon: "clipboard" as const },
   ];
 
@@ -198,9 +196,9 @@ export default function LoginScreen() {
       >
         <View style={styles.header}>
           <Image
-            source={require("../../attached_assets/ARABATY2_1766663501110.png")}
+            source={require("../../assets/images/sudmark_logo.png")}
             style={styles.logo}
-            contentFit="contain"
+            resizeMode="contain"
           />
           <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
             {step === "phone" && t("enterPhoneToStart")}

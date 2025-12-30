@@ -14,6 +14,7 @@ export interface User {
   roles: UserRole[];
   avatar?: string;
   countryCode?: string;
+  currentCity?: string;
 }
 
 interface AuthContextType {
@@ -36,9 +37,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH_STORAGE_KEY = "@arabaty_user";
-const TOKEN_STORAGE_KEY = "@arabaty_token";
-const ONBOARDING_STORAGE_KEY = "@arabaty_onboarding";
+const AUTH_STORAGE_KEY = "@sudmark_user";
+const TOKEN_STORAGE_KEY = "@sudmark_token";
+const ONBOARDING_STORAGE_KEY = "@sudmark_onboarding";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -88,18 +89,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: fullPhone, countryCode }),
       });
-      
+
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Login failed");
       }
-      
+
       if (data.isNewUser) {
         setPendingPhoneNumber(phone);
         setPendingCountryCode(countryCode);
         return { isNewUser: true };
       }
-      
+
       const userData: User = {
         ...data.user,
         phoneNumber: data.user.phone,
@@ -108,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await AsyncStorage.setItem(TOKEN_STORAGE_KEY, data.token);
       setUser(userData);
       setToken(data.token);
-      
+
       return { isNewUser: false, user: userData };
     } catch (error) {
       console.error("Phone login error:", error);
@@ -124,16 +125,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, phone, countryCode }),
       });
-      
+
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Failed to send magic link");
       }
-      
+
       setPendingEmail(email);
       setPendingPhoneNumber(phone);
       setPendingCountryCode(countryCode);
-      
+
       return { success: true, demoToken: data.demoToken };
     } catch (error) {
       console.error("Send magic link error:", error);
@@ -149,18 +150,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: magicToken }),
       });
-      
+
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Invalid token");
       }
-      
+
       if (data.isNewUser) {
         setPendingEmail(data.email);
         setPendingPhoneNumber(data.phone);
         return { isNewUser: true, email: data.email, phone: data.phone };
       }
-      
+
       const userData: User = {
         ...data.user,
         phoneNumber: data.user.phone,
@@ -171,7 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(data.token);
       setPendingEmail(null);
       setPendingPhoneNumber(null);
-      
+
       return { isNewUser: false, user: userData };
     } catch (error) {
       console.error("Token verification error:", error);
@@ -188,21 +189,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await fetch(`${baseUrl}api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           phone,
           email: email || pendingEmail,
-          name, 
+          name,
           roles,
           countryCode: pendingCountryCode,
           city,
         }),
       });
-      
+
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Registration failed");
       }
-      
+
       const userData: User = {
         ...data.user,
         phoneNumber: data.user.phone,
@@ -227,23 +228,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateProfile = async (updates: Partial<User>) => {
     if (!user || !token) return;
-    
+
     try {
       const baseUrl = getApiUrl();
       const response = await fetch(`${baseUrl}api/users/me`, {
         method: "PUT",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(updates),
       });
-      
+
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Update failed");
       }
-      
+
       const updatedUser = { ...user, ...data };
       await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedUser));
       setUser(updatedUser);

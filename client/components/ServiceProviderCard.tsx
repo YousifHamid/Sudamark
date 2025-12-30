@@ -15,7 +15,7 @@ import { Spacing, BorderRadius } from "@/constants/theme";
 export interface ServiceProvider {
   id: string;
   name: string;
-  role: "mechanic" | "electrician" | "lawyer" | "inspection_center";
+  role: "mechanic" | "electrician" | "lawyer" | "inspection_center" | "spare_parts";
   city: string;
   rating: number;
   reviewCount: number;
@@ -33,6 +33,7 @@ const ROLE_ICONS: Record<string, string> = {
   electrician: "zap",
   lawyer: "briefcase",
   inspection_center: "clipboard",
+  spare_parts: "package",
 };
 
 const ROLE_LABELS: Record<string, string> = {
@@ -40,6 +41,7 @@ const ROLE_LABELS: Record<string, string> = {
   electrician: "Electrician",
   lawyer: "Lawyer",
   inspection_center: "Inspection Center",
+  spare_parts: "Spare Parts",
 };
 
 const springConfig: WithSpringConfig = {

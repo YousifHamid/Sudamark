@@ -87,12 +87,12 @@ async function sendMagicLinkEmail(email: string, token: string, magicLink: strin
 
   try {
     await emailTransporter.sendMail({
-      from: `"Arabaty" <${process.env.BREVO_SMTP_LOGIN}>`,
+      from: `"Sudmark" <${process.env.BREVO_SMTP_LOGIN}>`,
       to: email,
-      subject: "رابط تسجيل الدخول - Arabaty Login Link",
+      subject: "رابط تسجيل الدخول - Sudmark Login Link",
       html: `
         <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #2563eb; text-align: center;">عربتي - Arabaty</h1>
+          <h1 style="color: #2563eb; text-align: center;">سودمارك - Sudmark</h1>
           <p style="font-size: 16px; text-align: center;">مرحباً! استخدم الرابط أدناه لتسجيل الدخول:</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${magicLink}" style="background-color: #2563eb; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-size: 18px;">
@@ -106,7 +106,7 @@ async function sendMagicLinkEmail(email: string, token: string, magicLink: strin
           <p style="text-align: center; color: #999; font-size: 12px;">هذا الرابط صالح لمدة 30 دقيقة فقط</p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           <p style="text-align: center; color: #999; font-size: 12px;">
-            Hello! Use the link above to login to Arabaty.<br>
+            Hello! Use the link above to login to Sudmark.<br>
             This link expires in 30 minutes.
           </p>
         </div>
@@ -376,7 +376,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { expiresIn: "30d" }
         );
 
-        const appDeepLink = `arabaty://auth/callback?token=${jwtToken}&isNewUser=false`;
+        const appDeepLink = `sudmark://auth/callback?token=${jwtToken}&isNewUser=false`;
         return res.redirect(appDeepLink);
       }
 
@@ -386,7 +386,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { expiresIn: "1h" }
       );
 
-      const appDeepLink = `arabaty://auth/callback?tempToken=${tempToken}&isNewUser=true&email=${encodeURIComponent(tokenRecord.email)}&phone=${encodeURIComponent(tokenRecord.phone)}`;
+      const appDeepLink = `sudmark://auth/callback?tempToken=${tempToken}&isNewUser=true&email=${encodeURIComponent(tokenRecord.email)}&phone=${encodeURIComponent(tokenRecord.phone)}`;
       return res.redirect(appDeepLink);
     } catch (error) {
       console.error("Verify magic link error:", error);
@@ -1290,8 +1290,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Payment System APIs
-  const FREE_LISTING_LIMIT = 50000;
-  const LISTING_FEE = 10000;
+  const FREE_LISTING_LIMIT = 1000;
+  const BASE_LISTING_FEE = 20000; // Default for sedan
+
+  const getCategoryFee = (category: string | null): number => {
+    switch (category?.toLowerCase()) {
+      case "suv":
+      case "4x4":
+        return 50000;
+      case "truck":
+      case "heavy":
+        return 100000;
+      case "sedan":
+      case "small_salon":
+      default:
+        return 20000;
+    }
+  };
 
   app.get("/api/listings/status", async (req: Request, res: Response) => {
     try {
@@ -1303,7 +1318,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalListings,
         freeLimit: FREE_LISTING_LIMIT,
         requiresPayment,
-        listingFee: LISTING_FEE,
+        listingFee: BASE_LISTING_FEE,
       });
     } catch (error) {
       console.error("Get listing status error:", error);
@@ -1320,8 +1335,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Transaction details required" });
       }
 
-      if (amount < LISTING_FEE) {
-        return res.status(400).json({ error: `Minimum payment is ${LISTING_FEE} SDG` });
+      // Fetch car to determine fee
+      const [car] = await db.select().from(cars).where(eq(cars.id, carId));
+      if (!car) {
+        return res.status(404).json({ error: "Car not found" });
+      }
+
+      const requiredFee = getCategoryFee(car.category);
+
+      if (amount < requiredFee) {
+        return res.status(400).json({ error: `Minimum payment for this category is ${requiredFee.toLocaleString()} SDG` });
       }
 
       const [existingPayment] = await db.select().from(payments).where(eq(payments.trxNo, trxNo));
@@ -1659,6 +1682,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("[IMAGE VALIDATION] API Error:", error);
       res.json({ valid: true });
     }
+  });
+
+  // Slider Images Management
+  app.get("/api/slider-images", async (_req: Request, res: Response) => {
+    try {
+      const slides = await db.select().from(sliderImages)
+        .where(eq(sliderImages.isActive, true))
+        .orderBy(desc(sliderImages.createdAt));
+      res.json(slides);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch slider images" });
+    }
+  });
+
+  app.post("/api/admin/slider-images", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { title, imageUrl, link, active } = req.body;
+      const [newSlide] = await db.insert(sliderImages).values({
+        title,
+        imageUrl,
+        linkUrl: link,
+        isActive: active !== undefined ? active : true,
+      }).returning();
+      res.json(newSlide);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create slider image" });
+    }
+  });
+
+  app.delete("/api/admin/slider-images/:id", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      await db.delete(sliderImages).where(eq(sliderImages.id, id));
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete slider image" });
+    }
+  });
+
+  // Cities API (Dynamic Cities)
+  app.get("/api/cities", async (_req: Request, res: Response) => {
+    const citiesList = [
+      { id: "khartoum", nameEn: "Khartoum", nameAr: "الخرطوم" },
+      { id: "bahri", nameEn: "Bahri", nameAr: "بحري" },
+      { id: "omdurman", nameEn: "Omdurman", nameAr: "أم درمان" },
+      { id: "portsudan", nameEn: "Port Sudan", nameAr: "بورتسودان" },
+      { id: "kassala", nameEn: "Kassala", nameAr: "كسلا" },
+      { id: "gezira", nameEn: "Al Gezira", nameAr: "الجزيرة" },
+      { id: "kordofan", nameEn: "Kordofan", nameAr: "كردفان" },
+      { id: "darfur", nameEn: "Darfur", nameAr: "دارفور" },
+      { id: "river_nile", nameEn: "River Nile", nameAr: "نهر النيل" },
+      { id: "white_nile", nameEn: "White Nile", nameAr: "النيل الأبيض" },
+      { id: "blue_nile", nameEn: "Blue Nile", nameAr: "النيل الأزرق" },
+      { id: "northern", nameEn: "Northern", nameAr: "الشمالية" },
+      { id: "red_sea", nameEn: "Red Sea", nameAr: "البحر الأحمر" },
+      { id: "gedaref", nameEn: "Al Qadarif", nameAr: "القضارف" },
+      { id: "sennar", nameEn: "Sennar", nameAr: "سنار" },
+    ];
+    // In a real scenario, this could come from a DB table 'cities'
+    res.json(citiesList);
   });
 
   // Privacy Policy API

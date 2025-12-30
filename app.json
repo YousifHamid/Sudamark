@@ -1,19 +1,19 @@
 {
   "expo": {
-    "name": "Arabaty",
-    "slug": "arabaty",
+    "name": "Sudmark",
+    "slug": "sudmark",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "arabaty",
+    "scheme": "sudmark",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.arabaty.app",
+      "bundleIdentifier": "com.sudmark.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "Arabaty needs camera access to take photos of your car listings",
-        "NSPhotoLibraryUsageDescription": "Arabaty needs photo library access to upload car photos"
+        "NSCameraUsageDescription": "Sudmark needs camera access to take photos of your car listings",
+        "NSPhotoLibraryUsageDescription": "Sudmark needs photo library access to upload car photos"
       }
     },
     "android": {
@@ -25,7 +25,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.arabaty.app",
+      "package": "com.sudmark.app",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE"

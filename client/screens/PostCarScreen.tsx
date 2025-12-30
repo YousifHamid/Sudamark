@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, TextInput, Pressable, ScrollView, Alert, Modal, Platform } from "react-native";
+import { View, StyleSheet, TextInput, Pressable, ScrollView, Alert, Modal, Platform, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import * as Haptics from "expo-haptics";
-import { Image } from "expo-image";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -48,7 +47,18 @@ export default function PostCarScreen() {
   const [mileage, setMileage] = useState("");
   const [description, setDescription] = useState("");
   const [city, setCity] = useState("");
+  const [category, setCategory] = useState("sedan");
+  const [condition, setCondition] = useState("used");
+
+  const getCategoryFee = (cat: string) => {
+    switch (cat) {
+      case "suv": return 50000;
+      case "truck": return 100000;
+      default: return 20000;
+    }
+  };
   const [isLoading, setIsLoading] = useState(false);
+  const [isAgreed, setIsAgreed] = useState(false);
 
   const [trxNo, setTrxNo] = useState("");
   const [paymentAmount, setPaymentAmount] = useState("");
@@ -59,11 +69,28 @@ export default function PostCarScreen() {
   const [couponMessage, setCouponMessage] = useState("");
 
   const cities = [
-    { id: "khartoum", labelKey: "khartoum" },
-    { id: "omdurman", labelKey: "omdurman" },
-    { id: "bahri", labelKey: "bahri" },
-    { id: "portSudan", labelKey: "portSudan" },
-    { id: "kassala", labelKey: "kassala" },
+    { id: "khartoum", nameEn: "Khartoum", nameAr: "الخرطوم" },
+    { id: "bahri", nameEn: "Bahri", nameAr: "بحري" },
+    { id: "omdurman", nameEn: "Omdurman", nameAr: "أم درمان" },
+    { id: "portsudan", nameEn: "Port Sudan", nameAr: "بورتسودان" },
+    { id: "kassala", nameEn: "Kassala", nameAr: "كسلا" },
+    { id: "gezira", nameEn: "Al Gezira", nameAr: "الجزيرة" },
+    { id: "kordofan", nameEn: "Kordofan", nameAr: "كردفان" },
+    { id: "darfur", nameEn: "Darfur", nameAr: "دارفور" },
+    { id: "river_nile", nameEn: "River Nile", nameAr: "نهر النيل" },
+    { id: "white_nile", nameEn: "White Nile", nameAr: "النيل الأبيض" },
+    { id: "blue_nile", nameEn: "Blue Nile", nameAr: "النيل الأزرق" },
+    { id: "northern", nameEn: "Northern", nameAr: "الشمالية" },
+    { id: "red_sea", nameEn: "Red Sea", nameAr: "البحر الأحمر" },
+    { id: "gedaref", nameEn: "Al Qadarif", nameAr: "القضارف" },
+    { id: "sennar", nameEn: "Sennar", nameAr: "سنار" },
+    { id: "west_kordofan", nameEn: "West Kordofan", nameAr: "غرب كردفان" },
+    { id: "south_kordofan", nameEn: "South Kordofan", nameAr: "جنوب كردفان" },
+    { id: "north_darfur", nameEn: "North Darfur", nameAr: "شمال دارفور" },
+    { id: "west_darfur", nameEn: "West Darfur", nameAr: "غرب دارفور" },
+    { id: "south_darfur", nameEn: "South Darfur", nameAr: "جنوب دارفور" },
+    { id: "central_darfur", nameEn: "Central Darfur", nameAr: "وسط دارفور" },
+    { id: "east_darfur", nameEn: "East Darfur", nameAr: "شرق دارفور" },
   ];
 
   useEffect(() => {
@@ -87,18 +114,18 @@ export default function PostCarScreen() {
       if (Platform.OS === "web") {
         return { valid: true };
       }
-      
+
       const base64 = await FileSystem.readAsStringAsync(uri, {
         encoding: "base64",
       });
-      
+
       const response = await apiRequest("POST", "/api/validate-car-image", { imageBase64: base64 });
       const data = await response.json();
-      
+
       if (data.valid) {
         return { valid: true };
       }
-      
+
       const message = isRTL ? data.message?.ar : data.message?.en;
       return { valid: false, message: message || (isRTL ? "صورة غير صالحة" : "Invalid image") };
     } catch (error) {
@@ -118,7 +145,7 @@ export default function PostCarScreen() {
       setValidatingImage(true);
       const validImages: string[] = [];
       const rejectedMessages: string[] = [];
-      
+
       for (const asset of result.assets) {
         const validation = await validateImageWithAI(asset.uri);
         if (validation.valid) {
@@ -127,14 +154,14 @@ export default function PostCarScreen() {
           rejectedMessages.push(validation.message || "");
         }
       }
-      
+
       setValidatingImage(false);
-      
+
       if (validImages.length > 0) {
         setImages([...images, ...validImages].slice(0, 6));
         Haptics.selectionAsync();
       }
-      
+
       if (rejectedMessages.length > 0) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         const uniqueMessages = [...new Set(rejectedMessages.filter(m => m))];
@@ -155,6 +182,16 @@ export default function PostCarScreen() {
   const handleSubmit = async () => {
     if (!title || !make || !model || !year || !price || !city) {
       Alert.alert(t("error"), t("fillRequiredFields"));
+      return;
+    }
+
+    if (!isAgreed) {
+      Alert.alert(
+        t("error"),
+        isRTL
+          ? "يجب الموافقة على الشروط والأحكام أولاً"
+          : "You must agree to the terms and conditions first"
+      );
       return;
     }
 
@@ -182,7 +219,8 @@ export default function PostCarScreen() {
       city,
       images: images.length > 0 ? images : ["https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800"],
       sellerId: user?.id || "",
-      category: "sedan",
+      category,
+      condition,
       createdAt: new Date().toISOString(),
     };
 
@@ -197,12 +235,12 @@ export default function PostCarScreen() {
       setCouponValid(false);
       return;
     }
-    
+
     setIsLoading(true);
     try {
       const response = await apiRequest("POST", "/api/coupons/validate", { code: couponCode.toUpperCase() });
       const data = await response.json();
-      
+
       if (data.valid) {
         setCouponValid(true);
         setCouponMessage(data.message);
@@ -225,7 +263,7 @@ export default function PostCarScreen() {
       Alert.alert(t("error"), isRTL ? "تحقق من الكود أولاً" : "Validate code first");
       return;
     }
-    
+
     setIsLoading(true);
     try {
       const newCar = {
@@ -241,6 +279,7 @@ export default function PostCarScreen() {
         images: images.length > 0 ? images : ["https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800"],
         sellerId: user?.id || "",
         category: "sedan",
+        condition,
         createdAt: new Date().toISOString(),
         isActive: true,
       };
@@ -248,9 +287,9 @@ export default function PostCarScreen() {
       const createdCar = await addCar(newCar);
       const carId = createdCar?.id || newCar.id;
 
-      const couponResponse = await apiRequest("POST", "/api/coupons/apply", { 
+      const couponResponse = await apiRequest("POST", "/api/coupons/apply", {
         code: couponCode.toUpperCase(),
-        carId 
+        carId
       });
 
       if (!couponResponse.ok) {
@@ -278,8 +317,10 @@ export default function PostCarScreen() {
     }
 
     const parsedAmount = parseInt(paymentAmount);
-    if (isNaN(parsedAmount) || parsedAmount < 10000) {
-      Alert.alert(t("error"), isRTL ? "المبلغ يجب أن يكون 10,000 جنيه أو أكثر" : "Amount must be 10,000 SDG or more");
+    const requiredFee = getCategoryFee(category);
+
+    if (isNaN(parsedAmount) || parsedAmount < requiredFee) {
+      Alert.alert(t("error"), isRTL ? `المبلغ يجب أن يكون ${requiredFee.toLocaleString()} جنيه أو أكثر للفئة المختارة` : `Amount must be ${requiredFee.toLocaleString()} SDG or more for selected category`);
       return;
     }
 
@@ -297,7 +338,8 @@ export default function PostCarScreen() {
         city,
         images: images.length > 0 ? images : ["https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800"],
         sellerId: user?.id || "",
-        category: "sedan",
+        category,
+        condition,
         createdAt: new Date().toISOString(),
         isActive: false,
       };
@@ -337,7 +379,7 @@ export default function PostCarScreen() {
             {isRTL ? "في انتظار الموافقة" : "Waiting for Approval"}
           </ThemedText>
           <ThemedText style={[styles.waitingText, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
-            {isRTL 
+            {isRTL
               ? "تم استلام طلب الدفع الخاص بك. سيتم مراجعته والموافقة عليه خلال دقائق قليلة."
               : "Your payment request has been received. It will be reviewed and approved within a few minutes."}
           </ThemedText>
@@ -380,9 +422,9 @@ export default function PostCarScreen() {
               {isRTL ? "رسوم الإعلان" : "Listing Fee"}
             </ThemedText>
             <ThemedText style={[styles.paymentDesc, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
-              {isRTL 
-                ? `المبلغ المطلوب: ${listingStatus?.listingFee?.toLocaleString() || "10,000"} جنيه سوداني`
-                : `Required: ${listingStatus?.listingFee?.toLocaleString() || "10,000"} SDG`}
+              {isRTL
+                ? `المبلغ المطلوب: ${getCategoryFee(category).toLocaleString()} جنيه سوداني`
+                : `Required: ${getCategoryFee(category).toLocaleString()} SDG`}
             </ThemedText>
           </View>
 
@@ -452,9 +494,27 @@ export default function PostCarScreen() {
                 </View>
               ) : null}
               {couponValid ? (
-                <Button onPress={handleCouponSubmit} disabled={isLoading} style={styles.submitButton}>
-                  {isLoading ? (isRTL ? "جاري النشر..." : "Publishing...") : (isRTL ? "نشر مجاناً" : "Publish Free")}
-                </Button>
+                <>
+                  <View style={[styles.agreementContainer, { backgroundColor: theme.warning + "10", borderColor: theme.warning }]}>
+                    <Pressable
+                      style={styles.checkboxRow}
+                      onPress={() => { setIsAgreed(!isAgreed); Haptics.selectionAsync(); }}
+                    >
+                      <View style={[styles.checkbox, isAgreed && { backgroundColor: theme.primary, borderColor: theme.primary }]}>
+                        {isAgreed && <Feather name="check" size={14} color="#FFFFFF" />}
+                      </View>
+                      <ThemedText style={[styles.agreementText, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+                        {isRTL
+                          ? "أتعهد بأنني مالك السلعة أو مفوض ببيعها، وأن التطبيق مجرد وسيط للعرض ولا يتحمل أي مسؤولية قانونية عن التعاملات المالية أو جودة المعروضات. أنا المسؤول الأول والأخير عن صحة البيانات."
+                          : "I agree that I am the owner or authorized seller, and the app is just a listing platform bearing no legal liability for transactions. I am fully responsible for the data accuracy."}
+                      </ThemedText>
+                    </Pressable>
+                  </View>
+
+                  <Button onPress={handleCouponSubmit} disabled={isLoading || !isAgreed} style={styles.submitButton}>
+                    {isLoading ? (isRTL ? "جاري النشر..." : "Publishing...") : (isRTL ? "نشر مجاناً" : "Publish Free")}
+                  </Button>
+                </>
               ) : null}
             </View>
           ) : null}
@@ -465,7 +525,7 @@ export default function PostCarScreen() {
                 <Image
                   source={require("../../attached_assets/WhatsApp_Image_2025-12-27_at_12.56.14_AM_1766789892928.jpeg")}
                   style={styles.qrImage}
-                  contentFit="contain"
+                  resizeMode="contain"
                 />
               </View>
 
@@ -487,7 +547,7 @@ export default function PostCarScreen() {
               </ThemedText>
               <TextInput
                 style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
-                placeholder={isRTL ? "10000" : "10000"}
+                placeholder={isRTL ? getCategoryFee(category).toString() : getCategoryFee(category).toString()}
                 placeholderTextColor={theme.textSecondary}
                 value={paymentAmount}
                 onChangeText={setPaymentAmount}
@@ -535,7 +595,7 @@ export default function PostCarScreen() {
           <View style={[styles.feeNotice, { backgroundColor: theme.secondary + "15", borderColor: theme.secondary }]}>
             <Feather name="info" size={20} color={theme.secondary} />
             <ThemedText style={[styles.feeNoticeText, { color: theme.secondary }, isRTL && styles.rtlText]}>
-              {isRTL 
+              {isRTL
                 ? `رسوم الإعلان: ${listingStatus.listingFee.toLocaleString()} جنيه`
                 : `Listing fee: ${listingStatus.listingFee.toLocaleString()} SDG`}
             </ThemedText>
@@ -553,7 +613,7 @@ export default function PostCarScreen() {
         >
           {images.map((uri, index) => (
             <View key={index} style={styles.imageWrapper}>
-              <Image source={{ uri }} style={styles.imagePreview} contentFit="cover" />
+              <Image source={{ uri }} style={styles.imagePreview} resizeMode="cover" />
               <Pressable
                 style={[styles.removeImageButton, { backgroundColor: theme.error }]}
                 onPress={() => removeImage(index)}
@@ -572,6 +632,57 @@ export default function PostCarScreen() {
             </Pressable>
           ) : null}
         </ScrollView>
+
+        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+          {t("category")}
+        </ThemedText>
+        <View style={[styles.citiesRow, isRTL && styles.citiesRowRTL]}>
+          {[
+            { id: "sedan", labelEn: "Sedan", labelAr: "سيدان" },
+            { id: "suv", labelEn: "SUV", labelAr: "دفع رباعي" },
+            { id: "truck", labelEn: "Truck", labelAr: "شاحنة" },
+          ].map((cat) => (
+            <Pressable
+              key={cat.id}
+              onPress={() => { setCategory(cat.id); Haptics.selectionAsync(); }}
+              style={[
+                styles.cityChip,
+                { backgroundColor: theme.backgroundSecondary, borderColor: theme.border },
+                category === cat.id && { backgroundColor: theme.primary, borderColor: theme.primary },
+              ]}
+            >
+              <ThemedText type="small" style={[category === cat.id ? { color: "#FFFFFF" } : undefined, isRTL && styles.rtlText]}>
+                {isRTL ? cat.labelAr : cat.labelEn}
+              </ThemedText>
+            </Pressable>
+          ))}
+        </View>
+
+        <View style={{ height: Spacing.md }} />
+
+        <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+          {isRTL ? "الحالة" : "Condition"}
+        </ThemedText>
+        <View style={[styles.citiesRow, isRTL && styles.citiesRowRTL]}>
+          {[
+            { id: "new", labelEn: "New", labelAr: "جديدة" },
+            { id: "used", labelEn: "Used", labelAr: "مستعملة" },
+          ].map((cond) => (
+            <Pressable
+              key={cond.id}
+              onPress={() => { setCondition(cond.id); Haptics.selectionAsync(); }}
+              style={[
+                styles.cityChip,
+                { backgroundColor: theme.backgroundSecondary, borderColor: theme.border },
+                condition === cond.id && { backgroundColor: theme.primary, borderColor: theme.primary },
+              ]}
+            >
+              <ThemedText type="small" style={[condition === cond.id ? { color: "#FFFFFF" } : undefined, isRTL && styles.rtlText]}>
+                {isRTL ? cond.labelAr : cond.labelEn}
+              </ThemedText>
+            </Pressable>
+          ))}
+        </View>
 
         <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
           {t("carTitle")} *
@@ -665,15 +776,18 @@ export default function PostCarScreen() {
           {cities.map((c) => (
             <Pressable
               key={c.id}
-              onPress={() => setCity(c.id)}
               style={[
                 styles.cityChip,
                 { backgroundColor: theme.backgroundSecondary, borderColor: theme.border },
                 city === c.id && { backgroundColor: theme.primary, borderColor: theme.primary },
               ]}
+              onPress={() => { setCity(c.id); Haptics.selectionAsync(); }}
             >
-              <ThemedText type="small" style={[city === c.id ? { color: "#FFFFFF" } : undefined, isRTL && styles.rtlText]}>
-                {t(c.labelKey)}
+              <ThemedText
+                type="small"
+                style={city === c.id ? { color: "#FFFFFF" } : { color: theme.textSecondary }}
+              >
+                {isRTL ? c.nameAr : c.nameEn}
               </ThemedText>
             </Pressable>
           ))}
@@ -937,5 +1051,30 @@ const styles = StyleSheet.create({
   },
   directPaymentSection: {
     marginBottom: Spacing.md,
+  },
+  agreementContainer: {
+    marginBottom: Spacing.xl,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+  },
+  checkboxRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: Spacing.sm,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 2,
+  },
+  agreementText: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 18,
   },
 });

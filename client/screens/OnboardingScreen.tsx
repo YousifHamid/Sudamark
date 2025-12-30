@@ -1,7 +1,6 @@
 import React from "react";
-import { View, StyleSheet, Dimensions, ScrollView } from "react-native";
+import { View, StyleSheet, Dimensions, ScrollView, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Image } from "expo-image";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 
@@ -52,7 +51,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
-          { 
+          {
             paddingTop: insets.top + Spacing.xl,
             paddingBottom: insets.bottom + Spacing.xl,
           }
@@ -61,9 +60,9 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
       >
         <View style={styles.logoContainer}>
           <Image
-            source={require("../../attached_assets/ARABATY2_1766665788809.png")}
+            source={require("../../assets/images/sudmark_logo.png")}
             style={styles.logo}
-            contentFit="contain"
+            resizeMode="contain"
           />
         </View>
 
@@ -76,8 +75,8 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
 
         <View style={styles.featuresGrid}>
           {FEATURES.map((feature) => (
-            <View 
-              key={feature.id} 
+            <View
+              key={feature.id}
               style={[
                 styles.featureCard,
                 { backgroundColor: theme.primary + "10" }

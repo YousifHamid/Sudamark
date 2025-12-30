@@ -7,28 +7,20 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Image } from "expo-image";
+
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { CarCard } from "@/components/CarCard";
-import { ImageSlider } from "@/components/ImageSlider";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { useCars } from "@/hooks/useCars";
+import { useQuery } from "@tanstack/react-query";
+import { getApiUrl } from "@/lib/query-client";
+import { Image } from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
-
-const SLIDER_IMAGES = [
-  { id: "1", imageUrl: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80" },
-  { id: "2", imageUrl: "https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=800&q=80" },
-  { id: "3", imageUrl: "https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=800&q=80" },
-  { id: "4", imageUrl: "https://images.unsplash.com/photo-1617531653332-bd46c24f2068?w=800&q=80" },
-  { id: "5", imageUrl: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80" },
-];
-
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -39,12 +31,43 @@ export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { cars, featuredCars } = useCars();
 
+  const { data: sliderImages = [] } = useQuery({
+    queryKey: ['slider-images'],
+    queryFn: async () => {
+      try {
+        const response = await fetch(new URL("/api/slider-images", getApiUrl()).toString());
+        if (!response.ok) return [];
+        return await response.json();
+      } catch (e) {
+        return [];
+      }
+    }
+  });
+
+  const displaySlides = sliderImages.length > 0 ? sliderImages : Array.from({ length: 3 }).map((_, i) => ({
+    id: `placeholder-${i}`,
+    title: t("ad") + " " + (i + 1),
+    isPlaceholder: true
+  }));
+
+  const [currentSlideIndex, setCurrentSlideIndex] = React.useState(0);
+  const scrollRef = React.useRef<ScrollView>(null);
+
+  // Auto-play Slider logic
+  React.useEffect(() => {
+    if (displaySlides.length <= 1) return;
+    const timer = setInterval(() => {
+      const nextIndex = (currentSlideIndex + 1) % displaySlides.length;
+      setCurrentSlideIndex(nextIndex);
+      scrollRef.current?.scrollTo({ x: nextIndex * SCREEN_WIDTH, animated: true });
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [currentSlideIndex, displaySlides.length]);
+
   const categories = [
-    { id: "new", labelKey: "newCar", icon: "check-circle" as const },
-    { id: "used", labelKey: "usedCar", icon: "refresh-cw" as const },
-    { id: "orneek", labelKey: "orneek", icon: "file-text" as const },
-    { id: "customs", labelKey: "customs", icon: "package" as const },
-    { id: "body", labelKey: "body", icon: "truck" as const },
+    { id: "sedan", labelKey: "sedan", icon: "disc" as const },
+    { id: "suv", labelKey: "suv", icon: "activity" as const },
+    { id: "truck", labelKey: "truck", icon: "truck" as const },
   ];
 
   const handleSearchPress = () => {
@@ -55,66 +78,104 @@ export default function HomeScreen() {
     <ScrollView
       style={[styles.container, { backgroundColor: theme.backgroundRoot }]}
       contentContainerStyle={{
-        paddingTop: headerHeight + Spacing.sm,
+        paddingTop: 150, // Fixed large padding to ensure SearchBar is visible below Header
         paddingBottom: tabBarHeight + Spacing.xl + 80,
       }}
       scrollIndicatorInsets={{ bottom: insets.bottom }}
       showsVerticalScrollIndicator={false}
     >
-      <ImageSlider images={SLIDER_IMAGES} autoPlayInterval={4000} />
+      <View style={[styles.searchBarContainer, { paddingHorizontal: Spacing.lg }]}>
+        <View style={[styles.searchBar, { backgroundColor: theme.backgroundSecondary }, isRTL && styles.searchBarRTL]}>
+          <Pressable
+            onPress={() => navigation.navigate("Search", {})}
+            style={[styles.filterButton, { backgroundColor: theme.primary + "15" }]}
+          >
+            <Feather name="sliders" size={20} color={theme.primary} />
+          </Pressable>
 
-      <Pressable
-        onPress={handleSearchPress}
-        style={[
-          styles.searchBar,
-          { backgroundColor: theme.backgroundSecondary },
-          isRTL && styles.searchBarRTL,
-        ]}
-      >
-        <View style={[styles.filterIconButton, { backgroundColor: theme.primary + "15" }]}>
-          <Feather name="sliders" size={20} color={theme.primary} />
-        </View>
-        <ThemedText style={[styles.searchPlaceholder, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
-          {t("searchCars")}
-        </ThemedText>
-        <Feather name="search" size={22} color={theme.textSecondary} />
-      </Pressable>
-
-      <View style={styles.sponsorSection}>
-        <LinearGradient
-          colors={["#FFA43A", "#FFB85C"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.sponsorCard}
-        >
-          <View style={[styles.sponsorContent, isRTL && styles.sponsorContentRTL]}>
-            <View style={styles.sponsorLogo}>
-              <Feather name="award" size={20} color="#FFA43A" />
-            </View>
-            <View style={styles.sponsorTextContainer}>
-              <ThemedText style={[styles.sponsorLabel, isRTL && styles.rtlText]}>
-                {t("officialSponsor")} - {t("sponsorName")}
+          <Pressable
+            onPress={handleSearchPress}
+            style={{ flex: 1, flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', gap: 8, height: '100%' }}
+          >
+            <View style={{ flex: 1, justifyContent: 'center' }}>
+              <ThemedText style={[styles.searchPlaceholder, { color: theme.textSecondary, textAlign: isRTL ? 'right' : 'left' }]}>
+                {t("searchCars")}
               </ThemedText>
             </View>
-          </View>
-        </LinearGradient>
+            <Feather name="search" size={20} color={theme.textSecondary} />
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.section}>
-        <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t("categories")}</ThemedText>
+        <View style={styles.sliderContainer}>
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={(e) => {
+              const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+              setCurrentSlideIndex(index);
+            }}
+            ref={scrollRef}
+            style={styles.sliderScrollView}
+          >
+            {displaySlides.map((slide: any, index: number) => (
+              <Pressable
+                key={slide.id}
+                style={[styles.singleSlide, { backgroundColor: theme.cardBackground }]}
+                onPress={() => slide.linkUrl ? console.log('Open Link', slide.linkUrl) : navigation.navigate("Search", { category: "all" })}
+              >
+                {slide.imageUrl ? (
+                  <Image source={{ uri: slide.imageUrl }} style={styles.slideImage} resizeMode="cover" />
+                ) : (
+                  <LinearGradient
+                    colors={[theme.primary, theme.secondary]}
+                    style={styles.adGradient}
+                  >
+                    <ThemedText style={styles.adText}>{slide.title || (isRTL ? `إعلان ${index + 1}` : `Ad ${index + 1}`)}</ThemedText>
+                  </LinearGradient>
+                )}
+              </Pressable>
+            ))}
+          </ScrollView>
+          <View style={styles.sliderIndicators}>
+            {displaySlides.map((_: any, index: number) => (
+              <View
+                key={index}
+                style={[
+                  styles.sliderDot,
+                  { backgroundColor: index === currentSlideIndex ? theme.primary : theme.border },
+                  index === currentSlideIndex && { width: 20 }
+                ]}
+              />
+            ))}
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.section}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoriesContainer}
+          contentContainerStyle={[
+            styles.categoriesScrollContent,
+            isRTL && styles.categoriesScrollContentRTL,
+            { paddingHorizontal: Spacing.lg } // explicit padding
+          ]}
+          style={{ marginBottom: Spacing.sm }}
         >
-          {categories.map((category) => (
+          {categories.map((cat) => (
             <Pressable
-              key={category.id}
-              style={[styles.categoryChip, { backgroundColor: theme.primary + "15" }]}
-              onPress={() => navigation.navigate("Search", { category: category.id })}
+              key={cat.id}
+              style={[
+                styles.categoryChip,
+                { backgroundColor: theme.backgroundSecondary, borderColor: theme.border },
+              ]}
+              onPress={() => navigation.navigate("Search", { category: cat.id })}
             >
-              <Feather name={category.icon} size={18} color={theme.primary} />
-              <ThemedText type="small" style={[styles.categoryLabel, { color: theme.primary }, isRTL && styles.rtlText]}>{t(category.labelKey)}</ThemedText>
+              <Feather name={cat.icon} size={14} color={theme.textSecondary} />
+              <ThemedText style={{ fontSize: 13, color: theme.text }}>{t(cat.labelKey)}</ThemedText>
             </Pressable>
           ))}
         </ScrollView>
@@ -124,7 +185,7 @@ export default function HomeScreen() {
         <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRTL]}>
           <ThemedText type="h4" style={isRTL ? styles.rtlText : undefined}>{t("featuredCars")}</ThemedText>
           <Pressable onPress={() => navigation.navigate("Search", {})}>
-            <ThemedText type="link">{t("seeAll")}</ThemedText>
+            <ThemedText type="link" style={{ fontSize: 14 }}>{t("seeAll")}</ThemedText>
           </Pressable>
         </View>
         <ScrollView
@@ -146,18 +207,28 @@ export default function HomeScreen() {
       <View style={styles.section}>
         <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRTL]}>
           <ThemedText type="h4" style={isRTL ? styles.rtlText : undefined}>{t("recentListings")}</ThemedText>
+          <Pressable onPress={() => navigation.navigate("Search", {})}>
+            <ThemedText type="link" style={{ fontSize: 14 }}>{t("seeAll")}</ThemedText>
+          </Pressable>
         </View>
-        <View style={styles.carsGrid}>
-          {cars.slice(0, 4).map((car) => (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.carsRow}
+        >
+          {cars.map((car) => (
             <CarCard
               key={car.id}
               car={car}
+              horizontal
               onPress={() => navigation.navigate("CarDetail", { carId: car.id })}
             />
           ))}
-        </View>
+        </ScrollView>
       </View>
-    </ScrollView>
+
+      <View style={{ height: Spacing.xl }} />
+    </ScrollView >
   );
 }
 
@@ -165,36 +236,38 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  locationHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    gap: Spacing.xs,
+  },
+  locationHeaderRTL: {
+    flexDirection: "row-reverse",
+  },
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
     marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    height: 52,
-    borderRadius: BorderRadius.lg,
-    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+    paddingHorizontal: Spacing.sm, // Reduced padding as inner elements handle spacing
+    height: 50, // Slightly taller
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.05)",
+    gap: Spacing.sm,
   },
   searchBarRTL: {
     flexDirection: "row-reverse",
   },
   searchPlaceholder: {
     flex: 1,
-    fontSize: 16,
-  },
-  filterIconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.sm,
-    alignItems: "center",
-    justifyContent: "center",
+    fontSize: 14,
   },
   section: {
-    marginTop: Spacing.xl,
+    marginBottom: Spacing.xl,
     paddingHorizontal: Spacing.lg,
-  },
-  sectionTitle: {
-    marginBottom: Spacing.md,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -205,55 +278,139 @@ const styles = StyleSheet.create({
   sectionHeaderRTL: {
     flexDirection: "row-reverse",
   },
-  categoriesContainer: {
-    paddingRight: Spacing.lg,
+  categoriesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: Spacing.sm,
+    justifyContent: "space-between",
+  },
+  categoriesGridRTL: {
+    flexDirection: "row-reverse",
+  },
+  categorySquare: {
+    width: (SCREEN_WIDTH - Spacing.lg * 2 - Spacing.sm * 2) / 3.4,
+    aspectRatio: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: BorderRadius.md,
+    padding: Spacing.xs,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  categoryIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.xs,
+  },
+  searchBarContainer: {
+    width: '100%',
+    marginBottom: Spacing.md,
+  },
+  filterButton: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.sm,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  categoryLabel: {
+    textAlign: "center",
+    fontSize: 12,
+    marginTop: 4,
+  },
+  categoriesRow: {
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  categoriesScrollContent: {
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+  },
+  categoriesScrollContentRTL: {
+    flexDirection: "row-reverse",
   },
   categoryChip: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: BorderRadius.full,
-    gap: Spacing.xs,
+    borderWidth: 1,
   },
-  categoryLabel: {
-    marginLeft: Spacing.xs,
+  adText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+  adGradient: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Spacing.md,
+  },
+  sliderContainer: {
+    paddingHorizontal: 0, // Full width, no padding // Full width
+  },
+  sliderScrollView: {
+    borderRadius: 0, // No border radius for full width // No border radius
+    overflow: "hidden",
+  },
+  singleSlide: {
+    width: SCREEN_WIDTH, // Full Width
+    height: 180, // Slightly taller
+    borderRadius: 0,
+    overflow: "hidden",
+  },
+  slideImage: {
+    width: '100%',
+    height: '100%',
+  },
+  sliderIndicators: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: Spacing.sm,
+    gap: 6,
+  },
+  sliderDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   carsRow: {
     gap: Spacing.md,
     paddingRight: Spacing.lg,
   },
-  carsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginHorizontal: -Spacing.xs,
-    gap: Spacing.md,
-  },
   rtlText: {
     writingDirection: "rtl",
   },
   sponsorSection: {
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.xl,
     paddingHorizontal: Spacing.lg,
   },
   sponsorCard: {
-    borderRadius: BorderRadius.md,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
   },
   sponsorContent: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
+    gap: Spacing.md,
   },
   sponsorContentRTL: {
     flexDirection: "row-reverse",
   },
   sponsorLogo: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
@@ -261,9 +418,14 @@ const styles = StyleSheet.create({
   sponsorTextContainer: {
     flex: 1,
   },
-  sponsorLabel: {
-    color: "#FFFFFF",
+  sponsorTitle: {
+    color: "rgba(255,255,255,0.8)",
     fontSize: 12,
-    fontWeight: "500",
+    marginBottom: 4,
+  },
+  sponsorName: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "700",
   },
 });

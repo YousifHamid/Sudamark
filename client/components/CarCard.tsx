@@ -1,6 +1,5 @@
 import React from "react";
-import { View, StyleSheet, Pressable, Dimensions } from "react-native";
-import { Image } from "expo-image";
+import { View, StyleSheet, Pressable, Dimensions, Image } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import Animated, {
   useAnimatedStyle,
@@ -83,7 +82,7 @@ export function CarCard({ car, onPress, horizontal = false }: CarCardProps) {
       <Image
         source={{ uri: car.images[0] }}
         style={[styles.image, { width: cardWidth }]}
-        contentFit="cover"
+        resizeMode="cover"
       />
       <View style={styles.content}>
         <ThemedText type="body" numberOfLines={1} style={styles.title}>

@@ -12,36 +12,36 @@ interface Translations {
 }
 
 export const translations: Translations = {
-  appName: { ar: "عربتي", en: "Arabaty" },
+  appName: { ar: "سودمارك", en: "Sudmark" },
   appTagline: { ar: "سوق السيارات السوداني الالكتروني", en: "Sudan's Online Car Marketplace" },
-  
+
   // Onboarding
   skip: { ar: "تخطي", en: "Skip" },
   next: { ar: "التالي", en: "Next" },
   getStarted: { ar: "ابدأ الآن", en: "Get Started" },
-  welcomeTitle: { ar: "عربتي يجمع الكل..بيع واشتري بسهولة", en: "Arabaty Brings Everyone Together..Buy & Sell Easily" },
+  welcomeTitle: { ar: "سودمارك يجمع الكل..بيع واشتري بسهولة", en: "Sudmark Brings Everyone Together..Buy & Sell Easily" },
   welcomeSubtitle: { ar: "بيع وشراء عربيتك بكل سهولة وأمان!", en: "Buy and sell your car easily and safely!" },
   welcomeFeature1: { ar: "تصفح وتواصل مع البائعين مباشرة", en: "Browse and connect with sellers directly" },
   welcomeFeature2: { ar: "فتش حوليك مكانيكي وكهربائي حتى محامي تسجيل عربيتك", en: "Find mechanics, electricians, even lawyers for your car registration" },
-  
+
   // Official Sponsor
   officialSponsor: { ar: "الراعي الرسمي لهذا الشهر", en: "Official Sponsor of the Month" },
   sponsorName: { ar: "ارشمود الهندسية", en: "Arshmood Engineering" },
   sponsorDesc: { ar: "نبني مشاريع هندسية بشكل ذكي، متكامل، ومستدام يلبي طموحاتك", en: "We build smart, integrated, and sustainable engineering projects that meet your ambitions" },
-  
+
   // Search Filters
   filterPrice: { ar: "السعر", en: "Price" },
   filterLocation: { ar: "الموقع", en: "Location" },
   filterType: { ar: "النوع", en: "Type" },
   filterCondition: { ar: "الحالة", en: "Condition" },
-  
+
   // Car Categories
   newCar: { ar: "جديدة", en: "New" },
   usedCar: { ar: "مستعملة", en: "Used" },
   orneek: { ar: "اورنيك", en: "Orneek" },
   customs: { ar: "جمارك", en: "Customs" },
   body: { ar: "هيكل", en: "Body" },
-  
+
   // Onboarding Features
   feature1Title: { ar: "اعثر على سيارتك المثالية", en: "Find Your Perfect Car" },
   feature1Desc: { ar: "تصفح آلاف السيارات من بائعين موثوقين", en: "Browse thousands of cars from trusted sellers" },
@@ -57,7 +57,7 @@ export const translations: Translations = {
   feature6Desc: { ar: "تابع السيارات التي تعجبك بسهولة", en: "Easily track cars you like" },
   feature7Title: { ar: "تقييمات حقيقية", en: "Real Reviews" },
   feature7Desc: { ar: "آراء المستخدمين لمساعدتك في الاختيار", en: "User reviews to help you decide" },
-  
+
   // Login
   phoneNumber: { ar: "رقم الهاتف", en: "Phone Number" },
   enterPhoneToStart: { ar: "أدخل رقم هاتفك للبدء", en: "Enter your phone number to get started" },
@@ -75,7 +75,7 @@ export const translations: Translations = {
   selectYourRole: { ar: "اختر أدوارك (يمكنك اختيار أكثر من واحد)", en: "Select Your Roles (you can choose multiple)" },
   creatingAccount: { ar: "جاري إنشاء الحساب...", en: "Creating Account..." },
   selectCountry: { ar: "اختر البلد", en: "Select Country" },
-  
+
   // Roles
   buyer: { ar: "مشتري", en: "Buyer" },
   seller: { ar: "بائع", en: "Seller" },
@@ -83,32 +83,33 @@ export const translations: Translations = {
   electrician: { ar: "كهربائي", en: "Electrician" },
   lawyer: { ar: "محامي", en: "Lawyer" },
   inspectionCenter: { ar: "مركز فحص", en: "Inspection Center" },
-  
+
   // Tabs
   home: { ar: "الرئيسية", en: "Home" },
   search: { ar: "بحث", en: "Search" },
   services: { ar: "الخدمات", en: "Services" },
   profile: { ar: "الملف", en: "Profile" },
-  
+
   // Home
   featuredCars: { ar: "سيارات مميزة", en: "Featured Cars" },
   recentListings: { ar: "إعلانات حديثة", en: "Recent Listings" },
   categories: { ar: "التصنيفات", en: "Categories" },
   seeAll: { ar: "عرض الكل", en: "See All" },
   viewAll: { ar: "عرض الكل", en: "View All" },
-  
+
   // Categories
   sedan: { ar: "سيدان", en: "Sedan" },
   suv: { ar: "دفع رباعي", en: "SUV" },
   sports: { ar: "رياضية", en: "Sports" },
   luxury: { ar: "فاخرة", en: "Luxury" },
   electric: { ar: "كهربائية", en: "Electric" },
-  
+  truck: { ar: "شاحنة", en: "Truck" },
+
   // Search
   searchCars: { ar: "ابحث عن سيارات...", en: "Search cars..." },
   noCarsFound: { ar: "لم يتم العثور على سيارات", en: "No cars found" },
   adjustFilters: { ar: "حاول تعديل الفلاتر أو البحث", en: "Try adjusting your filters or search query" },
-  
+
   // Services
   all: { ar: "الكل", en: "All" },
   mechanics: { ar: "ميكانيكيين", en: "Mechanics" },
@@ -117,7 +118,7 @@ export const translations: Translations = {
   inspection: { ar: "مراكز فحص", en: "Inspection" },
   noProvidersFound: { ar: "لم يتم العثور على مزودي خدمات", en: "No providers found" },
   checkBackLater: { ar: "تحقق لاحقاً من مزودي الخدمات في هذه الفئة", en: "Check back later for service providers in this category" },
-  
+
   // Profile
   myListings: { ar: "إعلاناتي", en: "My Listings" },
   favorites: { ar: "المفضلة", en: "Favorites" },
@@ -126,11 +127,11 @@ export const translations: Translations = {
   logout: { ar: "تسجيل الخروج", en: "Logout" },
   activity: { ar: "النشاط", en: "Activity" },
   version: { ar: "الإصدار", en: "Version" },
-  
+
   // Car Details
   contactSeller: { ar: "تواصل مع البائع", en: "Contact Seller" },
   requestInspection: { ar: "طلب معاينة", en: "Request Preview" },
-  
+
   // Search Filters Modal
   filters: { ar: "الفلاتر", en: "Filters" },
   applyFilters: { ar: "تطبيق الفلاتر", en: "Apply Filters" },
@@ -152,7 +153,7 @@ export const translations: Translations = {
   sellerInfo: { ar: "معلومات البائع", en: "Seller Info" },
   reviews: { ar: "تقييمات", en: "reviews" },
   carNotFound: { ar: "السيارة غير موجودة", en: "Car not found" },
-  
+
   // Post Car
   newListing: { ar: "إعلان جديد", en: "New Listing" },
   carTitle: { ar: "عنوان السيارة", en: "Car Title" },
@@ -170,14 +171,14 @@ export const translations: Translations = {
   add: { ar: "إضافة", en: "Add" },
   postListing: { ar: "نشر الإعلان", en: "Post Listing" },
   posting: { ar: "جاري النشر...", en: "Posting..." },
-  
+
   // Cities (Sudan)
   khartoum: { ar: "الخرطوم", en: "Khartoum" },
   omdurman: { ar: "أم درمان", en: "Omdurman" },
   bahri: { ar: "بحري", en: "Bahri" },
   portSudan: { ar: "بورتسودان", en: "Port Sudan" },
   kassala: { ar: "كسلا", en: "Kassala" },
-  
+
   // Email Magic Link Auth
   email: { ar: "البريد الإلكتروني", en: "Email" },
   enterEmail: { ar: "أدخل بريدك الإلكتروني", en: "Enter your email" },
@@ -192,7 +193,7 @@ export const translations: Translations = {
   invalidEmail: { ar: "يرجى إدخال بريد إلكتروني صحيح", en: "Please enter a valid email" },
   tokenExpired: { ar: "انتهت صلاحية الرمز. أعد إرسال الرابط", en: "Token expired. Please resend the link" },
   demoTokenHint: { ar: "تجريبي: انسخ الرمز من الأعلى", en: "Demo: Copy the token above" },
-  
+
   // Errors
   invalidPhoneNumber: { ar: "يرجى إدخال رقم هاتف صحيح", en: "Please enter a valid phone number" },
   invalidCode: { ar: "رمز غير صحيح. جرب 123456", en: "Invalid code. Try 123456" },
@@ -201,16 +202,16 @@ export const translations: Translations = {
   enter6DigitCode: { ar: "يرجى إدخال الرمز المكون من 6 أرقام", en: "Please enter the 6-digit code" },
   fillRequiredFields: { ar: "يرجى ملء جميع الحقول المطلوبة", en: "Please fill in all required fields" },
   error: { ar: "خطأ", en: "Error" },
-  
+
   // Currency
   sdg: { ar: "جنيه", en: "SDG" },
   km: { ar: "كم", en: "km" },
-  
+
   // FAB Button
   sell: { ar: "بيع", en: "Sell" },
   listYourCar: { ar: "بيع عربيتك الان", en: "Sell Your Car Now" },
   request: { ar: "اعلان سريع", en: "Quick Ad" },
-  
+
   // Advertisements
   adTitle1: { ar: "أسعار لا تُضاهى!", en: "Unbeatable Prices!" },
   adDesc1: { ar: "اكتشف أفضل العروض على السيارات المستعملة في السودان", en: "Discover the best deals on used cars in Sudan" },
@@ -220,7 +221,7 @@ export const translations: Translations = {
   adDesc3: { ar: "تأكد من حالة سيارتك قبل الشراء مع مراكز الفحص الموثوقة", en: "Verify car condition before buying with trusted inspection centers" },
   learnMore: { ar: "اعرف المزيد", en: "Learn More" },
   advertisement: { ar: "إعلان", en: "Ad" },
-  
+
   // Request Preview Screen
   selectDate: { ar: "اختر التاريخ", en: "Select Date" },
   chooseLocation: { ar: "اختر المكان", en: "Choose Location" },
@@ -249,7 +250,7 @@ export const translations: Translations = {
   december: { ar: "ديسمبر", en: "Dec" },
   january: { ar: "يناير", en: "Jan" },
   whatsappNotAvailable: { ar: "تطبيق واتساب غير متوفر على هذا الجهاز", en: "WhatsApp is not available on this device" },
-  
+
   // Notifications
   notifications: { ar: "الإشعارات", en: "Notifications" },
   enableNotifications: { ar: "تفعيل الإشعارات", en: "Enable Notifications" },

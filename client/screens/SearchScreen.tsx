@@ -28,13 +28,13 @@ export default function SearchScreen() {
   const route = useRoute<SearchScreenRouteProp>();
   const { cars, favorites } = useCars();
   const { user } = useAuth();
-  
+
   const isSpecialCategory = route.params?.category === "my-listings" || route.params?.category === "favorites";
   const specialMode = route.params?.category;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilterModal, setShowFilterModal] = useState(false);
-  
+
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(
     isSpecialCategory ? null : (route.params?.category || null)
@@ -58,11 +58,9 @@ export default function SearchScreen() {
   ];
 
   const categories = [
-    { id: "new", labelKey: "newCar" },
-    { id: "used", labelKey: "usedCar" },
-    { id: "orneek", labelKey: "orneek" },
-    { id: "customs", labelKey: "customs" },
-    { id: "body", labelKey: "body" },
+    { id: "sedan", labelKey: "sedan" },
+    { id: "suv", labelKey: "suv" },
+    { id: "truck", labelKey: "truck" },
   ];
 
   const conditions = [
@@ -73,13 +71,13 @@ export default function SearchScreen() {
 
   const filteredCars = useMemo(() => {
     let baseCars = cars;
-    
+
     if (specialMode === "my-listings") {
       baseCars = cars.filter((car) => car.sellerId === user?.id);
     } else if (specialMode === "favorites") {
       baseCars = cars.filter((car) => favorites.includes(car.id));
     }
-    
+
     return baseCars.filter((car) => {
       const matchesSearch = car.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         car.make.toLowerCase().includes(searchQuery.toLowerCase()) ||

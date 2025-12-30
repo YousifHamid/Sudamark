@@ -13,6 +13,7 @@ export type ProfileStackParamList = {
   Profile: undefined;
   PrivacyPolicy: undefined;
   EditProfile: undefined;
+  Settings: undefined;
 };
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -49,6 +50,14 @@ export default function ProfileStackNavigator() {
         component={PrivacyPolicyScreen}
         options={{
           headerTitle: isRTL ? "سياسة الخصوصية" : "Privacy Policy",
+        }}
+      />
+      <Stack.Screen
+        name="Settings"
+        // @ts-ignore
+        component={require("@/screens/SettingsScreen").default}
+        options={{
+          headerTitle: isRTL ? "الإعدادات" : "Settings",
         }}
       />
     </Stack.Navigator>

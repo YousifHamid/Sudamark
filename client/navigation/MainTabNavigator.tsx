@@ -12,6 +12,7 @@ import ServicesScreen from "@/screens/ServicesScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
+import { LinearGradient } from "expo-linear-gradient";
 
 export type MainTabParamList = {
   HomeTab: undefined;
@@ -34,35 +35,44 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
   const tabs = [
     { name: "HomeTab", icon: "home" as const, labelKey: "home" },
-    { name: "SearchTab", icon: "search" as const, labelKey: "search" },
+    { name: "PostTab", icon: "plus-circle" as const, labelKey: "sell" },
     { name: "ServicesTab", icon: "tool" as const, labelKey: "services" },
     { name: "ProfileTab", icon: "user" as const, labelKey: "profile" },
   ];
 
   return (
     <View style={[styles.floatingNavContainer, { bottom: insets.bottom + Spacing.md }]}>
-      <View style={[styles.navButtonsRow, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
+      <LinearGradient
+        colors={[theme.primary, theme.secondary]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.navButtonsRow, { borderColor: theme.border }]}
+      >
         {tabs.map((tab) => {
           const currentRouteName = state.routes[state.index]?.name;
           const isActive = currentRouteName === tab.name;
 
           const handlePress = () => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            navigation.navigate(tab.name);
+            if (tab.name === "PostTab") {
+              navigation.navigate("PostCar"); // Directly navigate to PostCar
+            } else {
+              navigation.navigate(tab.name);
+            }
           };
 
           return (
             <Pressable key={tab.name} onPress={handlePress} style={styles.navButton}>
-              <View style={[styles.navIconContainer, isActive && { backgroundColor: theme.primary + "20" }]}>
-                <Feather name={tab.icon} size={26} color={isActive ? theme.primary : theme.text} />
+              <View style={[styles.navIconContainer, isActive && { backgroundColor: "rgba(255,255,255,0.25)" }]}>
+                <Feather name={tab.icon} size={28} color="#FFFFFF" style={{ opacity: isActive ? 1 : 0.9 }} />
               </View>
-              <Text style={[styles.navLabel, { color: isActive ? theme.primary : theme.text, fontWeight: isActive ? "700" : "600" }]}>
+              <Text style={[styles.navLabel, { color: "#FFFFFF", fontWeight: "700", opacity: isActive ? 1 : 0.9, fontSize: 12 }]}>
                 {t(tab.labelKey)}
               </Text>
             </Pressable>
           );
         })}
-      </View>
+      </LinearGradient>
     </View>
   );
 }

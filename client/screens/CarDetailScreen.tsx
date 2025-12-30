@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { View, StyleSheet, ScrollView, Pressable, Dimensions, Alert, Modal, TextInput, Share, Linking } from "react-native";
+import { View, StyleSheet, ScrollView, Pressable, Dimensions, Alert, Modal, TextInput, Share, Linking, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 
 import { ThemedText } from "@/components/ThemedText";
@@ -35,7 +34,7 @@ export default function CarDetailScreen() {
   const car = cars.find((c) => c.id === route.params.carId);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLiked, setIsLiked] = useState(car ? isFavorite(car.id) : false);
-  
+
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerPrice, setOfferPrice] = useState("");
   const [offerMessage, setOfferMessage] = useState("");
@@ -93,13 +92,14 @@ export default function CarDetailScreen() {
     }
 
     setIsSubmittingOffer(true);
+
     try {
       await apiRequest("POST", "/api/offers", {
         carId: car.id,
         offerPrice: parseInt(offerPrice),
         message: offerMessage || null,
       });
-      
+
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setShowOfferModal(false);
       Alert.alert(
@@ -120,34 +120,52 @@ export default function CarDetailScreen() {
   const handleShare = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
-      const shareMessage = isRTL 
-        ? `${car.title}\n${car.price.toLocaleString()} جنيه\n${car.city}\n\nشاهد الإعلان على عربتي`
-        : `${car.title}\n${car.price.toLocaleString()} SDG\n${car.city}\n\nView on Arabaty`;
-      
+      // In a real app, this would be a dynamic link (e.g., Firebase Dynamic Link or Branch.io)
+      // that handles the redirection logic (App vs Store).
+      const appScheme = "sudmark://car/" + car.id;
+      const webUrl = "https://sudmark.com/app"; // Fallback/Landing page
+
+      const shareMessage = isRTL
+        ? `${car.title}\n${car.price.toLocaleString()} جنيه\n${car.city}\n\nشاهد التفاصيل في تطبيق سودمارك:\n${webUrl}\n\nأو افتح التطبيق مباشرة:\n${appScheme}`
+        : `${car.title}\n${car.price.toLocaleString()} SDG\n${car.city}\n\nCheck it out on Sudmark App:\n${webUrl}\n\nOr open via app:\n${appScheme}`;
+
       await Share.share({
         message: shareMessage,
         title: car.title,
+        url: webUrl, // iOS sometimes uses this
       });
     } catch (error) {
       console.error("Share error:", error);
     }
   };
 
-  const handleCallSeller = () => {
+  const handleCallSeller = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const sellerPhone = "+249123456789";
-    Linking.openURL(`tel:${sellerPhone}`);
+    // @ts-ignore - owner is joined from backend
+    const sellerPhone = car.owner?.phone || car.contactPhone || "+249123456789";
+    const url = `tel:${sellerPhone}`;
+    try {
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert(isRTL ? "خطأ" : "Error", isRTL ? "لا يمكن إجراء مكالمة" : "Cannot make a call");
+      }
+    } catch (e) {
+      console.error("Call error:", e);
+    }
   };
 
   const handleWhatsAppSeller = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const sellerPhone = "+249123456789";
-    const message = isRTL 
-      ? `مرحباً، أريد الاستفسار عن السيارة: ${car.title}` 
+    // @ts-ignore
+    const sellerPhone = car.owner?.phone || car.contactPhone || "+249123456789";
+    const message = isRTL
+      ? `مرحباً، أريد الاستفسار عن السيارة: ${car.title}`
       : `Hello, I'm interested in the car: ${car.title}`;
     const whatsappUrl = `whatsapp://send?phone=${sellerPhone}&text=${encodeURIComponent(message)}`;
     const webWhatsappUrl = `https://wa.me/${sellerPhone.replace('+', '')}?text=${encodeURIComponent(message)}`;
-    
+
     const canOpen = await Linking.canOpenURL(whatsappUrl);
     if (canOpen) {
       Linking.openURL(whatsappUrl);
@@ -188,7 +206,7 @@ export default function CarDetailScreen() {
                 key={index}
                 source={{ uri }}
                 style={styles.image}
-                contentFit="cover"
+                resizeMode="cover"
               />
             ))}
           </ScrollView>
@@ -210,6 +228,12 @@ export default function CarDetailScreen() {
             <Feather name="x" size={24} color="#FFFFFF" />
           </Pressable>
           <View style={[styles.headerActions, { top: insets.top + Spacing.sm }]}>
+            <Pressable
+              style={styles.headerActionButton}
+              onPress={() => navigation.navigate("Report", { userId: car.sellerId })}
+            >
+              <Feather name="flag" size={20} color="#FFFFFF" />
+            </Pressable>
             <Pressable
               style={styles.headerActionButton}
               onPress={handleShare}
@@ -309,7 +333,7 @@ export default function CarDetailScreen() {
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.md, backgroundColor: theme.backgroundRoot }, isRTL && styles.footerRTL]}>
         {isOwnCar ? (
-          <Button onPress={() => {}} style={styles.contactButton}>
+          <Button onPress={() => { }} style={styles.contactButton}>
             {isRTL ? "تعديل الإعلان" : "Edit Listing"}
           </Button>
         ) : (
@@ -340,11 +364,17 @@ export default function CarDetailScreen() {
               <ThemedText type="h3" style={isRTL ? styles.rtlText : undefined}>
                 {isRTL ? "تقديم عرض" : "Make an Offer"}
               </ThemedText>
-              <Pressable onPress={() => setShowOfferModal(false)}>
+              <Pressable onPress={handleShare}>
+                <Feather name="share" size={24} color={theme.text} />
+              </Pressable>
+              <Pressable onPress={() => navigation.navigate("Report", { userId: car.sellerId })} style={{ marginLeft: 8 }}>
+                <Feather name="flag" size={24} color={theme.error} />
+              </Pressable>
+              <Pressable onPress={() => setShowOfferModal(false)} style={{ marginLeft: 8 }}>
                 <Feather name="x" size={24} color={theme.text} />
               </Pressable>
             </View>
-            
+
             <KeyboardAwareScrollViewCompat style={styles.modalBody}>
               <View style={[styles.carSummary, { backgroundColor: theme.backgroundSecondary }]}>
                 <ThemedText type="body" style={[{ fontWeight: "600" }, isRTL && styles.rtlText]}>{car.title}</ThemedText>
@@ -352,7 +382,7 @@ export default function CarDetailScreen() {
                   {isRTL ? "السعر المطلوب:" : "Asking price:"} {car.price.toLocaleString()} {t("sdg")}
                 </ThemedText>
               </View>
-              
+
               <View style={styles.inputGroup}>
                 <ThemedText type="body" style={[styles.inputLabel, isRTL && styles.rtlText]}>
                   {isRTL ? "عرضك (جنيه)" : "Your Offer (SDG)"}
@@ -367,7 +397,7 @@ export default function CarDetailScreen() {
                   textAlign={isRTL ? "right" : "left"}
                 />
               </View>
-              
+
               <View style={styles.inputGroup}>
                 <ThemedText type="body" style={[styles.inputLabel, isRTL && styles.rtlText]}>
                   {isRTL ? "رسالة (اختياري)" : "Message (optional)"}
@@ -384,22 +414,22 @@ export default function CarDetailScreen() {
                 />
               </View>
             </KeyboardAwareScrollViewCompat>
-            
+
             <View style={[styles.modalFooter, { paddingBottom: insets.bottom + Spacing.md }]}>
-              <Button 
-                onPress={handleSubmitOffer} 
+              <Button
+                onPress={handleSubmitOffer}
                 disabled={isSubmittingOffer}
                 style={styles.submitButton}
               >
-                {isSubmittingOffer 
-                  ? (isRTL ? "جاري الإرسال..." : "Sending...") 
+                {isSubmittingOffer
+                  ? (isRTL ? "جاري الإرسال..." : "Sending...")
                   : (isRTL ? "إرسال العرض" : "Submit Offer")}
               </Button>
             </View>
           </Pressable>
         </Pressable>
       </Modal>
-    </ThemedView>
+    </ThemedView >
   );
 }
 

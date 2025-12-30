@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { View, StyleSheet, TextInput, Pressable, Alert, Image as RNImage, ScrollView } from "react-native";
+import { View, StyleSheet, TextInput, Pressable, Alert, ScrollView, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
-import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 
 import { ThemedText } from "@/components/ThemedText";
@@ -24,6 +23,7 @@ export default function EditProfileScreen() {
     const { user, updateProfile } = useAuth();
 
     const [name, setName] = useState(user?.name || "");
+    const [phone, setPhone] = useState(user?.phone || "");
     const [city, setCity] = useState(user?.currentCity || "Khartoum"); // Default fallback
     const [avatar, setAvatar] = useState(user?.avatar || null);
     const [isLoading, setIsLoading] = useState(false);
@@ -75,6 +75,7 @@ export default function EditProfileScreen() {
 
             await updateProfile({
                 name,
+                phone, // Pass phone to update
                 // @ts-ignore: city property might not be in User type definition yet, but backend accepts it
                 city: city,
                 avatar: avatarBase64 || undefined,
@@ -102,7 +103,7 @@ export default function EditProfileScreen() {
                 <View style={styles.avatarSection}>
                     <Pressable onPress={pickImage} style={[styles.avatarContainer, { borderColor: theme.border }]}>
                         {avatar ? (
-                            <Image source={{ uri: avatar }} style={styles.avatar} contentFit="cover" />
+                            <Image source={{ uri: avatar }} style={styles.avatar} resizeMode="cover" />
                         ) : (
                             <View style={[styles.avatarPlaceholder, { backgroundColor: theme.primary }]}>
                                 <ThemedText type="h1" style={{ color: "#FFFFFF" }}>
@@ -129,6 +130,18 @@ export default function EditProfileScreen() {
                         onChangeText={setName}
                         placeholder={isRTL ? "اسمك الكامل" : "Your full name"}
                         placeholderTextColor={theme.textSecondary}
+                    />
+
+                    <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
+                        {t("phoneNumber")}
+                    </ThemedText>
+                    <TextInput
+                        style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+                        value={phone}
+                        onChangeText={setPhone}
+                        placeholder={isRTL ? "رقم الهاتف" : "Phone Number"}
+                        placeholderTextColor={theme.textSecondary}
+                        keyboardType="phone-pad"
                     />
 
                     <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>

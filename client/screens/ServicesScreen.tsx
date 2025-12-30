@@ -27,7 +27,8 @@ export default function ServicesScreen() {
     { id: "all", labelKey: "all", icon: "grid" as const },
     { id: "mechanic", labelKey: "mechanics", icon: "tool" as const },
     { id: "electrician", labelKey: "electricians", icon: "zap" as const },
-    { id: "lawyer", labelKey: "lawyers", icon: "briefcase" as const },
+    { id: "inspection_center", labelKey: "inspectionCenter", icon: "clipboard" as const },
+    { id: "spare_parts", labelKey: "spareParts", icon: "package" as const },
   ];
 
   const filteredProviders = activeTab === "all"

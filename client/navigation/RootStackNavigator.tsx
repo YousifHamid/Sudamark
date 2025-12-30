@@ -10,6 +10,7 @@ import SearchScreen from "@/screens/SearchScreen";
 import ServiceProviderDetailScreen from "@/screens/ServiceProviderDetailScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAppReview } from "@/hooks/useAppReview";
 
 export type RootStackParamList = {
   Onboarding: undefined;
@@ -23,6 +24,7 @@ export type RootStackParamList = {
   MyListings: undefined;
   MyFavorites: undefined;
   EditProfile: undefined;
+  Report: { userId?: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -30,6 +32,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function RootStackNavigator() {
   const screenOptions = useScreenOptions({ transparent: false });
   const { isAuthenticated, isLoading, hasSeenOnboarding, completeOnboarding } = useAuth();
+  useAppReview();
 
   if (isLoading) {
     return null;
@@ -93,6 +96,15 @@ export default function RootStackNavigator() {
           <Stack.Screen
             name="ServiceProviderDetail"
             component={ServiceProviderDetailScreen}
+            options={{
+              presentation: "modal",
+              headerTitle: "",
+            }}
+          />
+          <Stack.Screen
+            name="Report"
+            // @ts-ignore
+            component={require("@/screens/ReportScreen").default}
             options={{
               presentation: "modal",
               headerTitle: "",

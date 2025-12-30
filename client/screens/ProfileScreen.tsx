@@ -1,5 +1,5 @@
-import React from "react";
-import { View, StyleSheet, ScrollView, Pressable, Alert } from "react-native";
+import React, { useState } from "react";
+import { View, StyleSheet, ScrollView, Pressable, Alert, Modal, TextInput, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -67,10 +67,44 @@ export default function ProfileScreen() {
   ];
 
   const settingsItems = [
+    { id: "advertise", label: isRTL ? "أعلن معنا / كن شريكاً" : "Advertise / Partner with us", icon: "briefcase" as const, onPress: () => setShowAdModal(true) },
     { id: "language", labelKey: "language", icon: "globe" as const, value: language === "ar" ? "العربية" : "English", onPress: handleLanguageToggle },
     { id: "privacy", label: isRTL ? "سياسة الخصوصية" : "Privacy Policy", icon: "shield" as const, onPress: () => navigation.navigate("PrivacyPolicy") },
-    { id: "settings", labelKey: "settings", icon: "settings" as const },
+    { id: "settings", labelKey: "settings", icon: "settings" as const, onPress: () => navigation.navigate("Settings") },
   ];
+
+  const [showAdModal, setShowAdModal] = useState(false);
+  const [adName, setAdName] = useState("");
+  const [adBusiness, setAdBusiness] = useState("");
+  const [adMessage, setAdMessage] = useState("");
+
+  const handleSendAdRequest = async () => {
+    if (!adName || !adMessage) {
+      Alert.alert(isRTL ? "خطأ" : "Error", isRTL ? "يرجى ملء الاسم والرسالة" : "Please fill name and message");
+      return;
+    }
+
+    // Default to main number, could offer choice
+    const phone = "201157155248";
+    const text = isRTL
+      ? `*طلب إعلان / شراكة*\nالاسم: ${adName}\nالنشاط: ${adBusiness}\nالرسالة: ${adMessage}`
+      : `*Ad/Partnership Request*\nName: ${adName}\nBusiness: ${adBusiness}\nMessage: ${adMessage}`;
+
+    const url = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}`;
+    const webUrl = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+
+    try {
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        Linking.openURL(url);
+      } else {
+        Linking.openURL(webUrl);
+      }
+      setShowAdModal(false);
+    } catch (e) {
+      Alert.alert("Error", "Could not open WhatsApp");
+    }
+  };
 
   return (
     <ScrollView
@@ -186,6 +220,56 @@ export default function ProfileScreen() {
       <ThemedText type="small" style={[styles.version, { color: theme.textSecondary }]}>
         {isRTL ? "الإصدار 1.0.0" : "Version 1.0.0"}
       </ThemedText>
+
+      <Modal
+        visible={showAdModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowAdModal(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowAdModal(false)}>
+          <Pressable style={[styles.modalContent, { backgroundColor: theme.backgroundRoot, maxHeight: '90%' }]} onPress={e => e.stopPropagation()}>
+            <View style={[styles.modalHeader, isRTL && styles.modalHeaderRTL]}>
+              <Pressable onPress={() => setShowAdModal(false)} style={{ zIndex: 1 }}>
+                <Feather name="x" size={24} color={theme.text} />
+              </Pressable>
+              <ThemedText type="h3" style={styles.modalTitle}>{isRTL ? "أعلن معنا" : "Advertise with Us"}</ThemedText>
+              <View style={{ width: 24 }} />
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+              <View style={styles.modalBody}>
+                <ThemedText style={{ marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>{isRTL ? "الاسم" : "Name"}</ThemedText>
+                <TextInput
+                  style={[styles.input, { color: theme.text, borderColor: theme.border, textAlign: isRTL ? 'right' : 'left' }]}
+                  value={adName} onChangeText={setAdName} placeholder={isRTL ? "اسمك الكامل" : "Full Name"} placeholderTextColor={theme.textSecondary}
+                />
+
+                <ThemedText style={{ marginBottom: 8, marginTop: 12, textAlign: isRTL ? 'right' : 'left' }}>{isRTL ? "نوع النشاط" : "Business Type"}</ThemedText>
+                <TextInput
+                  style={[styles.input, { color: theme.text, borderColor: theme.border, textAlign: isRTL ? 'right' : 'left' }]}
+                  value={adBusiness} onChangeText={setAdBusiness} placeholder={isRTL ? "مثال: معرض سيارات" : "e.g. Car Showroom"} placeholderTextColor={theme.textSecondary}
+                />
+
+                <ThemedText style={{ marginBottom: 8, marginTop: 12, textAlign: isRTL ? 'right' : 'left' }}>{isRTL ? "تفاصيل الطلب" : "Request Details"}</ThemedText>
+                <TextInput
+                  style={[styles.input, { height: 100, color: theme.text, borderColor: theme.border, textAlignVertical: 'top', textAlign: isRTL ? 'right' : 'left' }]}
+                  value={adMessage} onChangeText={setAdMessage} multiline numberOfLines={4} placeholder={isRTL ? "اكتب تفاصيل إعلانك..." : "Enter details..."} placeholderTextColor={theme.textSecondary}
+                />
+
+                <Pressable style={[styles.submitButton, { backgroundColor: "#25D366" }]} onPress={handleSendAdRequest}>
+                  <Feather name="message-circle" size={20} color="white" style={{ marginRight: 8 }} />
+                  <ThemedText style={{ color: "white", fontWeight: "bold" }}>{isRTL ? "إرسال عبر واتساب" : "Send via WhatsApp"}</ThemedText>
+                </Pressable>
+
+                <View style={{ marginTop: 16, alignItems: 'center' }}>
+                  <ThemedText type="small" style={{ color: theme.textSecondary }}>{isRTL ? "أرقام التواصل المباشر:" : "Direct Contact Numbers:"}</ThemedText>
+                  <ThemedText type="small" style={{ color: theme.primary, marginTop: 4 }}>00201157155248  |  00249115222228</ThemedText>
+                </View>
+              </View>
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </ScrollView>
   );
 }
@@ -287,5 +371,47 @@ const styles = StyleSheet.create({
   },
   rtlText: {
     writingDirection: "rtl",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    padding: Spacing.lg,
+  },
+  modalContent: {
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    maxHeight: "80%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: Spacing.lg,
+    width: '100%',
+  },
+  modalHeaderRTL: {
+    flexDirection: "row-reverse",
+  },
+  modalTitle: {
+    flex: 1,
+    textAlign: 'center',
+  },
+  modalBody: {
+
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: BorderRadius.md,
+    padding: 12,
+    fontSize: 16,
+  },
+  submitButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 14,
+    borderRadius: BorderRadius.md,
+    marginTop: Spacing.xl,
   },
 });

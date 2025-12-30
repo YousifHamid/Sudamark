@@ -1,7 +1,7 @@
 import { Platform, I18nManager } from "react-native";
 
-const primaryColor = "#1E3A5F";
-const secondaryColor = "#E8A54B";
+const primaryColor = "#4A148C"; // Deep Purple
+const secondaryColor = "#E91E63"; // Pink/Red
 const neutralWhite = "#FFFFFF";
 
 export const Colors = {

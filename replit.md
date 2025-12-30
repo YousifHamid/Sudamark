@@ -1,4 +1,4 @@
-# Arabaty - Car Marketplace Mobile App
+# Sudmark - Car Marketplace Mobile App
 
 ## Overview
 
@@ -16,12 +16,12 @@ A multi-role car marketplace mobile application built with React Native and Expo
 - **Added Arabic as default language with RTL layout support**
 - **Created LanguageContext with comprehensive translations for ALL screens**
 - **Language switcher in Profile screen to toggle between Arabic and English**
-- **3-screen onboarding flow with Arabaty logo and bilingual content**
+- **3-screen onboarding flow with Sudmark logo and bilingual content**
 - **All screens translated: Home, Search, Services, CarDetail, PostCar, Profile, Login, Onboarding**
 - **Tab navigation labels in Arabic (الرئيسية, بحث, الخدمات, الملف)**
 - **Sudanese cities for location filters (الخرطوم, أم درمان, بحري, بورتسودان, كسلا)**
 - **Currency shown in Sudanese Pounds (SDG/جنيه)**
-- **Updated app with new Arabaty logo (ARABATY2_1766665788809.png) in HeaderTitle, Onboarding, App Icon**
+- **Updated app with new Sudmark logo in HeaderTitle, Onboarding, App Icon**
 - **Replaced car classified image slider with clean search bar on HomeScreen**
 - **Header logo enlarged 1.5x for better visibility**
 - **Improved bottom tab bar with larger icons, better styling, and highlighted active state**
@@ -35,8 +35,8 @@ A multi-role car marketplace mobile application built with React Native and Expo
 - **Payment System for Car Listings**: First 1000 listings are free, listings #1001+ require 10,000 SDG payment via Bankak QR code
 - **3-Step Post Car Flow**: Form → QR Payment → Waiting for Approval (for paid listings)
 - **Admin Payments Dashboard**: New "المدفوعات" tab with approve/reject buttons and auto-approval toggle
-- **Unified Color Scheme**: 3 colors only - dark blue (#1E3A5F), warm orange (#E8A54B), and white - applied consistently in both light and dark modes
-- **Coupon Code System**: Alternative payment method - users can enter coupon codes (e.g., ARA1000) for free listings instead of direct payment
+- **Unified Color Scheme**: 3 colors only - Deep Purple (#4A148C), Pink/Red (#E91E63), and white - applied consistently in both light and dark modes
+- **Coupon Code System**: Alternative payment method - users can enter coupon codes (e.g., SUD1000) for free listings instead of direct payment
 - **Privacy Policy Screen**: Bilingual privacy policy page accessible from Profile settings, suitable for Google Play compliance
 - **Location Feature in Registration**: Users can select their city manually or auto-detect via GPS during signup
 - **Fixed "بيع عربيتك الان" button**: Button now shows login prompt for unauthenticated users, navigates to PostCar for logged-in users

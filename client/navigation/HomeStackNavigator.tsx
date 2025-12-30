@@ -25,11 +25,12 @@ export default function HomeStackNavigator() {
         component={HomeScreen}
         options={{
           headerTitle: () => <HeaderTitle />,
-          headerRight: () => (
-            <Pressable style={{ padding: 8 }}>
-              <Feather name="bell" size={22} color={theme.text} />
-            </Pressable>
-          ),
+          headerTitleAlign: "left", // Allow custom component to fill width from start
+          headerStyle: {
+            backgroundColor: theme.backgroundRoot,
+            // @ts-ignore
+            height: 120, // Increased height for larger logo
+          },
         }}
       />
     </Stack.Navigator>

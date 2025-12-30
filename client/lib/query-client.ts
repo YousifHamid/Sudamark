@@ -1,7 +1,7 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const TOKEN_STORAGE_KEY = "@arabaty_token";
+const TOKEN_STORAGE_KEY = "@sudmark_token";
 
 export function getApiUrl(): string {
   let host = process.env.EXPO_PUBLIC_DOMAIN;
@@ -9,9 +9,11 @@ export function getApiUrl(): string {
   if (!host) {
     // Fallback for development if not set
     if (__DEV__) {
-      return "http://localhost:5000/";
+      // NOTE: Update this IP address to your machine's local IP (check with 'ipconfig' or 'ifconfig')
+      return "http://192.168.1.74:5000/";
     }
-    throw new Error("EXPO_PUBLIC_DOMAIN is not set");
+    console.warn("EXPO_PUBLIC_DOMAIN is not set");
+    return "http://localhost:5000/"; // Safe fallback
   }
 
   // If the host already includes the protocol, return it as is

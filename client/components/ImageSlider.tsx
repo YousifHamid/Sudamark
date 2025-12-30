@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { View, StyleSheet, Dimensions, ScrollView, Pressable } from "react-native";
-import { Image } from "expo-image";
+import { View, StyleSheet, Dimensions, ScrollView, Pressable, Image } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 
@@ -65,7 +64,7 @@ export function ImageSlider({ images, autoPlayInterval = 4000 }: ImageSliderProp
             <Image
               source={{ uri: image.imageUrl }}
               style={styles.image}
-              contentFit="cover"
+              resizeMode="cover"
             />
           </Pressable>
         ))}
