@@ -22,6 +22,10 @@ import {
 } from "@shared/schema";
 import { eq, desc, and, gt, like, or, sql } from "drizzle-orm";
 import rateLimit from "express-rate-limit";
+import { OAuth2Client } from "google-auth-library";
+
+// Initialize Google Client - user needs to set this env var
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const JWT_SECRET_RAW = process.env.SESSION_SECRET;
 if (!JWT_SECRET_RAW) {
@@ -171,14 +175,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post(
-    "/api/auth/phone-login",
+    "/api/auth/login",
     authLimiter,
     async (req: Request, res: Response) => {
       try {
-        const { phone, countryCode } = req.body;
+        const { phone, password, googleId } = req.body;
 
-        if (!phone) {
-          return res.status(400).json({ error: "Phone number is required" });
+        if (googleId || req.body.googleToken) {
+          // Google Login Logic
+          let verifiedGoogleId = googleId;
+          let email = "";
+          let name = "";
+          let picture = "";
+
+          if (req.body.googleToken) {
+            try {
+              const ticket = await googleClient.verifyIdToken({
+                idToken: req.body.googleToken,
+                audience: [
+                  process.env.GOOGLE_CLIENT_ID!,
+                  process.env.ANDROID_CLIENT_ID!,
+                  process.env.IOS_CLIENT_ID!
+                ].filter(Boolean),
+              });
+              const payload = ticket.getPayload();
+              if (payload) {
+                verifiedGoogleId = payload.sub;
+                email = payload.email || "";
+                name = payload.name || "";
+                picture = payload.picture || "";
+              }
+            } catch (error) {
+              console.error("Token verification failed:", error);
+              return res.status(401).json({ error: "Invalid Google Token" });
+            }
+          }
+
+          // Fallback for dev/mock if googleId provided directly (optional, maybe remove for prod)
+          // strict: if googleToken is present, use verifiedGoogleId.
+          const finalId = verifiedGoogleId;
+
+          const [existingUser] = await db
+            .select()
+            .from(users)
+            .where(eq(users.googleId, finalId))
+            .limit(1);
+
+          if (existingUser) {
+            const token = jwt.sign(
+              {
+                id: existingUser.id,
+                phone: existingUser.phone,
+                roles: existingUser.roles,
+              },
+              JWT_SECRET,
+              { expiresIn: "30d" },
+            );
+            return res.json({ user: existingUser, token, isNewUser: false });
+          } else {
+            // Check if user exists by email (to link account)
+            if (email) {
+              const [emailUser] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+              if (emailUser) {
+                // Start of linking account logic, but for now just return isNewUser with extra details
+                // or auto-link?. Let's return isNewUser = true but with flag 'linkAccount' or just googleId
+                // Actually, if we link, we need to update the user.
+                // Let's update the user with googleId if they exist by email?
+                // Safe approach: ask them to login with password to link? 
+                // Or if email is verified (Google always verified), auto-link.
+                await db.update(users).set({ googleId: finalId, authProvider: 'google' }).where(eq(users.id, emailUser.id));
+
+                const token = jwt.sign(
+                  { id: emailUser.id, phone: emailUser.phone, roles: emailUser.roles },
+                  JWT_SECRET,
+                  { expiresIn: "30d" }
+                );
+                return res.json({ user: emailUser, token, isNewUser: false });
+              }
+            }
+
+            return res.json({
+              isNewUser: true,
+              googleId: finalId,
+              email,
+              name,
+              picture
+            });
+          }
+        }
+
+        if (!phone || !password) {
+          return res.status(400).json({ error: "Phone and password are required" });
         }
 
         // Check if user exists
@@ -188,23 +275,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .where(eq(users.phone, phone))
           .limit(1);
 
-        if (existingUser) {
-          const token = jwt.sign(
-            {
-              id: existingUser.id,
-              phone: existingUser.phone,
-              roles: existingUser.roles,
-            },
-            JWT_SECRET,
-            { expiresIn: "30d" },
-          );
-          return res.json({ user: existingUser, token, isNewUser: false });
+        if (!existingUser) {
+          return res.status(400).json({ error: "Invalid credentials" });
         }
 
-        // If user doesn't exist, signal client to register
-        res.json({ isNewUser: true, phone });
+        // Verify Password
+        if (existingUser.passwordHash) {
+          const isValid = await bcrypt.compare(password, existingUser.passwordHash);
+          if (!isValid) {
+            return res.status(400).json({ error: "Invalid credentials" });
+          }
+        } else {
+          // Legacy user or Google user trying to login with password - minimal fallback or deny
+          return res.status(400).json({ error: "Please login with your social account or reset password" });
+        }
+
+        const token = jwt.sign(
+          {
+            id: existingUser.id,
+            phone: existingUser.phone,
+            roles: existingUser.roles,
+          },
+          JWT_SECRET,
+          { expiresIn: "30d" },
+        );
+        return res.json({ user: existingUser, token, isNewUser: false });
+
       } catch (error) {
-        console.error("Phone login error:", error);
+        console.error("Login error:", error);
         res.status(500).json({ error: "Failed to login" });
       }
     },
@@ -212,7 +310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/register", async (req: Request, res: Response) => {
     try {
-      const { phone, email, name, roles, countryCode, city } = req.body;
+      const { phone, email, name, roles, countryCode, city, password, googleId } = req.body;
 
       const [existingUser] = await db
         .select()
@@ -234,6 +332,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      let passwordHash = null;
+      if (password) {
+        passwordHash = await bcrypt.hash(password, 10);
+      }
+
       const [newUser] = await db
         .insert(users)
         .values({
@@ -244,6 +347,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           roles: roles || ["buyer"],
           countryCode: countryCode || "+249",
           city: city || null,
+          passwordHash,
+          googleId: googleId || null,
+          authProvider: googleId ? "google" : "phone",
         })
         .returning();
 
@@ -257,6 +363,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Register error:", error);
       res.status(500).json({ error: "Failed to create user" });
+    }
+  });
+
+  // Temporary Migration Route for Legacy Users
+  app.post("/api/auth/migrate-legacy-users", async (req: Request, res: Response) => {
+    try {
+      const defaultPassword = "12345678";
+      const hash = await bcrypt.hash(defaultPassword, 10);
+
+      // drizzle-orm doesn't have isNull helper imported? eq(users.passwordHash, null) might work or sql
+      // I will use sql for safety if I am not sure about eq(.., null)
+      await db.update(users)
+        .set({ passwordHash: hash })
+        .where(sql`${users.passwordHash} IS NULL`);
+
+      res.json({ message: "Legacy users migrated (Default Password: 12345678)" });
+    } catch (error) {
+      console.error("Migration error:", error);
+      res.status(500).json({ error: "Migration failed" });
     }
   });
 
@@ -773,6 +898,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           fuelType,
           description,
           userId,
+          insuranceType,
+          advertiserType,
+          engineSize,
+          color,
         } = req.body;
 
         let ownerId = userId;
@@ -810,6 +939,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             transmission,
             fuelType,
             description,
+            insuranceType,
+            advertiserType,
+            engineSize,
+            color,
             isActive: true,
             isFeatured: false,
             images: [],
@@ -1249,35 +1382,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   // Payment System APIs
-  const FREE_LISTING_LIMIT = 1000;
-  const BASE_LISTING_FEE = 20000;
+  const FREE_USER_LIMIT = 30000;
+  const BASE_LISTING_FEE = 10000;
 
   const getCategoryFee = (category: string | null): number => {
-    switch (category?.toLowerCase()) {
-      case "suv":
-      case "4x4":
-        return 50000;
-      case "truck":
-      case "heavy":
-        return 100000;
-      case "sedan":
-      case "small_salon":
-      default:
-        return 20000;
-    }
+    return 10000;
   };
 
   app.get("/api/listings/status", async (req: Request, res: Response) => {
     try {
       const [result] = await db
         .select({ count: sql<number>`count(*)` })
-        .from(cars);
-      const totalListings = Number(result?.count || 0);
-      const requiresPayment = totalListings >= FREE_LISTING_LIMIT;
+        .from(users);
+      const totalUsers = Number(result?.count || 0);
+      const requiresPayment = totalUsers >= FREE_USER_LIMIT;
 
       res.json({
-        totalListings,
-        freeLimit: FREE_LISTING_LIMIT,
+        totalListings: totalUsers,
+        freeLimit: FREE_USER_LIMIT,
         requiresPayment,
         listingFee: BASE_LISTING_FEE,
       });

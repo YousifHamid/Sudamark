@@ -150,6 +150,10 @@ export function CarsProvider({ children }: { children: ReactNode }) {
         description: carData.description,
         images: processedImages,
         category: carData.category,
+        insuranceType: carData.insuranceType,
+        advertiserType: carData.advertiserType,
+        engineSize: carData.engineSize,
+        color: carData.color,
       });
 
       const newCar = await response.json();
@@ -167,6 +171,10 @@ export function CarsProvider({ children }: { children: ReactNode }) {
         description: newCar.description || "",
         sellerId: newCar.userId,
         createdAt: newCar.createdAt,
+        insuranceType: newCar.insuranceType,
+        advertiserType: newCar.advertiserType,
+        engineSize: newCar.engineSize,
+        color: newCar.color,
       };
 
       setCars((prev) => [formattedCar, ...prev]);

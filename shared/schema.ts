@@ -42,6 +42,9 @@ export const users = pgTable("users", {
   phone: text("phone").notNull().unique(),
   email: text("email").unique(),
   emailVerified: boolean("email_verified").default(false),
+  passwordHash: text("password_hash"),
+  googleId: text("google_id").unique(),
+  authProvider: text("auth_provider").default("phone"), // phone, google
   name: text("name").notNull(),
   roles: jsonb("roles")
     .$type<string[]>()
@@ -84,6 +87,9 @@ export const cars = pgTable("cars", {
   color: text("color"),
   city: text("city").notNull(),
   description: text("description"),
+  insuranceType: text("insurance_type").default("none"),
+  advertiserType: text("advertiser_type").default("owner"),
+  engineSize: text("engine_size"),
   images: jsonb("images")
     .$type<string[]>()
     .default(sql`'[]'::jsonb`),

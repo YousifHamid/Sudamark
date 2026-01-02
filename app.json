@@ -13,16 +13,11 @@
       "bundleIdentifier": "com.sudmark.app",
       "infoPlist": {
         "NSCameraUsageDescription": "Sudmark needs camera access to take photos of your car listings",
-        "NSPhotoLibraryUsageDescription": "Sudmark needs photo library access to upload car photos"
+        "NSPhotoLibraryUsageDescription": "Sudmark needs photo library access to upload car photos",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#FFFFFF",
-        "foregroundImage": "./assets/images/icon.png"
-      },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
       "package": "com.sudmark.app",
       "permissions": [
         "android.permission.CAMERA",

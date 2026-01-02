@@ -35,15 +35,21 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   hasSeenOnboarding: boolean;
-  loginWithPhone: (
-    phone: string,
+  login: (
+    phone?: string,
+    password?: string,
     countryCode?: string,
-  ) => Promise<{ isNewUser: boolean; user?: User }>;
+    googleToken?: string,
+  ) => Promise<{ isNewUser: boolean; user?: User; googleToken?: string; googleData?: any }>;
   setUserRoles: (
     roles: UserRole[],
     name: string,
     email?: string,
     city?: string,
+    password?: string,
+    googleId?: string,
+    providedPhone?: string,
+    providedCountryCode?: string,
   ) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<User>) => Promise<void>;
@@ -98,17 +104,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setHasSeenOnboarding(true);
   };
 
-  const loginWithPhone = async (
-    phone: string,
+  const login = async (
+    phone?: string,
+    password?: string,
     countryCode: string = "+249",
-  ): Promise<{ isNewUser: boolean; user?: User }> => {
+    googleToken?: string,
+  ): Promise<{ isNewUser: boolean; user?: User; googleToken?: string; googleData?: any }> => {
     try {
-      const fullPhone = `${countryCode}${phone.replace(/\s/g, "")}`;
       const baseUrl = getApiUrl();
-      const response = await fetch(`${baseUrl}api/auth/phone-login`, {
+      let body: any = {};
+
+      if (googleToken) {
+        body = { googleToken }; // Changed from googleId to googleToken
+      } else if (phone && password) {
+        const fullPhone = `${countryCode}${phone.replace(/\s/g, "")}`;
+        body = { phone: fullPhone, password };
+      } else {
+        throw new Error("Invalid login credentials");
+      }
+
+      const response = await fetch(`${baseUrl}api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: fullPhone, countryCode }),
+        body: JSON.stringify(body),
       });
 
       const data = await response.json();
@@ -117,9 +135,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data.isNewUser) {
-        setPendingPhoneNumber(phone);
+        setPendingPhoneNumber(phone || null);
         setPendingCountryCode(countryCode);
-        return { isNewUser: true };
+        // Return extra data for pre-filling registration
+        return {
+          isNewUser: true,
+          googleToken: data.googleId || googleToken, // backend returns verified googleId as 'googleId' field usually, or we keep token
+          googleData: {
+            email: data.email,
+            name: data.name,
+            picture: data.picture,
+            googleId: data.googleId // verified ID
+          }
+        };
       }
 
       const userData: User = {
@@ -133,7 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return { isNewUser: false, user: userData };
     } catch (error) {
-      console.error("Phone login error:", error);
+      console.error("Login error:", error);
       throw error;
     }
   };
@@ -143,11 +171,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     name: string,
     email?: string,
     city?: string,
+    password?: string,
+    googleId?: string,
+    providedPhone?: string,
+    providedCountryCode?: string,
   ) => {
-    if (!pendingPhoneNumber) return;
+    // If googleId is present, we might not have a pendingPhoneNumber if it's a fresh google sign in
+    // However, if we are in manual signup flow, we have providedPhone.
+
+    // Priority: provided phone > pending phone
+    const targetPhone = providedPhone || pendingPhoneNumber;
+    const targetCountry = providedCountryCode || pendingCountryCode;
+
+    if (!googleId && !targetPhone) return;
 
     try {
-      const phone = `${pendingCountryCode}${pendingPhoneNumber.replace(/\s/g, "")}`;
+      let phone = targetPhone ? `${targetCountry}${targetPhone.replace(/\s/g, "")}` : undefined;
+
+      // If google auth, and we don't have phone, we might need to ask for it? 
+      // For now, assume if phone flow, phone is there.
+
       const baseUrl = getApiUrl();
       const response = await fetch(`${baseUrl}api/auth/register`, {
         method: "POST",
@@ -157,8 +200,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: email || null,
           name,
           roles,
-          countryCode: pendingCountryCode,
+          countryCode: targetCountry,
           city,
+          password,
+          googleId,
         }),
       });
 
@@ -226,7 +271,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated: !!user,
         hasSeenOnboarding,
-        loginWithPhone,
+        login,
         setUserRoles,
         logout,
         updateProfile,

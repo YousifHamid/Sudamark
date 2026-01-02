@@ -42,6 +42,16 @@ export default function EditProfileScreen() {
     { id: "Bahri", labelKey: "bahri" },
     { id: "Port Sudan", labelKey: "portSudan" },
     { id: "Kassala", labelKey: "kassala" },
+    { id: "Gezira", labelKey: "gezira" },
+    { id: "Kordofan", labelKey: "kordofan" },
+    { id: "Darfur", labelKey: "darfur" },
+    { id: "River Nile", labelKey: "riverNile" },
+    { id: "White Nile", labelKey: "whiteNile" },
+    { id: "Blue Nile", labelKey: "blueNile" },
+    { id: "Northern", labelKey: "northern" },
+    { id: "Red Sea", labelKey: "redSea" },
+    { id: "Gedaref", labelKey: "gedaref" },
+    { id: "Sennar", labelKey: "sennar" },
   ];
 
   const pickImage = async () => {

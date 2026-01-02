@@ -28,6 +28,10 @@ export interface Car {
   description?: string;
   sellerId: string;
   createdAt: string;
+  insuranceType?: string;
+  advertiserType?: string;
+  engineSize?: string;
+  color?: string;
 }
 
 interface CarCardProps {

@@ -152,6 +152,25 @@ export const translations: Translations = {
   electrician: { ar: "كهربائي", en: "Electrician" },
   lawyer: { ar: "محامي", en: "Lawyer" },
   inspectionCenter: { ar: "مركز فحص", en: "Inspection Center" },
+  spareParts: { ar: "محل اسبيرات", en: "Spare Parts Store" },
+
+  // New Car Form Fields
+  advertiserType: { ar: "نوع المعلن", en: "Advertiser Type" },
+  insurance: { ar: "التأمين", en: "Insurance" },
+  color: { ar: "اللون", en: "Color" },
+  engineSize: { ar: "سعة المحرك", en: "Engine Size" },
+
+  // Dropdown Options
+  owner: { ar: "مالك", en: "Owner" },
+  broker: { ar: "وسيط", en: "Broker" },
+  office: { ar: "مكتب", en: "Office" },
+
+  comprehensive: { ar: "شامل", en: "Comprehensive" },
+  mandatory: { ar: "إجباري", en: "Mandatory" },
+  none: { ar: "لا يوجد", en: "None" },
+
+  smallSalon: { ar: "عربة صالون صغير", en: "Small Salon" },
+  bus: { ar: "حافلة", en: "Bus" },
 
   // Tabs
   home: { ar: "الرئيسية", en: "Home" },
@@ -167,7 +186,7 @@ export const translations: Translations = {
   viewAll: { ar: "عرض الكل", en: "View All" },
 
   // Categories
-  sedan: { ar: "سيدان", en: "Sedan" },
+  sedan: { ar: "صالون", en: "Sedan" },
   suv: { ar: "دفع رباعي", en: "SUV" },
   sports: { ar: "رياضية", en: "Sports" },
   luxury: { ar: "فاخرة", en: "Luxury" },
@@ -259,6 +278,16 @@ export const translations: Translations = {
   bahri: { ar: "بحري", en: "Bahri" },
   portSudan: { ar: "بورتسودان", en: "Port Sudan" },
   kassala: { ar: "كسلا", en: "Kassala" },
+  gezira: { ar: "الجزيرة", en: "Al Gezira" },
+  kordofan: { ar: "كردفان", en: "Kordofan" },
+  darfur: { ar: "دارفور", en: "Darfur" },
+  riverNile: { ar: "نهر النيل", en: "River Nile" },
+  whiteNile: { ar: "النيل الأبيض", en: "White Nile" },
+  blueNile: { ar: "النيل الأزرق", en: "Blue Nile" },
+  northern: { ar: "الشمالية", en: "Northern" },
+  redSea: { ar: "البحر الأحمر", en: "Red Sea" },
+  gedaref: { ar: "القضارف", en: "Al Qadarif" },
+  sennar: { ar: "سنار", en: "Sennar" },
 
   // Email Magic Link Auth
   email: { ar: "البريد الإلكتروني", en: "Email" },

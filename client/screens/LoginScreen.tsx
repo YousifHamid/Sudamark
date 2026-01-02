@@ -9,6 +9,10 @@ import {
   Platform,
   Image,
 } from "react-native";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+
+WebBrowser.maybeCompleteAuthSession();
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -28,10 +32,12 @@ export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
-  const { loginWithPhone, setUserRoles } = useAuth();
+  const { login, setUserRoles } = useAuth();
 
   const [step, setStep] = useState<"phone" | "role">("phone");
+  const [isRegistering, setIsRegistering] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [selectedRoles, setSelectedRoles] = useState<
     (
@@ -62,7 +68,49 @@ export default function LoginScreen() {
     },
   ];
 
-  const handlePhoneLogin = async () => {
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    androidClientId: "574389309781-tgrd9bq2t36coqij03uicm0u07863q01.apps.googleusercontent.com",
+    webClientId: "574389309781-kkg2pvlq04ibkm9mm57s8rljfft30ifa.apps.googleusercontent.com",
+    // iosClientId: "477937397775-vmb60a699ad449r764u0a00i3vbg39m3.apps.googleusercontent.com", // Placeholder
+  });
+
+  React.useEffect(() => {
+    if (response?.type === "success") {
+      const { authentication } = response;
+      if (authentication?.idToken) {
+        handleGoogleLogin(authentication.idToken);
+      } else if (authentication?.accessToken) {
+        // If idToken is missing, try creating a user flow that verifies accessToken on backend?
+        // Or just use accessToken if backend supports strict verification via userinfo endpoint.
+        // For now, let's assume idToken is returned (needs configuration).
+        // If not, we might need to fetch user info manually.
+        // Let's rely on idToken.
+        handleGoogleLogin(authentication.idToken || authentication.accessToken);
+      }
+    }
+  }, [response]);
+
+  const handleGoogleLogin = async (token: string) => {
+    setIsLoading(true);
+    setError("");
+    try {
+      // Pass token as googleToken
+      const result = await login(undefined, undefined, undefined, token);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (result.isNewUser) {
+        setStep("role");
+        if (result.googleData?.name) setName(result.googleData.name);
+      }
+    } catch (err: any) {
+      setError(err.message || t("error"));
+      console.error("Google Login error:", err);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAuthAction = async () => {
     const cleanNumber = phoneNumber.replace(/\s/g, "");
 
     // Strict validation based on selected country
@@ -78,12 +126,31 @@ export default function LoginScreen() {
       return;
     }
 
-    setError("");
+    if (!password || password.length < 6) {
+      setError(isRTL ? "كلمة المرور يجب أن تكون 6 أحرف على الأقل" : "Password must be at least 6 characters");
+      return;
+    }
+
+    if (isRegistering) {
+      // Proceed to Role Selection for Registration
+      setError("");
+      setStep("role");
+      return;
+    }
+
+    // Login Logic
+    handleLogin();
+  };
+
+  const handleLogin = async () => {
     setIsLoading(true);
+    setError("");
+    const cleanNumber = phoneNumber.replace(/\s/g, "");
 
     try {
-      const result = await loginWithPhone(
+      const result = await login(
         cleanNumber,
+        password,
         selectedCountry.dialCode,
       );
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -120,7 +187,17 @@ export default function LoginScreen() {
     setError("");
     setIsLoading(true);
     try {
-      await setUserRoles(selectedRoles, name, undefined, selectedCountry.name);
+      const cleanPhone = phoneNumber.replace(/\s/g, "");
+      await setUserRoles(
+        selectedRoles,
+        name,
+        undefined,
+        undefined, // city 
+        password,
+        undefined, // googleId
+        cleanPhone,
+        selectedCountry.dialCode
+      );
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       setError(t("error"));
@@ -165,7 +242,7 @@ export default function LoginScreen() {
               isRTL && styles.rtlText,
             ]}
           >
-            {step === "phone" && t("enterPhoneToStart")}
+            {step === "phone" && (isRegistering ? t("createAccount") : t("enterPhoneToStart"))}
             {step === "role" && t("completeProfile")}
           </ThemedText>
         </View>
@@ -233,13 +310,85 @@ export default function LoginScreen() {
               />
             </View>
 
+            <View style={{ height: 16 }} />
+            <ThemedText
+              type="small"
+              style={[
+                styles.label,
+                { color: theme.textSecondary },
+                isRTL && styles.rtlText,
+              ]}
+            >
+              {isRTL ? "كلمة المرور" : "Password"}
+            </ThemedText>
+            <View
+              style={[
+                styles.inputContainer,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
+              <TextInput
+                style={[styles.input, { color: theme.text, textAlign: "left" }]}
+                placeholder={isRTL ? "••••••" : "••••••"}
+                placeholderTextColor={theme.textSecondary}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+            </View>
+
             <Button
-              onPress={handlePhoneLogin}
+              onPress={handleAuthAction}
               disabled={isLoading}
               style={styles.button}
             >
-              {isLoading ? t("loading") : t("continue")}
+              {isLoading ? t("loading") : (isRegistering ? t("continue") : t("continue"))}
             </Button>
+
+            <Pressable
+              onPress={() => {
+                setIsRegistering(!isRegistering);
+                setError("");
+                Haptics.selectionAsync();
+              }}
+              style={{ marginTop: 16, alignItems: 'center' }}
+            >
+              <ThemedText style={{ color: theme.primary }}>
+                {isRegistering
+                  ? (isRTL ? "لديك حساب بالفعل؟ تسجيل الدخول" : "Already have an account? Login")
+                  : (isRTL ? "ليس لديك حساب؟ إنشاء حساب جديد" : "Don't have an account? Sign Up")
+                }
+              </ThemedText>
+            </Pressable>
+
+            <View style={{ height: 16 }} />
+            <Pressable
+              onPress={() => {
+                Haptics.selectionAsync();
+                promptAsync();
+              }}
+              style={[
+                styles.button,
+                {
+                  backgroundColor: "#FFFFFF",
+                  borderWidth: 1,
+                  borderColor: theme.border,
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: 8
+                }
+              ]}
+            >
+              {/* Simplified Google G Icon */}
+              <ThemedText style={{ fontWeight: 'bold', color: '#000' }}>G</ThemedText>
+              <ThemedText style={{ color: "#000000" }}>
+                {isRTL ? "المتابعة باستخدام Google" : "Continue with Google"}
+              </ThemedText>
+            </Pressable>
           </View>
         ) : null}
 
@@ -466,7 +615,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 14,
     paddingVertical: 0,
   },
   button: {
@@ -477,7 +626,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     height: Spacing.inputHeight,
     paddingHorizontal: Spacing.md,
-    fontSize: 16,
+    fontSize: 14,
   },
   rolesGrid: {
     flexDirection: "row",

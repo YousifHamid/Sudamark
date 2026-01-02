@@ -7,6 +7,7 @@ import {
   ScrollView,
   Alert,
   Modal,
+  FlatList,
   Platform,
   Image,
 } from "react-native";
@@ -38,6 +39,78 @@ interface ListingStatus {
   listingFee: number;
 }
 
+interface SelectionItem {
+  id: string;
+  labelAr: string;
+  labelEn: string;
+}
+
+const SelectionModal = ({
+  visible,
+  onClose,
+  title,
+  items,
+  onSelect,
+  selectedId,
+  theme,
+  isRTL,
+  t
+}: {
+  visible: boolean;
+  onClose: () => void;
+  title: string;
+  items: SelectionItem[];
+  onSelect: (id: string) => void;
+  selectedId: string;
+  theme: any;
+  isRTL: boolean;
+  t: any;
+}) => (
+  <Modal
+    visible={visible}
+    animationType="slide"
+    transparent
+    onRequestClose={onClose}
+  >
+    <View style={styles.modalOverlay}>
+      <View style={[styles.modalContent, { backgroundColor: theme.backgroundDefault }]}>
+        <View style={styles.modalHeader}>
+          <ThemedText type="h4">{title}</ThemedText>
+          <Pressable onPress={onClose}>
+            <Feather name="x" size={24} color={theme.text} />
+          </Pressable>
+        </View>
+        <FlatList
+          data={items}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ paddingBottom: 40 }}
+          renderItem={({ item }) => (
+            <Pressable
+              onPress={() => {
+                onSelect(item.id);
+                onClose();
+                Haptics.selectionAsync();
+              }}
+              style={[
+                styles.modalItem,
+                { borderBottomColor: theme.border },
+                selectedId === item.id && { backgroundColor: theme.primary + "15" }
+              ]}
+            >
+              <ThemedText style={{ flex: 1, textAlign: isRTL ? 'right' : 'left' }}>
+                {isRTL ? item.labelAr : item.labelEn}
+              </ThemedText>
+              {selectedId === item.id && (
+                <Feather name="check" size={20} color={theme.primary} />
+              )}
+            </Pressable>
+          )}
+        />
+      </View>
+    </View>
+  </Modal>
+);
+
 export default function PostCarScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
@@ -46,7 +119,32 @@ export default function PostCarScreen() {
   const { user } = useAuth();
   const { addCar } = useCars();
 
+  const categories = [
+    { id: "small_salon", labelEn: "Small Salon", labelAr: "عربة صالون صغير" },
+    { id: "4x4", labelEn: "4x4", labelAr: "دفع رباعي" },
+    { id: "bus", labelEn: "Bus", labelAr: "حافلة" },
+    { id: "truck", labelEn: "Truck", labelAr: "نقل ثقيل" },
+  ];
+
+  const conditions = [
+    { id: "new", labelEn: "New", labelAr: "جديدة" },
+    { id: "used", labelEn: "Used", labelAr: "مستعملة" },
+  ];
+
+  const advertiserTypes = [
+    { id: "owner", labelAr: "مالك", labelEn: "Owner" },
+    { id: "broker", labelAr: "وسيط", labelEn: "Broker" },
+    { id: "office", labelAr: "مكتب", labelEn: "Office" },
+  ];
+
+  const insuranceTypes = [
+    { id: "comprehensive", labelAr: "شامل", labelEn: "Comprehensive" },
+    { id: "mandatory", labelAr: "إجباري", labelEn: "Mandatory" },
+    { id: "none", labelAr: "لا يوجد", labelEn: "None" },
+  ];
+
   const [step, setStep] = useState<ScreenStep>("form");
+  const [activeModal, setActiveModal] = useState<'city' | 'category' | 'advertiser' | 'insurance' | 'condition' | null>(null);
   const [listingStatus, setListingStatus] = useState<ListingStatus | null>(
     null,
   );
@@ -59,18 +157,23 @@ export default function PostCarScreen() {
   const [mileage, setMileage] = useState("");
   const [description, setDescription] = useState("");
   const [city, setCity] = useState("");
-  const [category, setCategory] = useState("sedan");
+  const [category, setCategory] = useState("small_salon");
   const [condition, setCondition] = useState("used");
+  const [insuranceType, setInsuranceType] = useState("mandatory");
+  const [advertiserType, setAdvertiserType] = useState("owner");
+  const [color, setColor] = useState("");
+  const [engineSize, setEngineSize] = useState("");
+  const [carImages, setCarImages] = useState<Record<string, string | null>>({
+    front: null,
+    rear: null,
+    right: null,
+    left: null,
+    interior: null,
+    extra: null,
+  });
 
   const getCategoryFee = (cat: string) => {
-    switch (cat) {
-      case "suv":
-        return 50000;
-      case "truck":
-        return 100000;
-      default:
-        return 20000;
-    }
+    return 10000;
   };
 
   const [isLoading, setIsLoading] = useState(false);
@@ -102,13 +205,6 @@ export default function PostCarScreen() {
     { id: "red_sea", nameEn: "Red Sea", nameAr: "البحر الأحمر" },
     { id: "gedaref", nameEn: "Al Qadarif", nameAr: "القضارف" },
     { id: "sennar", nameEn: "Sennar", nameAr: "سنار" },
-    { id: "west_kordofan", nameEn: "West Kordofan", nameAr: "غرب كردفان" },
-    { id: "south_kordofan", nameEn: "South Kordofan", nameAr: "جنوب كردفان" },
-    { id: "north_darfur", nameEn: "North Darfur", nameAr: "شمال دارفور" },
-    { id: "west_darfur", nameEn: "West Darfur", nameAr: "غرب دارفور" },
-    { id: "south_darfur", nameEn: "South Darfur", nameAr: "جنوب دارفور" },
-    { id: "central_darfur", nameEn: "Central Darfur", nameAr: "وسط دارفور" },
-    { id: "east_darfur", nameEn: "East Darfur", nameAr: "شرق دارفور" },
   ];
 
   useEffect(() => {
@@ -127,22 +223,21 @@ export default function PostCarScreen() {
     }
   };
 
-  const pickImage = async () => {
+  const pickImage = async (slot: string) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
-      allowsMultipleSelection: true,
+      allowsEditing: true,
       quality: 0.8,
     });
 
     if (!result.canceled) {
-      const newImages = result.assets.map((asset) => asset.uri);
-      setImages([...images, ...newImages].slice(0, 6));
+      setCarImages((prev) => ({ ...prev, [slot]: result.assets[0].uri }));
       Haptics.selectionAsync();
     }
   };
 
-  const removeImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
+  const removeImage = (slot: string) => {
+    setCarImages((prev) => ({ ...prev, [slot]: null }));
     Haptics.selectionAsync();
   };
 
@@ -184,15 +279,14 @@ export default function PostCarScreen() {
       mileage: mileage ? parseInt(mileage) : 0,
       description,
       city,
-      images:
-        images.length > 0
-          ? images
-          : [
-              "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
-            ],
+      images: Object.values(carImages).filter((img): img is string => img !== null),
       sellerId: user?.id || "",
       category,
       condition,
+      insuranceType,
+      advertiserType,
+      engineSize,
+      color,
       createdAt: new Date().toISOString(),
     };
 
@@ -259,8 +353,8 @@ export default function PostCarScreen() {
           images.length > 0
             ? images
             : [
-                "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
-              ],
+              "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+            ],
         sellerId: user?.id || "",
         category: "sedan",
         condition,
@@ -339,8 +433,8 @@ export default function PostCarScreen() {
           images.length > 0
             ? images
             : [
-                "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
-              ],
+              "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800",
+            ],
         sellerId: user?.id || "",
         category,
         condition,
@@ -369,7 +463,7 @@ export default function PostCarScreen() {
       Alert.alert(
         t("error"),
         error.message ||
-          (isRTL ? "فشل في تقديم الدفع" : "Failed to submit payment"),
+        (isRTL ? "فشل في تقديم الدفع" : "Failed to submit payment"),
       );
     } finally {
       setIsLoading(false);
@@ -875,54 +969,79 @@ export default function PostCarScreen() {
         >
           {t("photosUpTo6")}
         </ThemedText>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.imagesContainer}
-          contentContainerStyle={styles.imagesContent}
+        <ThemedText
+          type="small"
+          style={[
+            styles.label,
+            { color: theme.textSecondary },
+            isRTL && styles.rtlText,
+          ]}
         >
-          {images.map((uri, index) => (
-            <View key={index} style={styles.imageWrapper}>
-              <Image
-                source={{ uri }}
-                style={styles.imagePreview}
-                resizeMode="cover"
-              />
-              <Pressable
-                style={[
-                  styles.removeImageButton,
-                  { backgroundColor: theme.error },
-                ]}
-                onPress={() => removeImage(index)}
-              >
-                <Feather name="x" size={16} color="#FFFFFF" />
-              </Pressable>
-            </View>
-          ))}
-          {images.length < 6 ? (
+          {isRTL ? "صور السيارة (6 صور)" : "Car Photos (6 Photos)"}
+        </ThemedText>
+        <View style={styles.imageGrid}>
+          {[
+            { id: "front", labelAr: "واجهة أمامية", labelEn: "Front View" },
+            { id: "rear", labelAr: "خلفية", labelEn: "Rear View" },
+            { id: "right", labelAr: "جانبية يمين", labelEn: "Right Side" },
+            { id: "left", labelAr: "جانبية يسار", labelEn: "Left Side" },
+            { id: "interior", labelAr: "داخلية", labelEn: "Interior" },
+            { id: "extra", labelAr: "إضافية", labelEn: "Extra" },
+          ].map((slot) => (
             <Pressable
+              key={slot.id}
               style={[
-                styles.addImageButton,
+                styles.imageSlot,
                 {
                   backgroundColor: theme.backgroundSecondary,
                   borderColor: theme.border,
                 },
               ]}
-              onPress={pickImage}
+              onPress={() => pickImage(slot.id)}
             >
-              <Feather name="plus" size={24} color={theme.textSecondary} />
-              <ThemedText
-                type="small"
-                style={[
-                  { color: theme.textSecondary },
-                  isRTL && styles.rtlText,
-                ]}
-              >
-                {t("add")}
-              </ThemedText>
+              {carImages[slot.id] ? (
+                <>
+                  <Image
+                    source={{ uri: carImages[slot.id] || "" }}
+                    style={styles.imagePreviewSlot}
+                    resizeMode="cover"
+                  />
+                  <Pressable
+                    style={[
+                      styles.removeImageButton,
+                      { backgroundColor: theme.error },
+                    ]}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      removeImage(slot.id);
+                    }}
+                  >
+                    <Feather name="x" size={14} color="#FFFFFF" />
+                  </Pressable>
+                </>
+              ) : (
+                <View style={styles.emptySlot}>
+                  <Feather
+                    name="camera"
+                    size={24}
+                    color={theme.textSecondary}
+                  />
+                  <ThemedText
+                    type="small"
+                    style={{
+                      color: theme.textSecondary,
+                      marginTop: 4,
+                      textAlign: "center",
+                      fontSize: 10,
+                    }}
+                  >
+                    {isRTL ? slot.labelAr : slot.labelEn}
+                  </ThemedText>
+                </View>
+              )}
             </Pressable>
-          ) : null}
-        </ScrollView>
+          ))}
+        </View>
 
         <ThemedText
           type="small"
@@ -934,42 +1053,24 @@ export default function PostCarScreen() {
         >
           {t("category")}
         </ThemedText>
-        <View style={[styles.citiesRow, isRTL && styles.citiesRowRTL]}>
-          {[
-            { id: "sedan", labelEn: "Sedan", labelAr: "سيدان" },
-            { id: "suv", labelEn: "SUV", labelAr: "دفع رباعي" },
-            { id: "truck", labelEn: "Truck", labelAr: "شاحنة" },
-          ].map((cat) => (
-            <Pressable
-              key={cat.id}
-              onPress={() => {
-                setCategory(cat.id);
-                Haptics.selectionAsync();
-              }}
-              style={[
-                styles.cityChip,
-                {
-                  backgroundColor: theme.backgroundSecondary,
-                  borderColor: theme.border,
-                },
-                category === cat.id && {
-                  backgroundColor: theme.primary,
-                  borderColor: theme.primary,
-                },
-              ]}
-            >
-              <ThemedText
-                type="small"
-                style={[
-                  category === cat.id ? { color: "#FFFFFF" } : undefined,
-                  isRTL && styles.rtlText,
-                ]}
-              >
-                {isRTL ? cat.labelAr : cat.labelEn}
-              </ThemedText>
-            </Pressable>
-          ))}
-        </View>
+        <Pressable
+          onPress={() => setActiveModal('category')}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.backgroundSecondary,
+              borderColor: theme.border,
+              justifyContent: 'center',
+              alignItems: isRTL ? 'flex-end' : 'flex-start'
+            }
+          ]}
+        >
+          <ThemedText style={{ color: theme.text }}>
+            {isRTL
+              ? categories.find(c => c.id === category)?.labelAr
+              : categories.find(c => c.id === category)?.labelEn}
+          </ThemedText>
+        </Pressable>
 
         <View style={{ height: Spacing.md }} />
 
@@ -983,41 +1084,24 @@ export default function PostCarScreen() {
         >
           {isRTL ? "الحالة" : "Condition"}
         </ThemedText>
-        <View style={[styles.citiesRow, isRTL && styles.citiesRowRTL]}>
-          {[
-            { id: "new", labelEn: "New", labelAr: "جديدة" },
-            { id: "used", labelEn: "Used", labelAr: "مستعملة" },
-          ].map((cond) => (
-            <Pressable
-              key={cond.id}
-              onPress={() => {
-                setCondition(cond.id);
-                Haptics.selectionAsync();
-              }}
-              style={[
-                styles.cityChip,
-                {
-                  backgroundColor: theme.backgroundSecondary,
-                  borderColor: theme.border,
-                },
-                condition === cond.id && {
-                  backgroundColor: theme.primary,
-                  borderColor: theme.primary,
-                },
-              ]}
-            >
-              <ThemedText
-                type="small"
-                style={[
-                  condition === cond.id ? { color: "#FFFFFF" } : undefined,
-                  isRTL && styles.rtlText,
-                ]}
-              >
-                {isRTL ? cond.labelAr : cond.labelEn}
-              </ThemedText>
-            </Pressable>
-          ))}
-        </View>
+        <Pressable
+          onPress={() => setActiveModal('condition')}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.backgroundSecondary,
+              borderColor: theme.border,
+              justifyContent: 'center',
+              alignItems: isRTL ? 'flex-end' : 'flex-start'
+            }
+          ]}
+        >
+          <ThemedText style={{ color: theme.text }}>
+            {isRTL
+              ? conditions.find(c => c.id === condition)?.labelAr
+              : conditions.find(c => c.id === condition)?.labelEn}
+          </ThemedText>
+        </Pressable>
 
         <ThemedText
           type="small"
@@ -1204,38 +1288,140 @@ export default function PostCarScreen() {
         >
           {t("city")} *
         </ThemedText>
-        <View style={[styles.citiesRow, isRTL && styles.citiesRowRTL]}>
-          {cities.map((c) => (
-            <Pressable
-              key={c.id}
+        <Pressable
+          onPress={() => setActiveModal('city')}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.backgroundSecondary,
+              borderColor: theme.border,
+              justifyContent: 'center',
+              alignItems: isRTL ? 'flex-end' : 'flex-start'
+            }
+          ]}
+        >
+          <ThemedText style={{ color: theme.text }}>
+            {isRTL
+              ? cities.find(c => c.id === city)?.nameAr
+              : cities.find(c => c.id === city)?.nameEn}
+          </ThemedText>
+        </Pressable>
+
+        <ThemedText
+          type="small"
+          style={[
+            styles.label,
+            { color: theme.textSecondary },
+            isRTL && styles.rtlText,
+          ]}
+        >
+          {isRTL ? "نوع المعلن" : "Advertiser Type"}
+        </ThemedText>
+        <Pressable
+          onPress={() => setActiveModal('advertiser')}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.backgroundSecondary,
+              borderColor: theme.border,
+              justifyContent: 'center',
+              alignItems: isRTL ? 'flex-end' : 'flex-start'
+            }
+          ]}
+        >
+          <ThemedText style={{ color: theme.text }}>
+            {isRTL
+              ? advertiserTypes.find(c => c.id === advertiserType)?.labelAr
+              : advertiserTypes.find(c => c.id === advertiserType)?.labelEn}
+          </ThemedText>
+        </Pressable>
+
+        <ThemedText
+          type="small"
+          style={[
+            styles.label,
+            { color: theme.textSecondary },
+            isRTL && styles.rtlText,
+          ]}
+        >
+          {isRTL ? "التأمين" : "Insurance"}
+        </ThemedText>
+        <Pressable
+          onPress={() => setActiveModal('insurance')}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.backgroundSecondary,
+              borderColor: theme.border,
+              justifyContent: 'center',
+              alignItems: isRTL ? 'flex-end' : 'flex-start'
+            }
+          ]}
+        >
+          <ThemedText style={{ color: theme.text }}>
+            {isRTL
+              ? insuranceTypes.find(c => c.id === insuranceType)?.labelAr
+              : insuranceTypes.find(c => c.id === insuranceType)?.labelEn}
+          </ThemedText>
+        </Pressable>
+
+        <View style={[styles.row, isRTL && styles.rowRTL]}>
+          <View style={styles.halfInput}>
+            <ThemedText
+              type="small"
               style={[
-                styles.cityChip,
+                styles.label,
+                { color: theme.textSecondary },
+                isRTL && styles.rtlText,
+              ]}
+            >
+              {isRTL ? "اللون" : "Color"}
+            </ThemedText>
+            <TextInput
+              style={[
+                styles.input,
                 {
                   backgroundColor: theme.backgroundSecondary,
+                  color: theme.text,
                   borderColor: theme.border,
                 },
-                city === c.id && {
-                  backgroundColor: theme.primary,
-                  borderColor: theme.primary,
-                },
+                isRTL && styles.rtlInput,
               ]}
-              onPress={() => {
-                setCity(c.id);
-                Haptics.selectionAsync();
-              }}
+              placeholder={isRTL ? "مثال: أبيض" : "e.g. White"}
+              placeholderTextColor={theme.textSecondary}
+              value={color}
+              onChangeText={setColor}
+              textAlign={isRTL ? "right" : "left"}
+            />
+          </View>
+          <View style={styles.halfInput}>
+            <ThemedText
+              type="small"
+              style={[
+                styles.label,
+                { color: theme.textSecondary },
+                isRTL && styles.rtlText,
+              ]}
             >
-              <ThemedText
-                type="small"
-                style={
-                  city === c.id
-                    ? { color: "#FFFFFF" }
-                    : { color: theme.textSecondary }
-                }
-              >
-                {isRTL ? c.nameAr : c.nameEn}
-              </ThemedText>
-            </Pressable>
-          ))}
+              {isRTL ? "سعة المحرك" : "Engine Size"}
+            </ThemedText>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  color: theme.text,
+                  borderColor: theme.border,
+                },
+                isRTL && styles.rtlInput,
+              ]}
+              placeholder={isRTL ? "مثال: 2.4L" : "e.g. 2.4L"}
+              placeholderTextColor={theme.textSecondary}
+              value={engineSize}
+              onChangeText={setEngineSize}
+              textAlign={isRTL ? "right" : "left"}
+            />
+          </View>
         </View>
 
         <ThemedText
@@ -1326,6 +1512,61 @@ export default function PostCarScreen() {
               : t("postListing")}
         </Button>
       </KeyboardAwareScrollViewCompat>
+      <SelectionModal
+        visible={activeModal === 'category'}
+        onClose={() => setActiveModal(null)}
+        title={t("category")}
+        items={categories}
+        onSelect={setCategory}
+        selectedId={category}
+        theme={theme}
+        isRTL={isRTL}
+        t={t}
+      />
+      <SelectionModal
+        visible={activeModal === 'condition'}
+        onClose={() => setActiveModal(null)}
+        title={isRTL ? "الحالة" : "Condition"}
+        items={conditions}
+        onSelect={setCondition}
+        selectedId={condition}
+        theme={theme}
+        isRTL={isRTL}
+        t={t}
+      />
+      <SelectionModal
+        visible={activeModal === 'city'}
+        onClose={() => setActiveModal(null)}
+        title={t("city")}
+        items={cities.map(c => ({ id: c.id, labelAr: c.nameAr, labelEn: c.nameEn }))}
+        onSelect={setCity}
+        selectedId={city}
+        theme={theme}
+        isRTL={isRTL}
+        t={t}
+      />
+      <SelectionModal
+        visible={activeModal === 'advertiser'}
+        onClose={() => setActiveModal(null)}
+        title={isRTL ? "نوع المعلن" : "Advertiser Type"}
+        items={advertiserTypes}
+        onSelect={setAdvertiserType}
+        selectedId={advertiserType}
+        theme={theme}
+        isRTL={isRTL}
+        t={t}
+      />
+      <SelectionModal
+        visible={activeModal === 'insurance'}
+        onClose={() => setActiveModal(null)}
+        title={isRTL ? "التأمين" : "Insurance"}
+        items={insuranceTypes}
+        onSelect={setInsuranceType}
+        selectedId={insuranceType}
+        theme={theme}
+        isRTL={isRTL}
+        t={t}
+      />
     </ThemedView>
   );
 }
@@ -1346,6 +1587,30 @@ const styles = StyleSheet.create({
   },
   imagesContent: {
     gap: Spacing.sm,
+  },
+  imageGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+  },
+  imageSlot: {
+    width: "31%",
+    aspectRatio: 1,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  imagePreviewSlot: {
+    width: "100%",
+    height: "100%",
+  },
+  emptySlot: {
+    alignItems: "center",
+    justifyContent: "center",
   },
   imageWrapper: {
     position: "relative",
@@ -1379,7 +1644,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.sm,
     borderWidth: 1,
     paddingHorizontal: Spacing.md,
-    fontSize: 16,
+    fontSize: 14,
   },
   rtlInput: {
     textAlign: "right",
@@ -1450,6 +1715,32 @@ const styles = StyleSheet.create({
   paymentTitle: {
     textAlign: "center",
     marginBottom: Spacing.sm,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    borderTopLeftRadius: BorderRadius.lg,
+    borderTopRightRadius: BorderRadius.lg,
+    maxHeight: "70%",
+    paddingBottom: 40,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0,0,0,0.1)",
+  },
+  modalItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderBottomWidth: 1,
   },
   paymentDesc: {
     textAlign: "center",

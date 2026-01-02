@@ -14,12 +14,12 @@
                 "buildType": "apk"
             },
             "env": {
-                "EXPO_PUBLIC_DOMAIN": "https://sudamark.up.railway.app"
+                "EXPO_PUBLIC_DOMAIN": "http://10.10.10.209:5000"
             }
         },
         "production": {
             "android": {
-                "buildType": "apk"
+                "buildType": "app-bundle"
             },
             "env": {
                 "EXPO_PUBLIC_DOMAIN": "https://sudamark.up.railway.app"

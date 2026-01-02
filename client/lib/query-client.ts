@@ -10,7 +10,7 @@ export function getApiUrl(): string {
     // Fallback for development if not set
     if (__DEV__) {
       // NOTE: Update this IP address to your machine's local IP (check with 'ipconfig' or 'ifconfig')
-      return "http://192.168.1.74:5000/";
+      return "http://10.173.22.148:5000/";
     }
     console.warn("EXPO_PUBLIC_DOMAIN is not set");
     return "https://sudamark.up.railway.app/"; // Safe fallback
@@ -73,28 +73,28 @@ export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
-  async ({ queryKey }) => {
-    const baseUrl = getApiUrl();
-    const url = new URL(queryKey.join("/") as string, baseUrl);
-    const token = await getAuthToken();
+    async ({ queryKey }) => {
+      const baseUrl = getApiUrl();
+      const url = new URL(queryKey.join("/") as string, baseUrl);
+      const token = await getAuthToken();
 
-    const headers: Record<string, string> = {};
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
 
-    const res = await fetch(url, {
-      headers,
-      credentials: "include",
-    });
+      const res = await fetch(url, {
+        headers,
+        credentials: "include",
+      });
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
-    }
+      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+        return null;
+      }
 
-    await throwIfResNotOk(res);
-    return await res.json();
-  };
+      await throwIfResNotOk(res);
+      return await res.json();
+    };
 
 export const queryClient = new QueryClient({
   defaultOptions: {

@@ -82,9 +82,9 @@ export default function HomeScreen() {
   }, [currentSlideIndex, displaySlides.length]);
 
   const categories = [
-    { id: "sedan", labelKey: "sedan", icon: "disc" as const },
-    { id: "suv", labelKey: "suv", icon: "activity" as const },
     { id: "truck", labelKey: "truck", icon: "truck" as const },
+    { id: "suv", labelKey: "suv", icon: "activity" as const },
+    { id: "sedan", labelKey: "sedan", icon: "disc" as const },
   ];
 
   const handleSearchPress = () => {
