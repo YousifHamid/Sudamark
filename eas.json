@@ -24,6 +24,12 @@
             "env": {
                 "EXPO_PUBLIC_DOMAIN": "https://sudamark.up.railway.app"
             }
+        },
+        "production-apk": {
+            "extends": "production",
+            "android": {
+                "buildType": "apk"
+            }
         }
     },
     "submit": {

@@ -40,16 +40,7 @@ export default function SettingsScreen() {
     await setLanguage(language === "ar" ? "en" : "ar");
   };
 
-  const handleChangePhone = () => {
-    Haptics.selectionAsync();
-    Alert.alert(
-      isRTL ? "تغيير رقم الهاتف" : "Change Phone Number",
-      isRTL
-        ? "سيتم تفعيل هذه الميزة قريباً"
-        : "This feature will be enabled soon",
-      [{ text: isRTL ? "حسناً" : "OK" }]
-    );
-  };
+
 
   const handleDeleteAccount = () => {
     Alert.alert(
@@ -168,18 +159,7 @@ export default function SettingsScreen() {
             {isRTL ? "إعدادات تسجيل الحساب" : "Account Settings"}
           </ThemedText>
 
-          <Pressable
-            style={[styles.actionButton, { borderColor: theme.border, marginBottom: Spacing.md }]}
-            onPress={handleChangePhone}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Feather name="phone" size={20} color={theme.text} />
-              <ThemedText style={{ marginHorizontal: Spacing.sm }}>
-                {isRTL ? "تغيير رقم الموبايل" : "Change Phone Number"}
-              </ThemedText>
-            </View>
-            <Feather name={isRTL ? "chevron-left" : "chevron-right"} size={20} color={theme.textSecondary} />
-          </Pressable>
+
 
           <Pressable
             style={[styles.dangerButton, { borderColor: theme.error }]}

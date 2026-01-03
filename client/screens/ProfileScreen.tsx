@@ -209,6 +209,60 @@ export default function ProfileScreen() {
         </Pressable>
       </View>
 
+
+      {
+        user?.roles?.includes("admin") && (
+          <View style={styles.section}>
+            <ThemedText
+              type="small"
+              style={[
+                styles.sectionTitle,
+                { color: theme.textSecondary },
+                isRTL && styles.rtlText,
+              ]}
+            >
+              Admin Dashboard
+            </ThemedText>
+            <View
+              style={[
+                styles.menuCard,
+                { backgroundColor: theme.backgroundDefault },
+              ]}
+            >
+              <Pressable
+                style={styles.menuItem}
+                onPress={() => {
+                  // @ts-ignore
+                  navigation.navigate("AdminUsers");
+                }}
+              >
+                <View
+                  style={[styles.menuItemLeft, isRTL && styles.menuItemLeftRTL]}
+                >
+                  <View
+                    style={[
+                      styles.iconContainer,
+                      { backgroundColor: theme.error + "20" },
+                    ]}
+                  >
+                    <Feather name="users" size={18} color={theme.error} />
+                  </View>
+                  <ThemedText>Manage Users</ThemedText>
+                </View>
+                <View
+                  style={[styles.menuItemRight, isRTL && styles.menuItemRightRTL]}
+                >
+                  <Feather
+                    name={isRTL ? "chevron-left" : "chevron-right"}
+                    size={20}
+                    color={theme.textSecondary}
+                  />
+                </View>
+              </Pressable>
+            </View>
+          </View>
+        )}
+
       <View style={styles.section}>
         <ThemedText
           type="small"
@@ -508,7 +562,7 @@ export default function ProfileScreen() {
           </Pressable>
         </Pressable>
       </Modal>
-    </ScrollView>
+    </ScrollView >
   );
 }
 

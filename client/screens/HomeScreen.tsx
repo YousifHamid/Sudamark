@@ -6,6 +6,7 @@ import {
   Pressable,
   Dimensions,
   Image,
+  RefreshControl,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -22,7 +23,7 @@ import { Spacing, BorderRadius } from "@/constants/theme";
 import { CarCard } from "@/components/CarCard";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { useCars } from "@/hooks/useCars";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getApiUrl } from "@/lib/query-client";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -35,7 +36,16 @@ export default function HomeScreen() {
   const { t, isRTL } = useLanguage();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { cars, featuredCars } = useCars();
+  const { cars, featuredCars, isLoading: isCarsLoading } = useCars();
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: ["cars"] });
+    await queryClient.invalidateQueries({ queryKey: ["slider-images"] });
+    setRefreshing(false);
+  }, []);
 
   const { data: sliderImages = [] } = useQuery({
     queryKey: ["slider-images"],
@@ -100,6 +110,9 @@ export default function HomeScreen() {
       }}
       scrollIndicatorInsets={{ bottom: insets.bottom }}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
+      }
     >
       <View
         style={[styles.searchBarContainer, { paddingHorizontal: Spacing.lg }]}
@@ -251,34 +264,36 @@ export default function HomeScreen() {
         </ScrollView>
       </View>
 
-      <View style={styles.section}>
-        <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRTL]}>
-          <ThemedText type="h4" style={isRTL ? styles.rtlText : undefined}>
-            {t("featuredCars")}
-          </ThemedText>
-          <Pressable onPress={() => navigation.navigate("Search", {})}>
-            <ThemedText type="link" style={{ fontSize: 14 }}>
-              {t("seeAll")}
+      {featuredCars.length > 0 && (
+        <View style={styles.section}>
+          <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRTL]}>
+            <ThemedText type="h4" style={isRTL ? styles.rtlText : undefined}>
+              {t("featuredCars")}
             </ThemedText>
-          </Pressable>
+            <Pressable onPress={() => navigation.navigate("Search", {})}>
+              <ThemedText type="link" style={{ fontSize: 14 }}>
+                {t("seeAll")}
+              </ThemedText>
+            </Pressable>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.carsRow}
+          >
+            {featuredCars.map((car) => (
+              <CarCard
+                key={car.id}
+                car={car}
+                horizontal
+                onPress={() =>
+                  navigation.navigate("CarDetail", { carId: car.id })
+                }
+              />
+            ))}
+          </ScrollView>
         </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.carsRow}
-        >
-          {featuredCars.map((car) => (
-            <CarCard
-              key={car.id}
-              car={car}
-              horizontal
-              onPress={() =>
-                navigation.navigate("CarDetail", { carId: car.id })
-              }
-            />
-          ))}
-        </ScrollView>
-      </View>
+      )}
 
       <View style={styles.section}>
         <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRTL]}>
@@ -291,26 +306,23 @@ export default function HomeScreen() {
             </ThemedText>
           </Pressable>
         </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.carsRow}
-        >
+        <View style={styles.carsGrid}>
           {cars.map((car) => (
-            <CarCard
-              key={car.id}
-              car={car}
-              horizontal
-              onPress={() =>
-                navigation.navigate("CarDetail", { carId: car.id })
-              }
-            />
+            <View key={car.id} style={styles.gridItem}>
+              <CarCard
+                car={car}
+                horizontal={false} // Use vertical card layout
+                onPress={() =>
+                  navigation.navigate("CarDetail", { carId: car.id })
+                }
+              />
+            </View>
           ))}
-        </ScrollView>
+        </View>
       </View>
 
       <View style={{ height: Spacing.xl }} />
-    </ScrollView>
+    </ScrollView >
   );
 }
 
@@ -469,6 +481,15 @@ const styles = StyleSheet.create({
   carsRow: {
     gap: Spacing.md,
     paddingRight: Spacing.lg,
+  },
+  carsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: Spacing.md,
+    justifyContent: "space-between", // Ensures 2 columns with space between
+  },
+  gridItem: {
+    width: (SCREEN_WIDTH - Spacing.lg * 2 - Spacing.md) / 2, // Calculate width for 2 columns
   },
   rtlText: {
     writingDirection: "rtl",

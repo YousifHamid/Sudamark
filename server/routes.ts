@@ -20,7 +20,7 @@ import {
   couponUsages,
   reports,
 } from "@shared/schema";
-import { eq, desc, and, gt, like, or, sql } from "drizzle-orm";
+import { eq, desc, and, gt, like, or, sql, inArray } from "drizzle-orm";
 import rateLimit from "express-rate-limit";
 import { OAuth2Client } from "google-auth-library";
 
@@ -409,10 +409,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     authMiddleware,
     async (req: AuthRequest, res: Response) => {
       try {
-        const { name, roles } = req.body;
+        const { name, roles, phone, city } = req.body;
+
+        // Prepare update object
+        const updateData: any = { updatedAt: new Date() };
+        if (name) updateData.name = name;
+        if (roles) updateData.roles = roles;
+        if (phone) updateData.phone = phone;
+        if (city) updateData.city = city;
+
         const [updatedUser] = await db
           .update(users)
-          .set({ name, roles, updatedAt: new Date() })
+          .set(updateData)
           .where(eq(users.id, req.user!.id))
           .returning();
         res.json(updatedUser);
@@ -630,11 +638,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req: Request, res: Response) => {
       try {
         const { id } = req.params;
-        const { isActive } = req.body;
+        const { isActive, isFeatured } = req.body;
+
+        const updateData: any = {};
+        if (isActive !== undefined) updateData.isActive = isActive;
+        if (isFeatured !== undefined) updateData.isFeatured = isFeatured;
+
+        if (Object.keys(updateData).length === 0) {
+          return res.status(400).json({ error: "No update data provided" });
+        }
 
         const [updatedCar] = await db
           .update(cars)
-          .set({ isActive: isActive })
+          .set(updateData)
           .where(eq(cars.id, id))
           .returning();
 
@@ -878,6 +894,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json(allUsers);
       } catch (error) {
         res.status(500).json({ error: "Failed to fetch users" });
+      }
+    },
+  );
+
+  app.delete(
+    "/api/admin/users/:id",
+    adminAuthMiddleware,
+    async (req: AuthRequest, res: Response) => {
+      try {
+        const { id } = req.params;
+
+        // 1. Get user's cars
+        const userCars = await db.select().from(cars).where(eq(cars.userId, id));
+        const carIds = userCars.map((c) => c.id);
+
+        // 2. Delete dependencies of those cars
+        if (carIds.length > 0) {
+          // Delete favorites for these cars
+          await db.delete(favorites).where(inArray(favorites.carId, carIds));
+          // Delete offers for these cars
+          await db.delete(buyerOffers).where(inArray(buyerOffers.carId, carIds));
+          // Delete inspection requests for these cars
+          await db.delete(inspectionRequests).where(inArray(inspectionRequests.carId, carIds));
+          // Delete payments linked to these cars (optional but safer)
+          await db.delete(payments).where(inArray(payments.carId, carIds));
+          // Delete car images? They are JSONB in cars table, so they go with the car row.
+
+          // Finally delete the cars
+          await db.delete(cars).where(inArray(cars.id, carIds));
+        }
+
+        // 3. Delete user's direct dependencies
+        await db.delete(favorites).where(eq(favorites.userId, id));
+        await db.delete(buyerOffers).where(eq(buyerOffers.buyerId, id));
+        await db.delete(inspectionRequests).where(or(eq(inspectionRequests.buyerId, id), eq(inspectionRequests.sellerId, id)));
+        await db.delete(reports).where(eq(reports.userId, id));
+        await db.delete(serviceProviders).where(eq(serviceProviders.userId, id));
+        // We might want to keep payments for accounting, but for now assuming full wipe
+        // await db.delete(payments).where(eq(payments.userId, id)); 
+
+        // 4. Delete the user
+        await db.delete(users).where(eq(users.id, id));
+
+        res.json({ success: true });
+      } catch (error) {
+        console.error("Delete user error:", error);
+        res.status(500).json({ error: "Failed to delete user" });
       }
     },
   );

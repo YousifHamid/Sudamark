@@ -12,7 +12,7 @@ import {
   Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
@@ -143,33 +143,39 @@ export default function PostCarScreen() {
     { id: "none", labelAr: "لا يوجد", labelEn: "None" },
   ];
 
+  const route = useRoute<any>();
+  const carData = route.params?.carData;
+  const isEditing = !!carData;
+
   const [step, setStep] = useState<ScreenStep>("form");
   const [activeModal, setActiveModal] = useState<'city' | 'category' | 'advertiser' | 'insurance' | 'condition' | null>(null);
   const [listingStatus, setListingStatus] = useState<ListingStatus | null>(
     null,
   );
-  const [images, setImages] = useState<string[]>([]);
-  const [title, setTitle] = useState("");
-  const [make, setMake] = useState("");
-  const [model, setModel] = useState("");
-  const [year, setYear] = useState("");
-  const [price, setPrice] = useState("");
-  const [mileage, setMileage] = useState("");
-  const [description, setDescription] = useState("");
-  const [city, setCity] = useState("");
-  const [category, setCategory] = useState("small_salon");
-  const [condition, setCondition] = useState("used");
-  const [insuranceType, setInsuranceType] = useState("mandatory");
-  const [advertiserType, setAdvertiserType] = useState("owner");
-  const [color, setColor] = useState("");
-  const [engineSize, setEngineSize] = useState("");
+
+  const [images, setImages] = useState<string[]>(carData?.images || []);
+  const [title, setTitle] = useState(carData?.title || "");
+  const [make, setMake] = useState(carData?.make || "");
+  const [model, setModel] = useState(carData?.model || "");
+  const [year, setYear] = useState(carData?.year?.toString() || "");
+  const [price, setPrice] = useState(carData?.price?.toString() || "");
+  const [mileage, setMileage] = useState(carData?.mileage?.toString() || "");
+  const [description, setDescription] = useState(carData?.description || "");
+  const [city, setCity] = useState(carData?.city || "");
+  const [category, setCategory] = useState(carData?.category || "small_salon");
+  const [condition, setCondition] = useState("used"); // Should ideally come from carData too
+  const [insuranceType, setInsuranceType] = useState(carData?.insuranceType || "mandatory");
+  const [advertiserType, setAdvertiserType] = useState(carData?.advertiserType || "owner");
+  const [color, setColor] = useState(carData?.color || "");
+  const [engineSize, setEngineSize] = useState(carData?.engineSize || "");
+
   const [carImages, setCarImages] = useState<Record<string, string | null>>({
-    front: null,
-    rear: null,
-    right: null,
-    left: null,
-    interior: null,
-    extra: null,
+    front: carData?.images?.[0] || null,
+    rear: carData?.images?.[1] || null,
+    right: carData?.images?.[2] || null,
+    left: carData?.images?.[3] || null,
+    interior: carData?.images?.[4] || null,
+    extra: carData?.images?.[5] || null,
   });
 
   const getCategoryFee = (cat: string) => {

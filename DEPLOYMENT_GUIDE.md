@@ -66,8 +66,7 @@
     "buildType": "app-bundle"
   },
   "env": {
-    "EXPO_PUBLIC_DOMAIN": "رابط-سيرفر-ريلوى-بدون-https-أو-فواصل" 
-    // مثال: sudmark-production.up.railway.app
+    "EXPO_PUBLIC_DOMAIN": "sudmark-production.up.railway.app"
   }
 }
 ```

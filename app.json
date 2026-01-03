@@ -15,14 +15,16 @@
         "NSCameraUsageDescription": "Sudmark needs camera access to take photos of your car listings",
         "NSPhotoLibraryUsageDescription": "Sudmark needs photo library access to upload car photos",
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "buildNumber": "2"
     },
     "android": {
       "package": "com.sudmark.app",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE"
-      ]
+      ],
+      "versionCode": 2
     },
     "web": {
       "output": "single",

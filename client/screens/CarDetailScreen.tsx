@@ -268,10 +268,15 @@ export default function CarDetailScreen() {
             <Pressable
               style={styles.headerActionButton}
               onPress={() =>
-                navigation.navigate("Report", { userId: car.sellerId })
+                navigation.navigate("Report", {
+                  userId: car.sellerId,
+                  targetId: car.id,
+                  targetType: "car",
+                  targetName: car.title
+                })
               }
             >
-              <Feather name="flag" size={20} color="#FFFFFF" />
+              <Feather name="flag" size={20} color="#EF4444" />
             </Pressable>
             <Pressable style={styles.headerActionButton} onPress={handleShare}>
               <Feather name="share" size={20} color="#FFFFFF" />
@@ -413,21 +418,7 @@ export default function CarDetailScreen() {
                 >
                   {isRTL ? "البائع" : "Seller"}
                 </ThemedText>
-                <View style={[styles.ratingRow, isRTL && styles.ratingRowRTL]}>
-                  <Feather name="star" size={14} color={theme.secondary} />
-                  <ThemedText
-                    type="small"
-                    style={[
-                      {
-                        marginLeft: isRTL ? 0 : Spacing.xs,
-                        marginRight: isRTL ? Spacing.xs : 0,
-                      },
-                      isRTL && styles.rtlText,
-                    ]}
-                  >
-                    4.8 (24 {t("reviews")})
-                  </ThemedText>
-                </View>
+
               </View>
               <View
                 style={[styles.sellerButtons, isRTL && styles.sellerButtonsRTL]}
@@ -464,7 +455,7 @@ export default function CarDetailScreen() {
         ]}
       >
         {isOwnCar ? (
-          <Button onPress={() => { }} style={styles.contactButton}>
+          <Button onPress={() => navigation.navigate("PostCar", { carData: car })} style={styles.contactButton}>
             {isRTL ? "تعديل الإعلان" : "Edit Listing"}
           </Button>
         ) : (
@@ -778,11 +769,14 @@ const styles = StyleSheet.create({
     flexDirection: "row-reverse",
   },
   sellerButtons: {
-    flexDirection: "row",
+    flexDirection: "column",
     gap: Spacing.sm,
   },
   sellerButtonsRTL: {
-    flexDirection: "row-reverse",
+    // No direction change needed for vertical column in RTL typically,
+    // but ensuring it stays column or just inherits is fine.
+    // actually previous was row-reverse. We can just empty this or strict set column.
+    flexDirection: "column",
   },
   callButton: {
     width: 44,

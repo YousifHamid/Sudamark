@@ -9,6 +9,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getApiUrl } from "@/lib/query-client";
 
 export type UserRole =
+  | "admin"
   | "buyer"
   | "seller"
   | "mechanic"

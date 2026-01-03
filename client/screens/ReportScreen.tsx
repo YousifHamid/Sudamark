@@ -32,7 +32,6 @@ export default function ReportScreen() {
   const route = useRoute<ReportScreenRouteProp>();
 
   const params = route.params || {};
-  const [username, setUsername] = useState(params.targetName || "");
   const [complaintType, setComplaintType] = useState("");
   const [details, setDetails] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,7 +45,7 @@ export default function ReportScreen() {
   ];
 
   const handleSubmit = async () => {
-    if (!username || !complaintType || !details) {
+    if (!complaintType || !details) {
       Alert.alert(
         t("error"),
         isRTL
@@ -63,7 +62,7 @@ export default function ReportScreen() {
         targetId: params.targetId || "unknown",
         targetType: params.targetType || "user",
         reason: complaintType,
-        details: `${details} (Reported Name: ${username})`,
+        details: `${details} (Target: ${params.targetName || "N/A"})`,
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -116,33 +115,7 @@ export default function ReportScreen() {
         </View>
 
         <View style={styles.form}>
-          <ThemedText
-            type="small"
-            style={[
-              styles.label,
-              { color: theme.textSecondary },
-              isRTL && styles.rtlText,
-            ]}
-          >
-            {isRTL ? "الجهة المبلغ عنها" : "Reported User / Item"} *
-          </ThemedText>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: params.targetId ? theme.backgroundSecondary + "80" : theme.backgroundSecondary,
-                color: theme.text,
-                borderColor: theme.border,
-              },
-              isRTL && styles.rtlInput,
-            ]}
-            placeholder={isRTL ? "اسم المستخدم أو الإعلان" : "Username or Listing Name"}
-            placeholderTextColor={theme.textSecondary}
-            value={username}
-            onChangeText={setUsername}
-            textAlign={isRTL ? "right" : "left"}
-            editable={!params.targetId} // Lock if passed from navigation
-          />
+
 
           <ThemedText
             type="small"

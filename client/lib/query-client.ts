@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const TOKEN_STORAGE_KEY = "@sudmark_token";
 
 export function getApiUrl(): string {
+  // return "https://sudamark.up.railway.app/"; // Safe fallback
   let host = process.env.EXPO_PUBLIC_DOMAIN;
 
   if (!host) {

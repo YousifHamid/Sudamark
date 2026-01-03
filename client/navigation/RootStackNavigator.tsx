@@ -19,7 +19,7 @@ export type RootStackParamList = {
   Main: undefined;
   CarDetail: { carId: string };
   RequestInspection: { carId: string };
-  PostCar: undefined;
+  PostCar: { carData?: any } | undefined;
   Search: { category?: string };
   ServiceProviderDetail: { provider: any };
   MyListings: undefined;
@@ -32,6 +32,9 @@ export type RootStackParamList = {
     targetName?: string;
   };
   Notifications: undefined;
+  Settings: undefined;
+  PrivacyPolicy: undefined;
+  AdminUsers: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -122,6 +125,36 @@ export default function RootStackNavigator() {
               presentation: "card",
               headerTitle: "Notifications",
             }}
+          />
+          <Stack.Screen
+            name="EditProfile"
+            // @ts-ignore
+            component={require("@/screens/EditProfileScreen").default}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="Settings"
+            // @ts-ignore
+            component={require("@/screens/SettingsScreen").default}
+            options={{
+              headerTitle: "", // Will be set by screen or hidden
+            }}
+          />
+          <Stack.Screen
+            name="PrivacyPolicy"
+            // @ts-ignore
+            component={require("@/screens/PrivacyPolicyScreen").PrivacyPolicyScreen}
+            options={{
+              headerTitle: "Privacy Policy",
+            }}
+          />
+          <Stack.Screen
+            name="AdminUsers"
+            // @ts-ignore
+            component={require("@/screens/AdminUsersScreen").default}
+            options={{ headerShown: false }}
           />
         </>
       )}

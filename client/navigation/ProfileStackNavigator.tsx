@@ -31,33 +31,17 @@ export default function ProfileStackNavigator() {
         options={{
           headerTitle: isRTL ? "الملف الشخصي" : "Profile",
           headerRight: () => (
-            <Pressable style={{ padding: 8 }}>
+            <Pressable
+              style={{ padding: 8 }}
+              onPress={() => {
+                // Navigate to Settings in RootStack
+                // @ts-ignore
+                navigation.navigate("Settings");
+              }}
+            >
               <Feather name="settings" size={22} color={theme.text} />
             </Pressable>
           ),
-        }}
-      />
-      <Stack.Screen
-        name="EditProfile"
-        // @ts-ignore
-        component={require("@/screens/EditProfileScreen").default}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="PrivacyPolicy"
-        component={PrivacyPolicyScreen}
-        options={{
-          headerTitle: isRTL ? "سياسة الخصوصية" : "Privacy Policy",
-        }}
-      />
-      <Stack.Screen
-        name="Settings"
-        // @ts-ignore
-        component={require("@/screens/SettingsScreen").default}
-        options={{
-          headerTitle: isRTL ? "الإعدادات" : "Settings",
         }}
       />
     </Stack.Navigator>

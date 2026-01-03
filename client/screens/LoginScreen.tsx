@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
+import { makeRedirectUri } from "expo-auth-session";
 
 WebBrowser.maybeCompleteAuthSession();
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -71,7 +72,9 @@ export default function LoginScreen() {
   const [request, response, promptAsync] = Google.useAuthRequest({
     androidClientId: "574389309781-tgrd9bq2t36coqij03uicm0u07863q01.apps.googleusercontent.com",
     webClientId: "574389309781-kkg2pvlq04ibkm9mm57s8rljfft30ifa.apps.googleusercontent.com",
-    // iosClientId: "477937397775-vmb60a699ad449r764u0a00i3vbg39m3.apps.googleusercontent.com", // Placeholder
+    redirectUri: makeRedirectUri({
+      scheme: "sudmark",
+    }),
   });
 
   React.useEffect(() => {

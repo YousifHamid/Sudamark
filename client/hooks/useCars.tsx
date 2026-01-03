@@ -45,6 +45,7 @@ const FAVORITES_STORAGE_KEY = "@sudmark_favorites";
 
 export function CarsProvider({ children }: { children: ReactNode }) {
   const [cars, setCars] = useState<Car[]>([]);
+  const [featuredCars, setFeaturedCars] = useState<Car[]>([]);
   const [sliderImages, setSliderImages] = useState<SliderImage[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,6 +57,10 @@ export function CarsProvider({ children }: { children: ReactNode }) {
       const response = await fetch(`${baseUrl}api/cars`);
       if (response.ok) {
         const apiCars = await response.json();
+        // Transformation logic ...
+        // Simpler: reuse the shared transformer if possible, but for now duplicate logic is fine or we keep it as is
+        // Wait, I need to keep the transformation logic.
+        // Let's copy it from lines 60-74
         if (apiCars.length > 0) {
           const formattedCars = apiCars.map((car: any) => ({
             id: car.id,
@@ -77,6 +82,34 @@ export function CarsProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.log("Failed to load cars from API");
+    }
+  }, []);
+
+  const loadFeaturedCars = useCallback(async () => {
+    try {
+      const baseUrl = getApiUrl();
+      const response = await fetch(`${baseUrl}api/cars/featured`);
+      if (response.ok) {
+        const apiFeaturedCars = await response.json();
+        const formattedFeatured = apiFeaturedCars.map((car: any) => ({
+          id: car.id,
+          title: `${car.make} ${car.model} ${car.year}`,
+          make: car.make,
+          model: car.model,
+          year: car.year,
+          price: car.price,
+          mileage: car.mileage || 0,
+          city: car.city,
+          images: car.images || [],
+          category: car.category || "used",
+          description: car.description || "",
+          sellerId: car.userId,
+          createdAt: car.createdAt,
+        }));
+        setFeaturedCars(formattedFeatured);
+      }
+    } catch (error) {
+      console.log("Failed to load featured cars");
     }
   }, []);
 
@@ -109,14 +142,14 @@ export function CarsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
-      await Promise.all([loadCars(), loadSliderImages(), loadFavorites()]);
+      await Promise.all([loadCars(), loadFeaturedCars(), loadSliderImages(), loadFavorites()]);
       setIsLoading(false);
     };
     loadData();
-  }, [loadCars, loadSliderImages, loadFavorites]);
+  }, [loadCars, loadFeaturedCars, loadSliderImages, loadFavorites]);
 
   const refreshCars = async () => {
-    await loadCars();
+    await Promise.all([loadCars(), loadFeaturedCars()]);
   };
 
   const addCar = async (
@@ -269,13 +302,11 @@ export function CarsProvider({ children }: { children: ReactNode }) {
 
   const isFavorite = (carId: string) => favorites.includes(carId);
 
-  const featuredCars = cars.filter((car) => car.category === "new").slice(0, 4);
-
   return (
     <CarsContext.Provider
       value={{
         cars,
-        featuredCars: featuredCars.length > 0 ? featuredCars : cars.slice(0, 4),
+        featuredCars,
         sliderImages,
         favorites,
         isLoading,
