@@ -460,11 +460,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
       }
 
-      const allCars = await db
+      const result = await db
         .select()
         .from(cars)
+        .leftJoin(users, eq(cars.userId, users.id))
         .where(and(...conditions))
         .orderBy(desc(cars.createdAt));
+
+      const allCars = result.map((row) => ({
+        ...row.cars,
+        user: row.users
+          ? {
+            id: row.users.id,
+            name: row.users.name,
+            phone: row.users.phone,
+          }
+          : undefined,
+      }));
+
       res.json(allCars);
     } catch (error) {
       console.error("Fetch cars error:", error);
@@ -474,12 +487,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/cars/featured", async (_req: Request, res: Response) => {
     try {
-      const featuredCars = await db
+      const result = await db
         .select()
         .from(cars)
+        .leftJoin(users, eq(cars.userId, users.id))
         .where(and(eq(cars.isActive, true), eq(cars.isFeatured, true)))
         .orderBy(desc(cars.createdAt))
         .limit(10);
+
+      const featuredCars = result.map((row) => ({
+        ...row.cars,
+        user: row.users
+          ? {
+            id: row.users.id,
+            name: row.users.name,
+            phone: row.users.phone,
+            avatar: row.users.avatar,
+          }
+          : undefined,
+      }));
+
       res.json(featuredCars);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch featured cars" });

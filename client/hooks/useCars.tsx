@@ -41,7 +41,7 @@ export interface CarFilters {
 
 const CarsContext = createContext<CarsContextType | undefined>(undefined);
 
-const FAVORITES_STORAGE_KEY = "@sudmark_favorites";
+const FAVORITES_STORAGE_KEY = "@sudamark_favorites";
 
 export function CarsProvider({ children }: { children: ReactNode }) {
   const [cars, setCars] = useState<Car[]>([]);
@@ -75,6 +75,13 @@ export function CarsProvider({ children }: { children: ReactNode }) {
             category: car.category || "used",
             description: car.description || "",
             sellerId: car.userId,
+            owner: car.user ? {
+              id: car.user.id,
+              name: car.user.name,
+              phone: car.user.phone,
+              avatar: car.user.avatar,
+            } : undefined,
+            contactPhone: car.contactPhone,
             createdAt: car.createdAt,
           }));
           setCars(formattedCars);
@@ -104,6 +111,13 @@ export function CarsProvider({ children }: { children: ReactNode }) {
           category: car.category || "used",
           description: car.description || "",
           sellerId: car.userId,
+          owner: car.user ? {
+            id: car.user.id,
+            name: car.user.name,
+            phone: car.user.phone,
+            avatar: car.user.avatar,
+          } : undefined,
+          contactPhone: car.contactPhone,
           createdAt: car.createdAt,
         }));
         setFeaturedCars(formattedFeatured);
@@ -203,6 +217,13 @@ export function CarsProvider({ children }: { children: ReactNode }) {
         category: newCar.category || "used",
         description: newCar.description || "",
         sellerId: newCar.userId,
+        owner: newCar.user ? {
+          id: newCar.user.id,
+          name: newCar.user.name,
+          phone: newCar.user.phone,
+          avatar: newCar.user.avatar,
+        } : undefined,
+        contactPhone: newCar.contactPhone,
         createdAt: newCar.createdAt,
         insuranceType: newCar.insuranceType,
         advertiserType: newCar.advertiserType,
@@ -247,6 +268,13 @@ export function CarsProvider({ children }: { children: ReactNode }) {
           category: car.category || "used",
           description: car.description || "",
           sellerId: car.userId,
+          owner: car.user ? {
+            id: car.user.id,
+            name: car.user.name,
+            phone: car.user.phone,
+            avatar: car.user.avatar,
+          } : undefined,
+          contactPhone: car.contactPhone,
           createdAt: car.createdAt,
         }));
       }

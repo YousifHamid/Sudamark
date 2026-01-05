@@ -52,6 +52,7 @@ export const users = pgTable("users", {
     .default(sql`'["buyer"]'::jsonb`),
   countryCode: text("country_code").default("+249"),
   city: text("city"),
+  avatar: text("avatar"),
   latitude: text("latitude"),
   longitude: text("longitude"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

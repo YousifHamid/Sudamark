@@ -11,6 +11,7 @@ import ServiceProviderDetailScreen from "@/screens/ServiceProviderDetailScreen";
 import NotificationsScreen from "@/screens/NotificationsScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useAppReview } from "@/hooks/useAppReview";
 
 export type RootStackParamList = {
@@ -43,6 +44,7 @@ export default function RootStackNavigator() {
   const screenOptions = useScreenOptions({ transparent: false });
   const { isAuthenticated, isLoading, hasSeenOnboarding, completeOnboarding } =
     useAuth();
+  const { t } = useLanguage();
   useAppReview();
 
   if (isLoading) {
@@ -83,7 +85,7 @@ export default function RootStackNavigator() {
             component={RequestInspectionScreen}
             options={{
               presentation: "modal",
-              headerTitle: "Request Inspection",
+              headerTitle: t("requestInspection"),
             }}
           />
           <Stack.Screen
@@ -91,14 +93,14 @@ export default function RootStackNavigator() {
             component={PostCarScreen}
             options={{
               presentation: "modal",
-              headerTitle: "New Listing",
+              headerTitle: t("newListing"),
             }}
           />
           <Stack.Screen
             name="Search"
             component={SearchScreen}
             options={{
-              headerTitle: "Search",
+              headerTitle: t("search"),
             }}
           />
           <Stack.Screen
@@ -123,7 +125,7 @@ export default function RootStackNavigator() {
             component={NotificationsScreen}
             options={{
               presentation: "card",
-              headerTitle: "Notifications",
+              headerTitle: t("notifications"),
             }}
           />
           <Stack.Screen
@@ -147,7 +149,7 @@ export default function RootStackNavigator() {
             // @ts-ignore
             component={require("@/screens/PrivacyPolicyScreen").PrivacyPolicyScreen}
             options={{
-              headerTitle: "Privacy Policy",
+              headerTitle: t("privacyPolicy"),
             }}
           />
           <Stack.Screen

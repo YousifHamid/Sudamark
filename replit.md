@@ -1,4 +1,4 @@
-# Sudmark - Car Marketplace Mobile App
+# SudaMark - Car Marketplace Mobile App
 
 ## Overview
 
@@ -16,12 +16,12 @@ A multi-role car marketplace mobile application built with React Native and Expo
 - **Added Arabic as default language with RTL layout support**
 - **Created LanguageContext with comprehensive translations for ALL screens**
 - **Language switcher in Profile screen to toggle between Arabic and English**
-- **3-screen onboarding flow with Sudmark logo and bilingual content**
+- **3-screen onboarding flow with SudaMark logo and bilingual content**
 - **All screens translated: Home, Search, Services, CarDetail, PostCar, Profile, Login, Onboarding**
 - **Tab navigation labels in Arabic (الرئيسية, بحث, الخدمات, الملف)**
 - **Sudanese cities for location filters (الخرطوم, أم درمان, بحري, بورتسودان, كسلا)**
 - **Currency shown in Sudanese Pounds (SDG/جنيه)**
-- **Updated app with new Sudmark logo in HeaderTitle, Onboarding, App Icon**
+- **Updated app with new SudaMark logo in HeaderTitle, Onboarding, App Icon**
 - **Replaced car classified image slider with clean search bar on HomeScreen**
 - **Header logo enlarged 1.5x for better visibility**
 - **Improved bottom tab bar with larger icons, better styling, and highlighted active state**

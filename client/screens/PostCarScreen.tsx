@@ -23,7 +23,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { Button } from "@/components/Button";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { useTheme } from "@/hooks/useTheme";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, translations } from "@/contexts/LanguageContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCars } from "@/hooks/useCars";
@@ -41,8 +41,7 @@ interface ListingStatus {
 
 interface SelectionItem {
   id: string;
-  labelAr: string;
-  labelEn: string;
+  label: string;
 }
 
 const SelectionModal = ({
@@ -98,7 +97,7 @@ const SelectionModal = ({
               ]}
             >
               <ThemedText style={{ flex: 1, textAlign: isRTL ? 'right' : 'left' }}>
-                {isRTL ? item.labelAr : item.labelEn}
+                {item.label}
               </ThemedText>
               {selectedId === item.id && (
                 <Feather name="check" size={20} color={theme.primary} />
@@ -120,27 +119,27 @@ export default function PostCarScreen() {
   const { addCar } = useCars();
 
   const categories = [
-    { id: "small_salon", labelEn: "Small Salon", labelAr: "عربة صالون صغير" },
-    { id: "4x4", labelEn: "4x4", labelAr: "دفع رباعي" },
-    { id: "bus", labelEn: "Bus", labelAr: "حافلة" },
-    { id: "truck", labelEn: "Truck", labelAr: "نقل ثقيل" },
+    { id: "small_salon", labelKey: "smallSalon" },
+    { id: "4x4", labelKey: "fourByFour" },
+    { id: "bus", labelKey: "bus" },
+    { id: "truck", labelKey: "truck" },
   ];
 
   const conditions = [
-    { id: "new", labelEn: "New", labelAr: "جديدة" },
-    { id: "used", labelEn: "Used", labelAr: "مستعملة" },
+    { id: "new", labelKey: "newCar" },
+    { id: "used", labelKey: "usedCar" },
   ];
 
   const advertiserTypes = [
-    { id: "owner", labelAr: "مالك", labelEn: "Owner" },
-    { id: "broker", labelAr: "وسيط", labelEn: "Broker" },
-    { id: "office", labelAr: "مكتب", labelEn: "Office" },
+    { id: "owner", labelKey: "owner" },
+    { id: "broker", labelKey: "broker" },
+    { id: "office", labelKey: "office" },
   ];
 
   const insuranceTypes = [
-    { id: "comprehensive", labelAr: "شامل", labelEn: "Comprehensive" },
-    { id: "mandatory", labelAr: "إجباري", labelEn: "Mandatory" },
-    { id: "none", labelAr: "لا يوجد", labelEn: "None" },
+    { id: "comprehensive", labelKey: "comprehensive" },
+    { id: "mandatory", labelKey: "mandatory" },
+    { id: "none", labelKey: "none" },
   ];
 
   const route = useRoute<any>();
@@ -163,7 +162,7 @@ export default function PostCarScreen() {
   const [description, setDescription] = useState(carData?.description || "");
   const [city, setCity] = useState(carData?.city || "");
   const [category, setCategory] = useState(carData?.category || "small_salon");
-  const [condition, setCondition] = useState("used"); // Should ideally come from carData too
+  const [condition, setCondition] = useState("used");
   const [insuranceType, setInsuranceType] = useState(carData?.insuranceType || "mandatory");
   const [advertiserType, setAdvertiserType] = useState(carData?.advertiserType || "owner");
   const [color, setColor] = useState(carData?.color || "");
@@ -196,21 +195,21 @@ export default function PostCarScreen() {
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
 
   const cities = [
-    { id: "khartoum", nameEn: "Khartoum", nameAr: "الخرطوم" },
-    { id: "bahri", nameEn: "Bahri", nameAr: "بحري" },
-    { id: "omdurman", nameEn: "Omdurman", nameAr: "أم درمان" },
-    { id: "portsudan", nameEn: "Port Sudan", nameAr: "بورتسودان" },
-    { id: "kassala", nameEn: "Kassala", nameAr: "كسلا" },
-    { id: "gezira", nameEn: "Al Gezira", nameAr: "الجزيرة" },
-    { id: "kordofan", nameEn: "Kordofan", nameAr: "كردفان" },
-    { id: "darfur", nameEn: "Darfur", nameAr: "دارفور" },
-    { id: "river_nile", nameEn: "River Nile", nameAr: "نهر النيل" },
-    { id: "white_nile", nameEn: "White Nile", nameAr: "النيل الأبيض" },
-    { id: "blue_nile", nameEn: "Blue Nile", nameAr: "النيل الأزرق" },
-    { id: "northern", nameEn: "Northern", nameAr: "الشمالية" },
-    { id: "red_sea", nameEn: "Red Sea", nameAr: "البحر الأحمر" },
-    { id: "gedaref", nameEn: "Al Qadarif", nameAr: "القضارف" },
-    { id: "sennar", nameEn: "Sennar", nameAr: "سنار" },
+    { id: "Omdurman", labelKey: "omdurman" },
+    { id: "Bahri", labelKey: "bahri" },
+    { id: "Khartoum", labelKey: "khartoum" },
+    { id: "Port Sudan", labelKey: "portSudan" },
+    { id: "Kassala", labelKey: "kassala" },
+    { id: "Gezira", labelKey: "gezira" },
+    { id: "Kordofan", labelKey: "kordofan" },
+    { id: "Darfur", labelKey: "darfur" },
+    { id: "River Nile", labelKey: "riverNile" },
+    { id: "White Nile", labelKey: "whiteNile" },
+    { id: "Blue Nile", labelKey: "blueNile" },
+    { id: "Northern", labelKey: "northern" },
+    { id: "Red Sea", labelKey: "redSea" },
+    { id: "Gedaref", labelKey: "gedaref" },
+    { id: "Sennar", labelKey: "sennar" },
   ];
 
   useEffect(() => {
@@ -254,12 +253,7 @@ export default function PostCarScreen() {
     }
 
     if (!isFormAgreed) {
-      Alert.alert(
-        t("error"),
-        isRTL
-          ? "يجب الموافقة على الشروط والأحكام أولاً"
-          : "You must agree to the terms and conditions first",
-      );
+      Alert.alert(t("error"), t("termsRequired"));
       return;
     }
 
@@ -303,7 +297,7 @@ export default function PostCarScreen() {
 
   const validateCoupon = async () => {
     if (!couponCode.trim()) {
-      setCouponMessage(isRTL ? "أدخل كود الخصم" : "Enter coupon code");
+      setCouponMessage(t("enterCouponCode"));
       setCouponValid(false);
       return;
     }
@@ -321,14 +315,12 @@ export default function PostCarScreen() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } else {
         setCouponValid(false);
-        setCouponMessage(
-          data.error || (isRTL ? "كود غير صالح" : "Invalid code"),
-        );
+        setCouponMessage(data.error || t("couponInvalid"));
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     } catch (error) {
       setCouponValid(false);
-      setCouponMessage(isRTL ? "فشل التحقق" : "Validation failed");
+      setCouponMessage(t("couponValidationFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -336,10 +328,7 @@ export default function PostCarScreen() {
 
   const handleCouponSubmit = async () => {
     if (!couponValid) {
-      Alert.alert(
-        t("error"),
-        isRTL ? "تحقق من الكود أولاً" : "Validate code first",
-      );
+      Alert.alert(t("error"), t("validateCodeFirst"));
       return;
     }
 
@@ -383,16 +372,14 @@ export default function PostCarScreen() {
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert(
-        isRTL ? "تم بنجاح!" : "Success!",
-        isRTL
-          ? "تم إرسال إعلانك للمراجعة."
-          : "Your listing has been submitted for approval.",
-        [{ text: isRTL ? "تم" : "OK", onPress: () => navigation.goBack() }],
+        t("paymentSuccess"),
+        t("paymentSuccessMsg"),
+        [{ text: t("ok"), onPress: () => navigation.goBack() }],
       );
     } catch (error: any) {
       Alert.alert(
         t("error"),
-        error.message || (isRTL ? "فشل تطبيق الكود" : "Failed to apply coupon"),
+        error.message || t("couponValidationFailed"),
       );
     } finally {
       setIsLoading(false);
@@ -401,12 +388,7 @@ export default function PostCarScreen() {
 
   const handlePaymentSubmit = async () => {
     if (!trxNo || !paymentAmount || !paymentDate) {
-      Alert.alert(
-        t("error"),
-        isRTL
-          ? "يرجى ملء جميع بيانات الدفع"
-          : "Please fill all payment details",
-      );
+      Alert.alert(t("error"), t("fillPaymentDetails"));
       return;
     }
 
@@ -416,9 +398,7 @@ export default function PostCarScreen() {
     if (isNaN(parsedAmount) || parsedAmount < requiredFee) {
       Alert.alert(
         t("error"),
-        isRTL
-          ? `المبلغ يجب أن يكون ${requiredFee.toLocaleString()} جنيه أو أكثر للفئة المختارة`
-          : `Amount must be ${requiredFee.toLocaleString()} SDG or more for selected category`,
+        t("minAmountError").replace("{amount}", requiredFee.toLocaleString()),
       );
       return;
     }
@@ -468,8 +448,7 @@ export default function PostCarScreen() {
     } catch (error: any) {
       Alert.alert(
         t("error"),
-        error.message ||
-        (isRTL ? "فشل في تقديم الدفع" : "Failed to submit payment"),
+        error.message || t("paymentSubmissionFailed"),
       );
     } finally {
       setIsLoading(false);
@@ -500,7 +479,7 @@ export default function PostCarScreen() {
             type="h2"
             style={[styles.waitingTitle, isRTL && styles.rtlText]}
           >
-            {isRTL ? "في انتظار الموافقة" : "Waiting for Approval"}
+            {t("waitingApproval")}
           </ThemedText>
           <ThemedText
             style={[
@@ -509,9 +488,7 @@ export default function PostCarScreen() {
               isRTL && styles.rtlText,
             ]}
           >
-            {isRTL
-              ? "تم استلام طلب الدفع الخاص بك. سيتم مراجعته والموافقة عليه خلال دقائق قليلة."
-              : "Your payment request has been received. It will be reviewed and approved within a few minutes."}
+            {t("paymentReceivedMsg")}
           </ThemedText>
           <View
             style={[
@@ -521,27 +498,27 @@ export default function PostCarScreen() {
           >
             <View style={[styles.summaryRow, isRTL && styles.rowRTL]}>
               <ThemedText style={{ color: theme.textSecondary }}>
-                {isRTL ? "رقم العملية:" : "Transaction ID:"}
+                {t("transactionIdLabel")}
               </ThemedText>
               <ThemedText style={styles.summaryValue}>{trxNo}</ThemedText>
             </View>
             <View style={[styles.summaryRow, isRTL && styles.rowRTL]}>
               <ThemedText style={{ color: theme.textSecondary }}>
-                {isRTL ? "المبلغ:" : "Amount:"}
+                {t("amountLabel")}
               </ThemedText>
               <ThemedText style={styles.summaryValue}>
-                {paymentAmount} {isRTL ? "جنيه" : "SDG"}
+                {paymentAmount} {t("sdg")}
               </ThemedText>
             </View>
             <View style={[styles.summaryRow, isRTL && styles.rowRTL]}>
               <ThemedText style={{ color: theme.textSecondary }}>
-                {isRTL ? "التاريخ:" : "Date:"}
+                {t("dateLabel")}
               </ThemedText>
               <ThemedText style={styles.summaryValue}>{paymentDate}</ThemedText>
             </View>
           </View>
           <Button onPress={() => navigation.goBack()} style={styles.doneButton}>
-            {isRTL ? "تم" : "Done"}
+            {t("done")}
           </Button>
         </View>
       </ThemedView>
@@ -570,7 +547,7 @@ export default function PostCarScreen() {
               type="h3"
               style={[styles.paymentTitle, isRTL && styles.rtlText]}
             >
-              {isRTL ? "رسوم الإعلان" : "Listing Fee"}
+              {t("listingFeeTitle")}
             </ThemedText>
             <ThemedText
               style={[
@@ -579,9 +556,7 @@ export default function PostCarScreen() {
                 isRTL && styles.rtlText,
               ]}
             >
-              {isRTL
-                ? `المبلغ المطلوب: ${getCategoryFee(category).toLocaleString()} جنيه سوداني`
-                : `Required: ${getCategoryFee(category).toLocaleString()} SDG`}
+              {t("requiredAmount")} {getCategoryFee(category).toLocaleString()} {t("sdg")}
             </ThemedText>
           </View>
 
@@ -589,10 +564,10 @@ export default function PostCarScreen() {
             type="h4"
             style={[styles.sectionTitle, isRTL && styles.rtlText]}
           >
-            {isRTL ? "اختر طريقة الدفع" : "Choose Payment Method"}
+            {t("choosePaymentMethod")}
           </ThemedText>
 
-          <View style={styles.paymentOptions}>
+          <View style={[styles.paymentOptions, isRTL && styles.rowRTL]}>
             <Pressable
               style={[
                 styles.paymentOption,
@@ -625,7 +600,7 @@ export default function PostCarScreen() {
                   paymentMethod === "coupon" && { color: theme.primary },
                 ]}
               >
-                {isRTL ? "كود خصم" : "Coupon Code"}
+                {t("couponCode")}
               </ThemedText>
             </Pressable>
 
@@ -661,7 +636,7 @@ export default function PostCarScreen() {
                   paymentMethod === "direct" && { color: theme.primary },
                 ]}
               >
-                {isRTL ? "دفع مباشر" : "Direct Payment"}
+                {t("directPayment")}
               </ThemedText>
             </Pressable>
           </View>
@@ -676,7 +651,7 @@ export default function PostCarScreen() {
                   isRTL && styles.rtlText,
                 ]}
               >
-                {isRTL ? "أدخل كود الخصم" : "Enter Coupon Code"}
+                {t("enterCouponCode")}
               </ThemedText>
               <View style={[styles.couponInputRow, isRTL && styles.rowRTL]}>
                 <TextInput
@@ -708,7 +683,7 @@ export default function PostCarScreen() {
                   disabled={isLoading}
                 >
                   <ThemedText style={{ color: "#FFFFFF", fontWeight: "600" }}>
-                    {isLoading ? "..." : isRTL ? "تحقق" : "Check"}
+                    {isLoading ? "..." : t("check")}
                   </ThemedText>
                 </Pressable>
               </View>
@@ -776,9 +751,7 @@ export default function PostCarScreen() {
                           isRTL && styles.rtlText,
                         ]}
                       >
-                        {isRTL
-                          ? "أتعهد بأنني مالك السلعة أو مفوض ببيعها، وأن التطبيق مجرد وسيط للعرض ولا يتحمل أي مسؤولية قانونية عن التعاملات المالية أو جودة المعروضات. أنا المسؤول الأول والأخير عن صحة البيانات."
-                          : "I agree that I am the owner or authorized seller, and the app is just a listing platform bearing no legal liability for transactions. I am fully responsible for the data accuracy."}
+                        {t("agreementText")}
                       </ThemedText>
                     </Pressable>
                   </View>
@@ -789,12 +762,8 @@ export default function PostCarScreen() {
                     style={styles.submitButton}
                   >
                     {isLoading
-                      ? isRTL
-                        ? "جاري النشر..."
-                        : "Publishing..."
-                      : isRTL
-                        ? "نشر مجاناً"
-                        : "Publish Free"}
+                      ? t("publishing")
+                      : t("publishFree")}
                   </Button>
                 </>
               ) : null}
@@ -803,128 +772,69 @@ export default function PostCarScreen() {
 
           {paymentMethod === "direct" ? (
             <View style={styles.directPaymentSection}>
-              <View
-                style={[
-                  styles.qrContainer,
-                  {
-                    backgroundColor: theme.backgroundDefault,
-                    borderColor: theme.border,
-                  },
-                ]}
-              >
-                <Image
-                  source={require("../../attached_assets/WhatsApp_Image_2025-12-27_at_12.56.14_AM_1766789892928.jpeg")}
-                  style={styles.qrImage}
-                  resizeMode="contain"
-                />
+              <View style={styles.qrContainer}>
+                <ThemedText style={{ marginBottom: Spacing.md, textAlign: 'center' }}>
+                  {t("scanToPay")}
+                </ThemedText>
+                <View style={{ width: 200, height: 200, backgroundColor: theme.backgroundSecondary, alignItems: 'center', justifyContent: 'center', borderColor: theme.border, borderWidth: 1 }}>
+                  <Feather name="maximize" size={48} color={theme.textSecondary} />
+                </View>
+                <ThemedText style={{ marginTop: Spacing.md, textAlign: 'center' }}>
+                  {t("bankLabel")} {t("bankNameValue")}{"\n"}
+                  {t("accountLabel")} 1234567{"\n"}
+                  {t("accountNameLabel")} {t("accountNameValue")}
+                </ThemedText>
               </View>
 
-              <ThemedText
-                type="small"
-                style={[
-                  styles.label,
-                  { color: theme.textSecondary },
-                  isRTL && styles.rtlText,
-                ]}
-              >
-                {isRTL ? "رقم العملية (Trx. ID)" : "Transaction ID (Trx. ID)"} *
-              </ThemedText>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: theme.backgroundSecondary,
-                    color: theme.text,
-                    borderColor: theme.border,
-                  },
-                  isRTL && styles.rtlInput,
-                ]}
-                placeholder={isRTL ? "مثال: 20082275558" : "e.g. 20082275558"}
-                placeholderTextColor={theme.textSecondary}
-                value={trxNo}
-                onChangeText={setTrxNo}
-                keyboardType="number-pad"
-                textAlign={isRTL ? "right" : "left"}
-              />
+              <View style={{ gap: Spacing.md }}>
+                <View>
+                  <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+                    {t("transactionIdLabel")}
+                  </ThemedText>
+                  <TextInput
+                    style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+                    placeholder="123456"
+                    placeholderTextColor={theme.textSecondary}
+                    value={trxNo}
+                    onChangeText={setTrxNo}
+                  />
+                </View>
+                <View>
+                  <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+                    {t("amountLabel")}
+                  </ThemedText>
+                  <TextInput
+                    style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+                    placeholder="5000"
+                    keyboardType="number-pad"
+                    placeholderTextColor={theme.textSecondary}
+                    value={paymentAmount}
+                    onChangeText={setPaymentAmount}
+                  />
+                </View>
+                <View>
+                  <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }, isRTL && styles.rtlText]}>
+                    {t("dateLabel")}
+                  </ThemedText>
+                  <TextInput
+                    style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text, borderColor: theme.border }, isRTL && styles.rtlInput]}
+                    placeholder={t("exampleDate")}
+                    placeholderTextColor={theme.textSecondary}
+                    value={paymentDate}
+                    onChangeText={setPaymentDate}
+                  />
+                </View>
 
-              <ThemedText
-                type="small"
-                style={[
-                  styles.label,
-                  { color: theme.textSecondary },
-                  isRTL && styles.rtlText,
-                ]}
-              >
-                {isRTL ? "المبلغ (Amount)" : "Amount"} *
-              </ThemedText>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: theme.backgroundSecondary,
-                    color: theme.text,
-                    borderColor: theme.border,
-                  },
-                  isRTL && styles.rtlInput,
-                ]}
-                placeholder={
-                  isRTL
-                    ? getCategoryFee(category).toString()
-                    : getCategoryFee(category).toString()
-                }
-                placeholderTextColor={theme.textSecondary}
-                value={paymentAmount}
-                onChangeText={setPaymentAmount}
-                keyboardType="number-pad"
-                textAlign={isRTL ? "right" : "left"}
-              />
-
-              <ThemedText
-                type="small"
-                style={[
-                  styles.label,
-                  { color: theme.textSecondary },
-                  isRTL && styles.rtlText,
-                ]}
-              >
-                {isRTL ? "تاريخ التحويل" : "Transfer Date"} *
-              </ThemedText>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: theme.backgroundSecondary,
-                    color: theme.text,
-                    borderColor: theme.border,
-                  },
-                  isRTL && styles.rtlInput,
-                ]}
-                placeholder={isRTL ? "مثال: 27-Dec-2025" : "e.g. 27-Dec-2025"}
-                placeholderTextColor={theme.textSecondary}
-                value={paymentDate}
-                onChangeText={setPaymentDate}
-                textAlign={isRTL ? "right" : "left"}
-              />
-
-              <Button
-                onPress={handlePaymentSubmit}
-                disabled={isLoading}
-                style={styles.submitButton}
-              >
-                {isLoading
-                  ? isRTL
-                    ? "جاري الإرسال..."
-                    : "Submitting..."
-                  : isRTL
-                    ? "تأكيد الدفع"
-                    : "Confirm Payment"}
-              </Button>
+                <Button onPress={handlePaymentSubmit} disabled={isLoading} style={styles.submitButton}>
+                  {isLoading ? t("submitting") : t("confirmPayment")}
+                </Button>
+              </View>
             </View>
           ) : null}
 
-          <Pressable onPress={() => setStep("form")} style={styles.backLink}>
-            <ThemedText style={{ color: theme.primary }}>
-              {isRTL ? "العودة للتعديل" : "Go back to edit"}
+          <Pressable style={styles.backLink} onPress={() => setStep("form")}>
+            <ThemedText style={{ color: theme.textSecondary, textDecorationLine: 'underline' }}>
+              {t("goBackToEdit")}
             </ThemedText>
           </Pressable>
         </KeyboardAwareScrollViewCompat>
@@ -958,9 +868,7 @@ export default function PostCarScreen() {
                 isRTL && styles.rtlText,
               ]}
             >
-              {isRTL
-                ? `رسوم الإعلان: ${listingStatus.listingFee.toLocaleString()} جنيه`
-                : `Listing fee: ${listingStatus.listingFee.toLocaleString()} SDG`}
+              {t("listingFeeLabel")} {listingStatus.listingFee.toLocaleString()} {t("sdg")}
             </ThemedText>
           </View>
         ) : null}
@@ -987,12 +895,12 @@ export default function PostCarScreen() {
         </ThemedText>
         <View style={styles.imageGrid}>
           {[
-            { id: "front", labelAr: "واجهة أمامية", labelEn: "Front View" },
-            { id: "rear", labelAr: "خلفية", labelEn: "Rear View" },
-            { id: "right", labelAr: "جانبية يمين", labelEn: "Right Side" },
-            { id: "left", labelAr: "جانبية يسار", labelEn: "Left Side" },
-            { id: "interior", labelAr: "داخلية", labelEn: "Interior" },
-            { id: "extra", labelAr: "إضافية", labelEn: "Extra" },
+            { id: "front", labelKey: "viewFront" },
+            { id: "rear", labelKey: "viewRear" },
+            { id: "right", labelKey: "viewRight" },
+            { id: "left", labelKey: "viewLeft" },
+            { id: "interior", labelKey: "viewInterior" },
+            { id: "extra", labelKey: "viewExtra" },
           ].map((slot) => (
             <Pressable
               key={slot.id}
@@ -1041,7 +949,7 @@ export default function PostCarScreen() {
                       fontSize: 10,
                     }}
                   >
-                    {isRTL ? slot.labelAr : slot.labelEn}
+                    {t(slot.labelKey)}
                   </ThemedText>
                 </View>
               )}
@@ -1066,16 +974,20 @@ export default function PostCarScreen() {
             {
               backgroundColor: theme.backgroundSecondary,
               borderColor: theme.border,
-              justifyContent: 'center',
-              alignItems: isRTL ? 'flex-end' : 'flex-start'
+              flexDirection: isRTL ? 'row-reverse' : 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingHorizontal: 12,
             }
           ]}
         >
           <ThemedText style={{ color: theme.text }}>
-            {isRTL
-              ? categories.find(c => c.id === category)?.labelAr
-              : categories.find(c => c.id === category)?.labelEn}
+            {(() => {
+              const c = categories.find(c => c.id === category);
+              return c ? t(c.labelKey) : "";
+            })()}
           </ThemedText>
+          <Feather name="chevron-down" size={20} color={theme.textSecondary} />
         </Pressable>
 
         <View style={{ height: Spacing.md }} />
@@ -1097,16 +1009,20 @@ export default function PostCarScreen() {
             {
               backgroundColor: theme.backgroundSecondary,
               borderColor: theme.border,
-              justifyContent: 'center',
-              alignItems: isRTL ? 'flex-end' : 'flex-start'
+              flexDirection: isRTL ? 'row-reverse' : 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingHorizontal: 12,
             }
           ]}
         >
           <ThemedText style={{ color: theme.text }}>
-            {isRTL
-              ? conditions.find(c => c.id === condition)?.labelAr
-              : conditions.find(c => c.id === condition)?.labelEn}
+            {(() => {
+              const c = conditions.find(c => c.id === condition);
+              return c ? t(c.labelKey) : "";
+            })()}
           </ThemedText>
+          <Feather name="chevron-down" size={20} color={theme.textSecondary} />
         </Pressable>
 
         <ThemedText
@@ -1301,17 +1217,34 @@ export default function PostCarScreen() {
             {
               backgroundColor: theme.backgroundSecondary,
               borderColor: theme.border,
-              justifyContent: 'center',
-              alignItems: isRTL ? 'flex-end' : 'flex-start'
+              flexDirection: isRTL ? 'row-reverse' : 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingHorizontal: 12,
             }
           ]}
         >
           <ThemedText style={{ color: theme.text }}>
-            {isRTL
-              ? cities.find(c => c.id === city)?.nameAr
-              : cities.find(c => c.id === city)?.nameEn}
+            {(() => {
+              const c = cities.find(c => c.id === city);
+              return c ? t(c.labelKey) : "";
+            })()}
           </ThemedText>
+          <Feather name="chevron-down" size={20} color={theme.textSecondary} />
         </Pressable>
+        <ThemedText
+          type="small"
+          style={{
+            fontSize: 10,
+            color: theme.textSecondary,
+            marginTop: 4,
+            ...(isRTL ? { textAlign: "right" } : { textAlign: "left" }),
+          }}
+        >
+          {isRTL
+            ? "اختر المدينة التي تتواجد بها السيارة"
+            : "Select the city where the car is located"}
+        </ThemedText>
 
         <ThemedText
           type="small"
@@ -1330,16 +1263,20 @@ export default function PostCarScreen() {
             {
               backgroundColor: theme.backgroundSecondary,
               borderColor: theme.border,
-              justifyContent: 'center',
-              alignItems: isRTL ? 'flex-end' : 'flex-start'
+              flexDirection: isRTL ? 'row-reverse' : 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingHorizontal: 12,
             }
           ]}
         >
           <ThemedText style={{ color: theme.text }}>
-            {isRTL
-              ? advertiserTypes.find(c => c.id === advertiserType)?.labelAr
-              : advertiserTypes.find(c => c.id === advertiserType)?.labelEn}
+            {(() => {
+              const c = advertiserTypes.find(c => c.id === advertiserType);
+              return c ? t(c.labelKey) : "";
+            })()}
           </ThemedText>
+          <Feather name="chevron-down" size={20} color={theme.textSecondary} />
         </Pressable>
 
         <ThemedText
@@ -1359,16 +1296,20 @@ export default function PostCarScreen() {
             {
               backgroundColor: theme.backgroundSecondary,
               borderColor: theme.border,
-              justifyContent: 'center',
-              alignItems: isRTL ? 'flex-end' : 'flex-start'
+              flexDirection: isRTL ? 'row-reverse' : 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingHorizontal: 12,
             }
           ]}
         >
           <ThemedText style={{ color: theme.text }}>
-            {isRTL
-              ? insuranceTypes.find(c => c.id === insuranceType)?.labelAr
-              : insuranceTypes.find(c => c.id === insuranceType)?.labelEn}
+            {(() => {
+              const c = insuranceTypes.find(c => c.id === insuranceType);
+              return c ? t(c.labelKey) : "";
+            })()}
           </ThemedText>
+          <Feather name="chevron-down" size={20} color={theme.textSecondary} />
         </Pressable>
 
         <View style={[styles.row, isRTL && styles.rowRTL]}>
@@ -1522,7 +1463,7 @@ export default function PostCarScreen() {
         visible={activeModal === 'category'}
         onClose={() => setActiveModal(null)}
         title={t("category")}
-        items={categories}
+        items={categories.map(c => ({ id: c.id, label: t(c.labelKey) }))}
         onSelect={setCategory}
         selectedId={category}
         theme={theme}
@@ -1532,8 +1473,8 @@ export default function PostCarScreen() {
       <SelectionModal
         visible={activeModal === 'condition'}
         onClose={() => setActiveModal(null)}
-        title={isRTL ? "الحالة" : "Condition"}
-        items={conditions}
+        title={t("condition")}
+        items={conditions.map(c => ({ id: c.id, label: t(c.labelKey) }))}
         onSelect={setCondition}
         selectedId={condition}
         theme={theme}
@@ -1544,7 +1485,7 @@ export default function PostCarScreen() {
         visible={activeModal === 'city'}
         onClose={() => setActiveModal(null)}
         title={t("city")}
-        items={cities.map(c => ({ id: c.id, labelAr: c.nameAr, labelEn: c.nameEn }))}
+        items={cities.map(c => ({ id: c.id, label: t(c.labelKey) }))}
         onSelect={setCity}
         selectedId={city}
         theme={theme}
@@ -1554,8 +1495,8 @@ export default function PostCarScreen() {
       <SelectionModal
         visible={activeModal === 'advertiser'}
         onClose={() => setActiveModal(null)}
-        title={isRTL ? "نوع المعلن" : "Advertiser Type"}
-        items={advertiserTypes}
+        title={t("advertiserType")}
+        items={advertiserTypes.map(c => ({ id: c.id, label: t(c.labelKey) }))}
         onSelect={setAdvertiserType}
         selectedId={advertiserType}
         theme={theme}
@@ -1565,8 +1506,8 @@ export default function PostCarScreen() {
       <SelectionModal
         visible={activeModal === 'insurance'}
         onClose={() => setActiveModal(null)}
-        title={isRTL ? "التأمين" : "Insurance"}
-        items={insuranceTypes}
+        title={t("insurance")}
+        items={insuranceTypes.map(c => ({ id: c.id, label: t(c.labelKey) }))}
         onSelect={setInsuranceType}
         selectedId={insuranceType}
         theme={theme}
@@ -1692,6 +1633,7 @@ const styles = StyleSheet.create({
   },
   rtlText: {
     writingDirection: "rtl",
+    textAlign: "right",
   },
   feeNotice: {
     flexDirection: "row",

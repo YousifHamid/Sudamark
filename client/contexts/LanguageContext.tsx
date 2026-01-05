@@ -188,6 +188,7 @@ export const translations: Translations = {
   // Categories
   sedan: { ar: "صالون", en: "Sedan" },
   suv: { ar: "دفع رباعي", en: "SUV" },
+  fourByFour: { ar: "دفع رباعي", en: "4x4" },
   sports: { ar: "رياضية", en: "Sports" },
   luxury: { ar: "فاخرة", en: "Luxury" },
   electric: { ar: "كهربائية", en: "Electric" },
@@ -273,9 +274,9 @@ export const translations: Translations = {
   posting: { ar: "جاري النشر...", en: "Posting..." },
 
   // Cities (Sudan)
-  khartoum: { ar: "الخرطوم", en: "Khartoum" },
   omdurman: { ar: "أم درمان", en: "Omdurman" },
   bahri: { ar: "بحري", en: "Bahri" },
+  khartoum: { ar: "الخرطوم", en: "Khartoum" },
   portSudan: { ar: "بورتسودان", en: "Port Sudan" },
   kassala: { ar: "كسلا", en: "Kassala" },
   gezira: { ar: "الجزيرة", en: "Al Gezira" },
@@ -384,15 +385,15 @@ export const translations: Translations = {
   callSeller: { ar: "اتصال", en: "Call" },
   whatsappSeller: { ar: "واتساب", en: "WhatsApp" },
   inspectionInfo: {
-    ar: "تم ارسال طلبك للمشتري للموافقة عليه يرجى الانتظار حتى تأكيده",
-    en: "Your request has been sent to the buyer for approval. Please wait for confirmation.",
+    ar: "سوف يتم ارسال طلبك للمشتري للموافقة عليه يرجى الانتظار حتى تأكيده",
+    en: "Your request will be sent to the buyer for approval. Please wait for confirmation.",
   },
   submitRequest: { ar: "إرسال الطلب", en: "Submit Request" },
   submitting: { ar: "جاري الإرسال...", en: "Submitting..." },
   requestSubmitted: { ar: "تم إرسال الطلب", en: "Request Submitted" },
   requestSubmittedMessage: {
-    ar: "تم ارسال طلبك للمشتري للموافقة عليه يرجى الانتظار حتى تأكيده",
-    en: "Your request has been sent to the buyer for approval. Please wait for confirmation.",
+    ar: "سوف يتم ارسال طلبك للمشتري للموافقة عليه يرجى الانتظار حتى تأكيده",
+    en: "Your request will be sent to the buyer for approval. Please wait for confirmation.",
   },
   ok: { ar: "حسناً", en: "OK" },
   selectDateRequired: { ar: "يرجى اختيار التاريخ", en: "Please select a date" },
@@ -420,6 +421,99 @@ export const translations: Translations = {
     ar: "الإشعارات معطلة",
     en: "Notifications Disabled",
   },
+
+  // Post Car Additional
+  confirmPayment: { ar: "تأكيد الدفع", en: "Confirm Payment" },
+  goBackToEdit: { ar: "العودة للتعديل", en: "Go back to edit" },
+  listingFeeLabel: { ar: "رسوم الإعلان: ", en: "Listing fee: " },
+  privacyPolicy: { ar: "سياسة الخصوصية", en: "Privacy Policy" },
+  listingFeeTitle: { ar: "رسوم الإعلان", en: "Listing Fee" },
+  requiredAmount: { ar: "المبلغ المطلوب: ", en: "Required: " },
+  choosePaymentMethod: { ar: "اختر طريقة الدفع", en: "Choose Payment Method" },
+  directPayment: { ar: "دفع مباشر", en: "Direct Payment" },
+  couponCode: { ar: "كود خصم", en: "Coupon Code" },
+  enterCouponCode: { ar: "أدخل كود الخصم", en: "Enter Coupon Code" },
+  check: { ar: "تحقق", en: "Check" },
+  publishFree: { ar: "نشر مجاناً", en: "Publish Free" },
+  publishing: { ar: "جاري النشر...", en: "Publishing..." },
+  carPhotosLabel: { ar: "صور السيارة (6 صور)", en: "Car Photos (6 Photos)" },
+
+  // Car Views
+  viewFront: { ar: "واجهة أمامية", en: "Front View" },
+  viewRear: { ar: "خلفية", en: "Rear View" },
+  viewRight: { ar: "جانبية يمين", en: "Right Side" },
+  viewLeft: { ar: "جانبية يسار", en: "Left Side" },
+  viewInterior: { ar: "داخلية", en: "Interior" },
+  viewExtra: { ar: "إضافية", en: "Extra" },
+
+  // Placeholders
+  exampleMake: { ar: "مثال: تويوتا", en: "Toyota" },
+  exampleModel: { ar: "مثال: كامري", en: "Camry" },
+  exampleColor: { ar: "مثال: أبيض", en: "e.g. White" },
+  exampleEngine: { ar: "مثال: 2.4L", en: "e.g. 2.4L" },
+  examplePhone: { ar: "مثال: 20082275558", en: "e.g. 20082275558" },
+  exampleDate: { ar: "مثال: 27-Dec-2025", en: "e.g. 27-Dec-2025" },
+
+  // Agreement & Status
+  agreementText: {
+    ar: "أتعهد بأنني مالك السلعة أو مفوض ببيعها، وأن التطبيق مجرد وسيط للعرض ولا يتحمل أي مسؤولية قانونية عن التعاملات المالية أو جودة المعروضات. أنا المسؤول الأول والأخير عن صحة البيانات.",
+    en: "I agree that I am the owner or authorized seller, and the app is just a listing platform bearing no legal liability for transactions. I am fully responsible for the data accuracy.",
+  },
+  continueToPayment: { ar: "متابعة للدفع", en: "Continue to Payment" },
+  waitingApproval: { ar: "في انتظار الموافقة", en: "Waiting for Approval" },
+  paymentReceivedMsg: {
+    ar: "تم استلام طلب الدفع الخاص بك. سيتم مراجعته والموافقة عليه خلال دقائق قليلة.",
+    en: "Your payment request has been received. It will be reviewed and approved within a few minutes.",
+  },
+  transactionIdLabel: { ar: "رقم العملية (Trx. ID)", en: "Transaction ID (Trx. ID)" },
+  amountLabel: { ar: "المبلغ (Amount)", en: "Amount" },
+  dateLabel: { ar: "تاريخ التحويل", en: "Transfer Date" },
+  done: { ar: "تم", en: "Done" },
+  paymentSuccess: { ar: "تم بنجاح!", en: "Success!" },
+  paymentSuccessMsg: {
+    ar: "تم إرسال إعلانك للمراجعة.",
+    en: "Your listing has been submitted for approval.",
+  },
+  validateCodeFirst: { ar: "تحقق من الكود أولاً", en: "Validate code first" },
+  couponInvalid: { ar: "كود غير صالح", en: "Invalid code" },
+  couponValidationFailed: { ar: "فشل التحقق", en: "Validation failed" },
+  fillPaymentDetails: { ar: "يرجى ملء جميع بيانات الدفع", en: "Please fill all payment details" },
+  amountError: { ar: "المبلغ غير صحيح", en: "Invalid Amount" },
+  paymentSubmissionFailed: { ar: "فشل في تقديم الدفع", en: "Failed to submit payment" },
+
+  // Edit Profile
+  failedToOpenGallery: { ar: "فشل فتح المعرض", en: "Failed to open gallery" },
+  nameRequired: { ar: "الاسم مطلوب", en: "Name is required" },
+  failedToUpdateProfile: { ar: "فشل تحديث الملف الشخصي", en: "Failed to update profile" },
+  editProfile: { ar: "تعديل الملف الشخصي", en: "Edit Profile" },
+  changePhoto: { ar: "تغيير الصورة", en: "Change Photo" },
+  fullName: { ar: "الاسم الكامل", en: "Full Name" },
+  fullNamePlaceholder: { ar: "اسمك الكامل", en: "Your full name" },
+  saving: { ar: "جاري الحفظ...", en: "Saving..." },
+  saveChanges: { ar: "حفظ التغييرات", en: "Save Changes" },
+
+  // Empty States
+  noListingsYet: { ar: "لم تقم بإضافة أي إعلانات بعد", en: "You haven't posted any listings yet" },
+  noFavoritesYet: { ar: "لم تقم بإضافة أي سيارات للمفضلة", en: "You haven't added any favorites yet" },
+
+  // Condition
+  excellent: { ar: "ممتازة", en: "Excellent" },
+  good: { ar: "جيدة", en: "Good" },
+  fair: { ar: "مقبولة", en: "Fair" },
+  condition: { ar: "الحالة", en: "Condition" },
+
+  // Hint
+  cityHint: { ar: "اختر المدينة التي تتواجد بها السيارة", en: "Select the city where the car is located" },
+  termsRequired: { ar: "يجب الموافقة على الشروط والأحكام أولاً", en: "You must agree to the terms and conditions first" },
+  minAmountError: { ar: "المبلغ يجب أن يكون {amount} جنيه أو أكثر", en: "Amount must be {amount} SDG or more" },
+
+  // Direct Payment
+  scanToPay: { ar: "امسح للدفع", en: "Scan to Pay" },
+  bankLabel: { ar: "البنك: ", en: "Bank: " },
+  accountLabel: { ar: "رقم الحساب: ", en: "Account: " },
+  accountNameLabel: { ar: "الاسم: ", en: "Name: " },
+  bankNameValue: { ar: "بنك الخرطوم", en: "Bank of Khartoum" },
+  accountNameValue: { ar: "سودامارك", en: "Sudamark" },
 };
 
 interface LanguageContextType {

@@ -1,7 +1,7 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const TOKEN_STORAGE_KEY = "@sudmark_token";
+const TOKEN_STORAGE_KEY = "@sudamark_token";
 
 export function getApiUrl(): string {
   // return "https://sudamark.up.railway.app/"; // Safe fallback
@@ -11,7 +11,7 @@ export function getApiUrl(): string {
     // Fallback for development if not set
     if (__DEV__) {
       // NOTE: Update this IP address to your machine's local IP (check with 'ipconfig' or 'ifconfig')
-      return "http://10.173.22.148:5000/";
+      return "http://192.168.1.42:5000/";
     }
     console.warn("EXPO_PUBLIC_DOMAIN is not set");
     return "https://sudamark.up.railway.app/"; // Safe fallback

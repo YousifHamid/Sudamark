@@ -17,7 +17,7 @@ const emailContent = `
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Sudmark App Summary</title>
+  <title>SudaMark App Summary</title>
   <style>
     body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
     .header { background: linear-gradient(135deg, #1E3A5F, #2563eb); color: white; padding: 30px; text-align: center; border-radius: 10px; }
@@ -117,12 +117,12 @@ const emailContent = `
   <h2>App Summary - For Presentations and Advertisements</h2>
   
   <div class="ad-box" style="text-align: center;">
-    <p class="tagline">Sudmark - Your Trusted Car Marketplace</p>
+    <p class="tagline">SudaMark - Your Trusted Car Marketplace</p>
     <p>Buy, Sell, and Connect with Car Experts in One Place</p>
   </div>
 
-  <h3>🚗 What is Sudmark?</h3>
-  <p>Sudmark is a comprehensive car marketplace app designed specifically for the Sudanese market. The app connects car buyers, sellers, and automotive service providers (mechanics, electricians, and lawyers) in one unified platform.</p>
+  <h3>🚗 What is SudaMark?</h3>
+  <p>SudaMark is a comprehensive car marketplace app designed specifically for the Sudanese market. The app connects car buyers, sellers, and automotive service providers (mechanics, electricians, and lawyers) in one unified platform.</p>
 
   <h3>✨ Key Features</h3>
   <div class="feature">
@@ -167,15 +167,15 @@ const emailContent = `
   <h3>📱 Ready-to-Use Ad Copy</h3>
   <div class="ad-box">
     <p><strong>Short Ad:</strong></p>
-    <p>"Sudmark - Sudan's #1 Car Marketplace! Buy and sell your car easily. First 1,000 listings FREE!"</p>
+    <p>"SudaMark - Sudan's #1 Car Marketplace! Buy and sell your car easily. First 1,000 listings FREE!"</p>
   </div>
   <div class="ad-box">
     <p><strong>Medium Ad:</strong></p>
-    <p>"Looking for a new car or want to sell yours? Sudmark connects you with thousands of buyers and sellers in Sudan. Browse, compare, and negotiate - all in one app. Download now!"</p>
+    <p>"Looking for a new car or want to sell yours? SudaMark connects you with thousands of buyers and sellers in Sudan. Browse, compare, and negotiate - all in one app. Download now!"</p>
   </div>
   <div class="ad-box">
     <p><strong>Detailed Ad:</strong></p>
-    <p>"Sudmark - Your trusted car marketplace in Sudan. ✓ Thousands of cars for sale ✓ Advanced search filters ✓ Direct contact with sellers ✓ Mechanics & electricians directory ✓ First 1,000 listings FREE! Join the Sudmark community today."</p>
+    <p>"SudaMark - Your trusted car marketplace in Sudan. ✓ Thousands of cars for sale ✓ Advanced search filters ✓ Direct contact with sellers ✓ Mechanics & electricians directory ✓ First 1,000 listings FREE! Join the SudaMark community today."</p>
   </div>
 
   <h3>📊 App Statistics & Technical Info</h3>
@@ -214,7 +214,7 @@ const emailContent = `
   <h2 style="color: #1E3A5F;">سودمارك - SUDMARK</h2>
   <p style="color: #666;">سوق السيارات الأول في السودان</p>
   <p style="color: #666;">Sudan's Premier Car Marketplace</p>
-  <p style="margin-top: 20px; color: #E8A54B; font-weight: bold;">www.sudmark.app</p>
+  <p style="margin-top: 20px; color: #E8A54B; font-weight: bold;">www.sudamark.app</p>
 </div>
 
 </body>
@@ -229,10 +229,10 @@ async function sendEmail() {
 
   try {
     await emailTransporter.sendMail({
-      from: `"Sudmark" <${process.env.BREVO_SMTP_LOGIN}>`,
+      from: `"SudaMark" <${process.env.BREVO_SMTP_LOGIN}>`,
       to: recipientEmail,
       subject:
-        "سودمارك - ملخص التطبيق للعروض والإعلانات | Sudmark App Summary for Presentations",
+        "سودامارك - ملخص التطبيق للعروض والإعلانات | SudaMark App Summary for Presentations",
       html: emailContent,
     });
     console.log(`Email sent successfully to ${recipientEmail}`);

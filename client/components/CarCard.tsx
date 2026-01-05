@@ -32,6 +32,13 @@ export interface Car {
   advertiserType?: string;
   engineSize?: string;
   color?: string;
+  owner?: {
+    id: string;
+    name: string;
+    phone: string;
+    avatar?: string;
+  };
+  contactPhone?: string;
 }
 
 interface CarCardProps {

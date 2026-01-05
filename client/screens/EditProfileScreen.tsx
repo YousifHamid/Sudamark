@@ -37,9 +37,9 @@ export default function EditProfileScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const cities = [
-    { id: "Khartoum", labelKey: "khartoum" },
     { id: "Omdurman", labelKey: "omdurman" },
     { id: "Bahri", labelKey: "bahri" },
+    { id: "Khartoum", labelKey: "khartoum" },
     { id: "Port Sudan", labelKey: "portSudan" },
     { id: "Kassala", labelKey: "kassala" },
     { id: "Gezira", labelKey: "gezira" },
@@ -57,7 +57,7 @@ export default function EditProfileScreen() {
   const pickImage = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ["images"],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.5,
@@ -67,16 +67,13 @@ export default function EditProfileScreen() {
         setAvatar(result.assets[0].uri);
       }
     } catch (error) {
-      Alert.alert(
-        t("error"),
-        isRTL ? "فشل فتح المعرض" : "Failed to open gallery",
-      );
+      Alert.alert(t("error"), t("failedToOpenGallery"));
     }
   };
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert(t("error"), isRTL ? "الاسم مطلوب" : "Name is required");
+      Alert.alert(t("error"), t("nameRequired"));
       return;
     }
 
@@ -104,10 +101,7 @@ export default function EditProfileScreen() {
 
       navigation.goBack();
     } catch (error) {
-      Alert.alert(
-        t("error"),
-        isRTL ? "فشل تحديث الملف الشخصي" : "Failed to update profile",
-      );
+      Alert.alert(t("error"), t("failedToUpdateProfile"));
     } finally {
       setIsLoading(false);
     }
@@ -132,9 +126,7 @@ export default function EditProfileScreen() {
               color={theme.text}
             />
           </Pressable>
-          <ThemedText type="h3">
-            {isRTL ? "تعديل الملف الشخصي" : "Edit Profile"}
-          </ThemedText>
+          <ThemedText type="h3">{t("editProfile")}</ThemedText>
           <View style={{ width: 24 }} />
         </View>
 
@@ -171,14 +163,18 @@ export default function EditProfileScreen() {
             </View>
           </Pressable>
           <ThemedText style={{ marginTop: 8, color: theme.primary }}>
-            {isRTL ? "تغيير الصورة" : "Change Photo"}
+            {t("changePhoto")}
           </ThemedText>
         </View>
 
         <View style={styles.form}>
           <ThemedText
             type="small"
-            style={[styles.label, { color: theme.textSecondary }]}
+            style={[
+              styles.label,
+              { color: theme.textSecondary },
+              isRTL && { textAlign: "right" },
+            ]}
           >
             {t("fullName")}
           </ThemedText>
@@ -194,13 +190,18 @@ export default function EditProfileScreen() {
             ]}
             value={name}
             onChangeText={setName}
-            placeholder={isRTL ? "اسمك الكامل" : "Your full name"}
+            placeholder={t("fullNamePlaceholder")}
             placeholderTextColor={theme.textSecondary}
+            textAlign={isRTL ? "right" : "left"}
           />
 
           <ThemedText
             type="small"
-            style={[styles.label, { color: theme.textSecondary }]}
+            style={[
+              styles.label,
+              { color: theme.textSecondary },
+              isRTL && { textAlign: "right" },
+            ]}
           >
             {t("phoneNumber")}
           </ThemedText>
@@ -216,18 +217,23 @@ export default function EditProfileScreen() {
             ]}
             value={phone}
             onChangeText={setPhone}
-            placeholder={isRTL ? "رقم الهاتف" : "Phone Number"}
+            placeholder={t("phoneNumber")}
             placeholderTextColor={theme.textSecondary}
             keyboardType="phone-pad"
+            textAlign={isRTL ? "right" : "left"}
           />
 
           <ThemedText
             type="small"
-            style={[styles.label, { color: theme.textSecondary }]}
+            style={[
+              styles.label,
+              { color: theme.textSecondary },
+              isRTL && { textAlign: "right" },
+            ]}
           >
             {t("city")}
           </ThemedText>
-          <View style={styles.cityChips}>
+          <View style={[styles.cityChips, isRTL && { flexDirection: "row-reverse" }]}>
             {cities.map((c) => (
               <Pressable
                 key={c.id}
@@ -264,13 +270,7 @@ export default function EditProfileScreen() {
           disabled={isLoading}
           style={styles.saveButton}
         >
-          {isLoading
-            ? isRTL
-              ? "جاري الحفظ..."
-              : "Saving..."
-            : isRTL
-              ? "حفظ التغييرات"
-              : "Save Changes"}
+          {isLoading ? t("saving") : t("saveChanges")}
         </Button>
       </ScrollView>
     </ThemedView>

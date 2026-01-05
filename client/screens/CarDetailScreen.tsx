@@ -96,7 +96,6 @@ export default function CarDetailScreen() {
       return;
     }
     setOfferPrice(car.price.toString());
-    setOfferMessage("");
     setShowOfferModal(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
@@ -110,31 +109,34 @@ export default function CarDetailScreen() {
       return;
     }
 
-    setIsSubmittingOffer(true);
+    setShowOfferModal(false);
+
+    // @ts-ignore
+    const sellerPhone = car.owner?.phone || car.contactPhone || "+249123456789";
+    const message = isRTL
+      ? `مرحباً، أريد تقديم عرض سعر للسيارة: ${car.title}\nالسعر المقترح: ${parseInt(offerPrice).toLocaleString()} جنيه`
+      : `Hello, I would like to make an offer for the car: ${car.title}\nOffered Price: ${parseInt(offerPrice).toLocaleString()} SDG`;
+
+    const whatsappUrl = `whatsapp://send?phone=${sellerPhone}&text=${encodeURIComponent(message)}`;
+    const webWhatsappUrl = `https://wa.me/${sellerPhone.replace("+", "")}?text=${encodeURIComponent(message)}`;
 
     try {
-      await apiRequest("POST", "/api/offers", {
-        carId: car.id,
-        offerPrice: parseInt(offerPrice),
-        message: offerMessage || null,
-      });
-
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setShowOfferModal(false);
-      Alert.alert(
-        isRTL ? "تم إرسال العرض" : "Offer Sent",
-        isRTL
-          ? "تم إرسال عرضك للبائع بنجاح"
-          : "Your offer has been sent to the seller",
-      );
-    } catch (error) {
-      console.error("Submit offer error:", error);
-      Alert.alert(
-        isRTL ? "خطأ" : "Error",
-        isRTL ? "حدث خطأ أثناء إرسال العرض" : "Failed to submit offer",
-      );
-    } finally {
-      setIsSubmittingOffer(false);
+      const canOpen = await Linking.canOpenURL(whatsappUrl);
+      if (canOpen) {
+        Linking.openURL(whatsappUrl);
+      } else {
+        const canOpenWeb = await Linking.canOpenURL(webWhatsappUrl);
+        if (canOpenWeb) {
+          Linking.openURL(webWhatsappUrl);
+        } else {
+          Alert.alert(
+            isRTL ? "تنبيه" : "Alert",
+            isRTL ? "واتساب غير مثبت" : "WhatsApp is not installed"
+          );
+        }
+      }
+    } catch (e) {
+      console.error("WhatsApp error:", e);
     }
   };
 
@@ -143,12 +145,13 @@ export default function CarDetailScreen() {
     try {
       // In a real app, this would be a dynamic link (e.g., Firebase Dynamic Link or Branch.io)
       // that handles the redirection logic (App vs Store).
-      const appScheme = "sudmark://car/" + car.id;
-      const webUrl = "https://sudmark.com/app"; // Fallback/Landing page
+      // const appScheme = "sudamark://car/" + car.id;
+      const webUrl = "https://sudamark.cloud/"; // Fallback/Landing page
+      const palyStoreUrl = "https://play.google.com/store/apps/details?id=com.sudamark.app"; // Fallback/Landing page
 
       const shareMessage = isRTL
-        ? `${car.title}\n${car.price.toLocaleString()} جنيه\n${car.city}\n\nشاهد التفاصيل في تطبيق سودامارك:\n${webUrl}\n\nأو افتح التطبيق مباشرة:\n${appScheme}`
-        : `${car.title}\n${car.price.toLocaleString()} SDG\n${car.city}\n\nCheck it out on Sudamark App:\n${webUrl}\n\nOr open via app:\n${appScheme}`;
+        ? `${car.title}\n${car.price.toLocaleString()} جنيه\n${car.city}\n\nشاهد التفاصيل في تطبيق سودامارك:\n${webUrl}\n\nأو افتح التطبيق في play store:\n${palyStoreUrl}`
+        : `${car.title}\n${car.price.toLocaleString()} SDG\n${car.city}\n\nCheck it out on Sudamark App:\n${webUrl}\n\nOr open in play store:\n${palyStoreUrl}`;
 
       await Share.share({
         message: shareMessage,
@@ -165,6 +168,7 @@ export default function CarDetailScreen() {
     // @ts-ignore - owner is joined from backend
     const sellerPhone = car.owner?.phone || car.contactPhone || "+249123456789";
     const url = `tel:${sellerPhone}`;
+
     try {
       const canOpen = await Linking.canOpenURL(url);
       if (canOpen) {
@@ -313,7 +317,7 @@ export default function CarDetailScreen() {
                   type="small"
                   style={{ color: theme.secondary, marginLeft: 4 }}
                 >
-                  {isRTL ? "تقديم عرض" : "Make Offer"}
+                  {isRTL ? "ابدأ بالمساومة: قدم سعرك الأن" : "Start negotiating: State your price now"}
                 </ThemedText>
               </Pressable>
             ) : null}
@@ -402,25 +406,6 @@ export default function CarDetailScreen() {
               ]}
             >
               <View
-                style={[
-                  styles.sellerAvatar,
-                  { backgroundColor: theme.primary },
-                ]}
-              >
-                <ThemedText type="h4" style={{ color: "#FFFFFF" }}>
-                  S
-                </ThemedText>
-              </View>
-              <View style={[styles.sellerInfo, isRTL && styles.sellerInfoRTL]}>
-                <ThemedText
-                  type="body"
-                  style={[{ fontWeight: "600" }, isRTL && styles.rtlText]}
-                >
-                  {isRTL ? "البائع" : "Seller"}
-                </ThemedText>
-
-              </View>
-              <View
                 style={[styles.sellerButtons, isRTL && styles.sellerButtonsRTL]}
               >
                 <Pressable
@@ -430,13 +415,13 @@ export default function CarDetailScreen() {
                   ]}
                   onPress={handleCallSeller}
                 >
-                  <Feather name="phone" size={18} color="#FFFFFF" />
+                  <Feather name="phone" size={28} color="#FFFFFF" />
                 </Pressable>
                 <Pressable
                   style={[styles.callButton, { backgroundColor: "#25D366" }]}
                   onPress={handleWhatsAppSeller}
                 >
-                  <Feather name="message-circle" size={18} color="#FFFFFF" />
+                  <Feather name="message-circle" size={28} color="#FFFFFF" />
                 </Pressable>
               </View>
             </View>
@@ -463,7 +448,7 @@ export default function CarDetailScreen() {
             <Button onPress={handleMakeOffer} style={styles.contactButton}>
               {isRTL ? "تقديم عرض" : "Make Offer"}
             </Button>
-            <Pressable
+            {/* <Pressable
               style={[
                 styles.inspectionButton,
                 { backgroundColor: theme.backgroundSecondary },
@@ -483,7 +468,7 @@ export default function CarDetailScreen() {
               >
                 {t("requestInspection")}
               </ThemedText>
-            </Pressable>
+            </Pressable> */}
           </>
         )}
       </View>
@@ -575,37 +560,6 @@ export default function CarDetailScreen() {
                   placeholder={isRTL ? "أدخل السعر" : "Enter your offer"}
                   placeholderTextColor={theme.textSecondary}
                   textAlign={isRTL ? "right" : "left"}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <ThemedText
-                  type="body"
-                  style={[styles.inputLabel, isRTL && styles.rtlText]}
-                >
-                  {isRTL ? "رسالة (اختياري)" : "Message (optional)"}
-                </ThemedText>
-                <TextInput
-                  style={[
-                    styles.messageInput,
-                    {
-                      backgroundColor: theme.backgroundSecondary,
-                      color: theme.text,
-                      borderColor: theme.border,
-                    },
-                    isRTL && styles.rtlText,
-                  ]}
-                  value={offerMessage}
-                  onChangeText={setOfferMessage}
-                  multiline
-                  numberOfLines={3}
-                  placeholder={
-                    isRTL
-                      ? "أضف رسالة للبائع..."
-                      : "Add a message for the seller..."
-                  }
-                  placeholderTextColor={theme.textSecondary}
-                  textAlignVertical="top"
                 />
               </View>
             </KeyboardAwareScrollViewCompat>
@@ -769,21 +723,28 @@ const styles = StyleSheet.create({
     flexDirection: "row-reverse",
   },
   sellerButtons: {
-    flexDirection: "column",
-    gap: Spacing.sm,
+    flexDirection: "row",
+    gap: Spacing.xl,
+    justifyContent: "center",
+    width: "100%",
   },
   sellerButtonsRTL: {
-    // No direction change needed for vertical column in RTL typically,
-    // but ensuring it stays column or just inherits is fine.
-    // actually previous was row-reverse. We can just empty this or strict set column.
-    flexDirection: "column",
+    flexDirection: "row-reverse",
   },
   callButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   footer: {
     position: "absolute",

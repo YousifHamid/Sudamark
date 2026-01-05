@@ -1,5 +1,5 @@
 {
-  "name": "sudmark",
+  "name": "sudamark",
   "main": "client/index.js",
   "version": "1.0.0",
   "scripts": {

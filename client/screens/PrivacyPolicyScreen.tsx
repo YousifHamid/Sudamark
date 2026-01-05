@@ -205,7 +205,7 @@ export function PrivacyPolicyScreen() {
         >
           {isRTL
             ? "باستخدام تطبيق سودمارك، فإنك توافق على سياسة الخصوصية هذه."
-            : "By using the Sudmark app, you agree to this privacy policy."}
+            : "By using the SudaMark app, you agree to this privacy policy."}
         </ThemedText>
       </ScrollView>
     </ThemedView>

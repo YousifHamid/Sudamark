@@ -69,11 +69,12 @@ export default function LoginScreen() {
     },
   ];
 
+  /*
   const [request, response, promptAsync] = Google.useAuthRequest({
     androidClientId: "574389309781-tgrd9bq2t36coqij03uicm0u07863q01.apps.googleusercontent.com",
     webClientId: "574389309781-kkg2pvlq04ibkm9mm57s8rljfft30ifa.apps.googleusercontent.com",
     redirectUri: makeRedirectUri({
-      scheme: "sudmark",
+      scheme: "sudamark",
     }),
   });
 
@@ -112,6 +113,7 @@ export default function LoginScreen() {
       setIsLoading(false);
     }
   };
+  */
 
   const handleAuthAction = async () => {
     const cleanNumber = phoneNumber.replace(/\s/g, "");
@@ -233,7 +235,7 @@ export default function LoginScreen() {
       >
         <View style={styles.header}>
           <Image
-            source={require("../../assets/images/sudmark_logo.png")}
+            source={require("../../assets/images/sudamark_logo.png")}
             style={styles.logo}
             resizeMode="contain"
           />
@@ -368,7 +370,7 @@ export default function LoginScreen() {
             </Pressable>
 
             <View style={{ height: 16 }} />
-            <Pressable
+            {/* <Pressable
               onPress={() => {
                 Haptics.selectionAsync();
                 promptAsync();
@@ -386,12 +388,11 @@ export default function LoginScreen() {
                 }
               ]}
             >
-              {/* Simplified Google G Icon */}
               <ThemedText style={{ fontWeight: 'bold', color: '#000' }}>G</ThemedText>
               <ThemedText style={{ color: "#000000" }}>
                 {isRTL ? "المتابعة باستخدام Google" : "Continue with Google"}
               </ThemedText>
-            </Pressable>
+            </Pressable> */}
           </View>
         ) : null}
 

@@ -65,11 +65,21 @@ export default function SearchScreen() {
   const [tempMaxPrice, setTempMaxPrice] = useState(maxPrice);
 
   const cities = [
-    { id: "khartoum", labelKey: "khartoum" },
     { id: "omdurman", labelKey: "omdurman" },
     { id: "bahri", labelKey: "bahri" },
-    { id: "portSudan", labelKey: "portSudan" },
+    { id: "khartoum", labelKey: "khartoum" },
+    { id: "portsudan", labelKey: "portSudan" },
     { id: "kassala", labelKey: "kassala" },
+    { id: "gezira", labelKey: "gezira" },
+    { id: "kordofan", labelKey: "kordofan" },
+    { id: "darfur", labelKey: "darfur" },
+    { id: "river_nile", labelKey: "riverNile" },
+    { id: "white_nile", labelKey: "whiteNile" },
+    { id: "blue_nile", labelKey: "blueNile" },
+    { id: "northern", labelKey: "northern" },
+    { id: "red_sea", labelKey: "redSea" },
+    { id: "gedaref", labelKey: "gedaref" },
+    { id: "sennar", labelKey: "sennar" },
   ];
 
   const categories = [

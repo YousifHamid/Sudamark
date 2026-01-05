@@ -61,9 +61,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH_STORAGE_KEY = "@sudmark_user";
-const TOKEN_STORAGE_KEY = "@sudmark_token";
-const ONBOARDING_STORAGE_KEY = "@sudmark_onboarding";
+const AUTH_STORAGE_KEY = "@sudamark_user";
+const TOKEN_STORAGE_KEY = "@sudamark_token";
+const ONBOARDING_STORAGE_KEY = "@sudamark_onboarding";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -253,14 +253,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(data.error || "Update failed");
       }
 
-      const updatedUser = { ...user, ...data };
+      const updatedUser = {
+        ...user,
+        ...data,
+        phoneNumber: data.phone || user?.phoneNumber,
+      };
       await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedUser));
       setUser(updatedUser);
     } catch (error) {
       console.error("Profile update error:", error);
-      const updatedUser = { ...user, ...updates };
+      const updatedUser = {
+        ...user,
+        ...updates,
+        phoneNumber: updates.phone || user?.phoneNumber,
+      };
       await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedUser));
-      setUser(updatedUser);
+      setUser(updatedUser as User);
     }
   };
 

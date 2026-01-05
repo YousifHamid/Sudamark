@@ -82,7 +82,7 @@ export function HeaderTitle() {
     <View style={styles.outerContainer}>
       <View style={styles.logoSection}>
         <Image
-          source={require("../../assets/images/sudmark_logo.png")}
+          source={require("../../assets/images/sudamark_logo.png")}
           style={styles.logo}
           resizeMode="contain"
         />
