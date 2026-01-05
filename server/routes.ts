@@ -548,7 +548,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
         // Validation logic removed per request
         const [newCar] = await db.insert(cars).values(carData).returning();
-        res.json(newCar);
+
+        // Fetch the user to include in response
+        const [user] = await db
+          .select({
+            id: users.id,
+            name: users.name,
+            phone: users.phone,
+            avatar: users.avatar,
+          })
+          .from(users)
+          .where(eq(users.id, req.user!.id));
+
+        res.json({ ...newCar, user });
       } catch (error) {
         console.error("Create car error:", error);
         res.status(500).json({ error: "Failed to create car listing" });
