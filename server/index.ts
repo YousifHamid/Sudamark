@@ -16,6 +16,9 @@ declare module "http" {
   }
 }
 
+app.set("trust proxy", 1); // Trust first proxy
+
+
 function setupSecurity(app: express.Application) {
   // Use Helmet for security headers
   app.use(
