@@ -174,12 +174,36 @@ export function CarsProvider({ children }: { children: ReactNode }) {
         (carData.images || []).map(async (img) => {
           if (img.startsWith("file://")) {
             try {
-              const base64 = await FileSystem.readAsStringAsync(img, {
-                encoding: "base64",
+              // Create FormData for upload
+              const formData = new FormData();
+              // @ts-ignore
+              formData.append("image", {
+                uri: img,
+                name: "image.jpg",
+                type: "image/jpeg",
               });
-              return `data:image/jpeg;base64,${base64}`;
+
+              // Use standard fetch for multipart upload since apiRequest helper handles JSON
+              const baseUrl = getApiUrl();
+              const uploadResponse = await fetch(`${baseUrl}api/upload`, {
+                method: "POST",
+                body: formData,
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+              });
+
+              if (uploadResponse.ok) {
+                const { imageUrl } = await uploadResponse.json();
+                return imageUrl;
+              } else {
+                console.error("Upload failed for image", img);
+                return img; // Fallback? Or better null/filter
+              }
+
             } catch (e) {
-              console.error("Error converting image:", e);
+              console.error("Error uploading image:", e);
               return img;
             }
           }
@@ -195,7 +219,7 @@ export function CarsProvider({ children }: { children: ReactNode }) {
         mileage: carData.mileage,
         city: carData.city,
         description: carData.description,
-        images: processedImages,
+        images: processedImages.filter(img => !img.startsWith("file://")), // Filter out failed uploads to avoid saving local paths
         category: carData.category,
         insuranceType: carData.insuranceType,
         advertiserType: carData.advertiserType,

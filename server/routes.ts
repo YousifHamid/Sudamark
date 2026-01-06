@@ -42,6 +42,38 @@ const adminLoginAttempts = new Map<
 const ADMIN_MAX_ATTEMPTS = 5;
 const ADMIN_BLOCK_DURATION_MS = 15 * 60 * 1000;
 
+import multer from "multer";
+import * as fs from "fs";
+import * as path from "path";
+
+// Configure Multer for local storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(process.cwd(), "uploads");
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only image files are allowed!"));
+    }
+  },
+});
+
+// Helper to check admin login limits
 function checkAdminLoginAllowed(ip: string): {
   allowed: boolean;
   remainingTime?: number;
@@ -154,6 +186,7 @@ async function ensureDefaultAdmin() {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  const httpServer = createServer(app);
   await ensureDefaultAdmin();
 
   app.get("/api/health", (_req: Request, res: Response) => {
@@ -162,6 +195,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/terms", (_req: Request, res: Response) => {
     res.sendFile("terms.html", { root: "./server/templates" });
+  });
+
+  // Serve uploaded files
+  app.use("/uploads", (req, res, next) => {
+    res.header("Cross-Origin-Resource-Policy", "cross-origin");
+    next();
+  }, (req, res, next) => {
+    const safePath = path.normalize(req.path).replace(/^(\.\.[\/\\])+/, '');
+    const filePath = path.join(process.cwd(), "uploads", safePath);
+
+    if (fs.existsSync(filePath)) {
+      res.sendFile(filePath);
+    } else {
+      next();
+    }
+  });
+
+  // Upload endpoint
+  app.post("/api/upload", upload.single("image"), (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No image file uploaded" });
+      }
+
+      const imageUrl = `/uploads/${req.file.filename}`;
+      res.json({ imageUrl });
+    } catch (error) {
+      console.error("Upload error:", error);
+      res.status(500).json({ error: "Failed to upload image" });
+    }
   });
 
   // --- Auth Routes ---
@@ -2069,6 +2132,5 @@ For privacy inquiries: privacy@arabaty.app
     });
   });
 
-  const httpServer = createServer(app);
   return httpServer;
 }

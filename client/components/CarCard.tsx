@@ -91,7 +91,11 @@ export function CarCard({ car, onPress, horizontal = false }: CarCardProps) {
       ]}
     >
       <Image
-        source={{ uri: car.images[0] }}
+        source={{
+          uri: car.images[0]?.startsWith("http")
+            ? car.images[0]
+            : `${require("@/lib/query-client").getApiUrl().replace(/\/$/, "")}${car.images[0]}`
+        }}
         style={[styles.image, { width: cardWidth }]}
         resizeMode="cover"
       />

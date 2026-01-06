@@ -238,7 +238,11 @@ export default function CarDetailScreen() {
             {car.images.map((uri, index) => (
               <Image
                 key={index}
-                source={{ uri }}
+                source={{
+                  uri: uri?.startsWith("http")
+                    ? uri
+                    : `${require("@/lib/query-client").getApiUrl().replace(/\/$/, "")}${uri}`
+                }}
                 style={styles.image}
                 resizeMode="cover"
               />
@@ -304,23 +308,6 @@ export default function CarDetailScreen() {
             <ThemedText type="h2" style={{ color: theme.primary }}>
               {car.price.toLocaleString()} {t("sdg")}
             </ThemedText>
-            {!isOwnCar ? (
-              <Pressable
-                style={[
-                  styles.offerBadge,
-                  { backgroundColor: theme.secondary + "20" },
-                ]}
-                onPress={handleMakeOffer}
-              >
-                <Feather name="tag" size={14} color={theme.secondary} />
-                <ThemedText
-                  type="small"
-                  style={{ color: theme.secondary, marginLeft: 4 }}
-                >
-                  {isRTL ? "ابدأ بالمساومة: قدم سعرك الأن" : "Start negotiating: State your price now"}
-                </ThemedText>
-              </Pressable>
-            ) : null}
           </View>
 
           <ThemedText type="h3" style={[styles.title, isRTL && styles.rtlText]}>
