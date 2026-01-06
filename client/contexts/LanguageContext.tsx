@@ -340,6 +340,8 @@ export const translations: Translations = {
     en: "Please fill in all required fields",
   },
   error: { ar: "خطأ", en: "Error" },
+  accountBlocked: { ar: "تم حظر حسابك. يرجى التواصل مع الإدارة.", en: "Your account has been blocked. Please contact admin." },
+  accountDeleted: { ar: "تم حذف حسابك.", en: "Your account has been deleted." },
 
   // Currency
   sdg: { ar: "جنيه", en: "SDG" },

@@ -118,7 +118,8 @@ interface AuthRequest extends Request {
   admin?: { id: string; email: string; role: string };
 }
 
-function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
+
+async function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
     return res.status(401).json({ error: "Authorization required" });
@@ -131,8 +132,26 @@ function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
       phone: string;
       roles: string[];
     };
-    req.user = decoded;
-    next();
+
+    // Verify user status in DB
+    try {
+      const [user] = await db.select().from(users).where(eq(users.id, decoded.id));
+
+      if (!user) {
+        return res.status(401).json({ error: "USER_DELETED" });
+      }
+
+      if (!user.isActive) {
+        return res.status(403).json({ error: "ACCOUNT_BLOCKED" });
+      }
+
+      req.user = { id: user.id, phone: user.phone, roles: user.roles };
+      next();
+    } catch (err) {
+      console.error("Auth middleware DB check failed", err);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+
   } catch {
     return res.status(401).json({ error: "Invalid token" });
   }
@@ -159,8 +178,20 @@ function adminAuthMiddleware(
     if (!decoded.isAdmin) {
       return res.status(403).json({ error: "Admin access required" });
     }
-    req.admin = decoded;
-    next();
+
+    (async () => {
+      try {
+        const [admin] = await db.select().from(admins).where(eq(admins.id, decoded.id));
+        if (!admin || !admin.isActive) {
+          return res.status(403).json({ error: "ACCOUNT_BLOCKED" });
+        }
+        req.admin = decoded;
+        next();
+      } catch (err) {
+        console.error("Admin auth middleware DB check failed", err);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+    })();
   } catch {
     return res.status(401).json({ error: "Invalid admin token" });
   }
@@ -285,6 +316,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .limit(1);
 
           if (existingUser) {
+            if (!existingUser.isActive) {
+              return res.status(403).json({ error: "ACCOUNT_BLOCKED" });
+            }
             const token = jwt.sign(
               {
                 id: existingUser.id,
@@ -300,6 +334,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (email) {
               const [emailUser] = await db.select().from(users).where(eq(users.email, email)).limit(1);
               if (emailUser) {
+                if (!emailUser.isActive) {
+                  return res.status(403).json({ error: "ACCOUNT_BLOCKED" });
+                }
                 // Start of linking account logic, but for now just return isNewUser with extra details
                 // or auto-link?. Let's return isNewUser = true but with flag 'linkAccount' or just googleId
                 // Actually, if we link, we need to update the user.
@@ -340,6 +377,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         if (!existingUser) {
           return res.status(400).json({ error: "Invalid credentials" });
+        }
+
+        if (!existingUser.isActive) {
+          return res.status(403).json({ error: "ACCOUNT_BLOCKED" });
         }
 
         // Verify Password
@@ -1037,6 +1078,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json(allUsers);
       } catch (error) {
         res.status(500).json({ error: "Failed to fetch users" });
+      }
+    },
+  );
+
+  app.put(
+    "/api/admin/users/:id",
+    adminAuthMiddleware,
+    async (req: AuthRequest, res: Response) => {
+      try {
+        const { id } = req.params;
+        const { name, phone, roles, isActive } = req.body;
+
+        const updateData: any = { updatedAt: new Date() };
+        if (name) updateData.name = name;
+        if (phone) updateData.phone = phone;
+        if (roles) updateData.roles = roles;
+        if (isActive !== undefined) updateData.isActive = isActive;
+
+        const [updatedUser] = await db
+          .update(users)
+          .set(updateData)
+          .where(eq(users.id, id))
+          .returning();
+
+        if (!updatedUser) {
+          return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json(updatedUser);
+      } catch (error) {
+        console.error("Update user error:", error);
+        res.status(500).json({ error: "Failed to update user" });
       }
     },
   );

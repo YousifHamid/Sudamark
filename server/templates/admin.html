@@ -130,6 +130,7 @@
                 <th class="p-4 text-right">الموقع</th>
                 <th class="p-4 text-right">الأدوار</th>
                 <th class="p-4 text-right">التاريخ</th>
+                <th class="p-4 text-right">الإجراءات</th>
               </tr>
             </thead>
             <tbody id="users-table"></tbody>
@@ -320,6 +321,48 @@
       </div>
     </div>
   </div>
+  </div>
+
+
+  <div id="edit-user-modal"
+    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="glass rounded-2xl p-6 w-full max-w-md border border-gray-700">
+      <h2 class="text-xl font-bold mb-4">تعديل المستخدم</h2>
+      <input type="hidden" id="edit-user-id">
+
+      <div class="mb-3">
+        <label class="block text-gray-400 text-sm mb-1" for="edit-user-name">الاسم</label>
+        <input type="text" id="edit-user-name" placeholder="الاسم" aria-label="الاسم"
+          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+      </div>
+
+      <div class="mb-3">
+        <label class="block text-gray-400 text-sm mb-1" for="edit-user-phone">الهاتف</label>
+        <input type="text" id="edit-user-phone" placeholder="الهاتف" aria-label="الهاتف"
+          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-gray-400 text-sm mb-2">الأدوار</label>
+        <div class="flex flex-wrap gap-2">
+          <label class="inline-flex items-center"><input type="checkbox" value="admin"
+              class="role-checkbox form-checkbox text-orange-500 rounded ml-1 bg-gray-800 border-gray-600"> أدمن</label>
+          <label class="inline-flex items-center"><input type="checkbox" value="buyer"
+              class="role-checkbox form-checkbox text-orange-500 rounded ml-1 bg-gray-800 border-gray-600">
+            مشتري</label>
+          <label class="inline-flex items-center"><input type="checkbox" value="seller"
+              class="role-checkbox form-checkbox text-orange-500 rounded ml-1 bg-gray-800 border-gray-600"> بائع</label>
+          <label class="inline-flex items-center"><input type="checkbox" value="mechanic"
+              class="role-checkbox form-checkbox text-orange-500 rounded ml-1 bg-gray-800 border-gray-600">
+            ميكانيكي</label>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="saveUser()" class="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-lg">حفظ</button>
+        <button onclick="hideEditUser()" class="flex-1 bg-gray-600 hover:bg-gray-700 py-3 rounded-lg">إلغاء</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -526,18 +569,96 @@
     async function loadUsers() {
       try {
         const users = await api('/api/admin/users');
+        window.usersData = users; // Store for edit
         const tbody = document.getElementById('users-table');
         tbody.innerHTML = users.map(u => `
           <tr class="border-t border-gray-700">
-            <td class="p-4">${u.name}</td>
+            <td class="p-4">
+                ${u.name}
+                ${!u.isActive ? '<span class="text-red-500 text-xs font-bold block">(محظور)</span>' : ''}
+            </td>
             <td class="p-4 text-gray-400">${u.phone}</td>
             <td class="p-4">${u.city || 'غير محدد'}</td>
             <td class="p-4"><span class="bg-blue-500 px-2 py-1 rounded text-xs">${(u.roles || []).join(', ')}</span></td>
             <td class="p-4 text-gray-400">${new Date(u.createdAt).toLocaleDateString('ar')}</td>
+            <td class="p-4 flex gap-2 flex-wrap">
+                <button onclick="editUser('${u.id}')" class="text-yellow-400 hover:underline">تعديل</button>
+                <button onclick="toggleUserBlock('${u.id}', ${!u.isActive}, '${u.name}')" class="text-orange-400 hover:underline">
+                    ${u.isActive ? 'حظر' : 'تفعيل'}
+                </button>
+                <button onclick="deleteUser('${u.id}', '${u.name}')" class="text-red-400 hover:underline">حذف</button>
+            </td>
           </tr>
         `).join('');
       } catch (err) {
         console.error('Failed to load users:', err);
+      }
+    }
+
+    async function deleteUser(id, name) {
+      if (!confirm(`هل أنت متأكد من حذف المستخدم ${name}؟ سيتم حذف جميع بياناته وإعلاناته.`)) return;
+      try {
+        await api(`/api/admin/users/${id}`, { method: 'DELETE' });
+        loadUsers();
+        loadStats();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function toggleUserBlock(id, isActive, name) {
+      const action = isActive ? 'تفعيل' : 'حظر';
+      if (!confirm(`هل أنت متأكد من ${action} المستخدم ${name}؟`)) return;
+      try {
+        await api(`/api/admin/users/${id}`, { method: 'PUT', body: JSON.stringify({ isActive }) });
+        loadUsers();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function editUser(id) {
+      const user = window.usersData?.find(u => u.id === id);
+      if (!user) return alert('User not found');
+
+      document.getElementById('edit-user-id').value = id;
+      document.getElementById('edit-user-name').value = user.name;
+      document.getElementById('edit-user-phone').value = user.phone;
+
+      // Roles checkbox logic could be added here, currently just text for simplicity or fixed roles
+      // We can add checkboxes for roles in the modal
+      const roles = user.roles || [];
+      document.querySelectorAll('.role-checkbox').forEach(cb => {
+        cb.checked = roles.includes(cb.value);
+      });
+
+      document.getElementById('edit-user-modal').classList.remove('hidden');
+    }
+
+    function hideEditUser() {
+      document.getElementById('edit-user-modal').classList.add('hidden');
+    }
+
+    async function saveUser() {
+      try {
+        const id = document.getElementById('edit-user-id').value;
+        const name = document.getElementById('edit-user-name').value;
+        const phone = document.getElementById('edit-user-phone').value;
+
+        const roles = [];
+        document.querySelectorAll('.role-checkbox:checked').forEach(cb => {
+          roles.push(cb.value);
+        });
+
+        await api(`/api/admin/users/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ name, phone, roles })
+        });
+
+        hideEditUser();
+        loadUsers();
+      } catch (err) {
+        alert(err.message);
       }
     }
 

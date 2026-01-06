@@ -26,6 +26,28 @@ export function getApiUrl(): string {
   return `https://${host}/`;
 }
 
+type AuthEventType = 'unauthorized' | 'forbidden';
+type AuthEventHandler = (data?: any) => void;
+const listeners: Record<AuthEventType, AuthEventHandler[]> = {
+  unauthorized: [],
+  forbidden: []
+};
+
+export const authEvents = {
+  on: (event: AuthEventType, handler: AuthEventHandler) => {
+    if (!listeners[event]) listeners[event] = [];
+    listeners[event].push(handler);
+  },
+  off: (event: AuthEventType, handler: AuthEventHandler) => {
+    if (!listeners[event]) return;
+    listeners[event] = listeners[event].filter(h => h !== handler);
+  },
+  emit: (event: AuthEventType, data?: any) => {
+    if (!listeners[event]) return;
+    listeners[event].forEach(h => h(data));
+  }
+};
+
 async function getAuthToken(): Promise<string | null> {
   try {
     return await AsyncStorage.getItem(TOKEN_STORAGE_KEY);
@@ -37,6 +59,15 @@ async function getAuthToken(): Promise<string | null> {
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
+
+    // Check for specific auth errors
+    if (res.status === 403 && text.includes("ACCOUNT_BLOCKED")) {
+      authEvents.emit('forbidden', 'ACCOUNT_BLOCKED');
+    }
+    if (res.status === 401 && text.includes("USER_DELETED")) {
+      authEvents.emit('forbidden', 'USER_DELETED');
+    }
+
     throw new Error(`${res.status}: ${text}`);
   }
 }
@@ -102,8 +133,8 @@ export const queryClient = new QueryClient({
     queries: {
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
+      refetchOnWindowFocus: true,
+      staleTime: 0,
       retry: false,
     },
     mutations: {

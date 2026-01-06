@@ -1,12 +1,14 @@
-import React, {
+import {
   createContext,
   useContext,
   useState,
   useEffect,
   ReactNode,
 } from "react";
+import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getApiUrl } from "@/lib/query-client";
+import { getApiUrl, authEvents } from "@/lib/query-client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export type UserRole =
   | "admin"
@@ -271,6 +273,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(updatedUser as User);
     }
   };
+
+
+  const { t } = useLanguage();
+
+  useEffect(() => {
+    const handleForbidden = (reason: string) => {
+      logout();
+      if (reason === 'ACCOUNT_BLOCKED') {
+        Alert.alert(t('error'), t('accountBlocked'));
+      } else if (reason === 'USER_DELETED') {
+        Alert.alert(t('error'), t('accountDeleted'));
+      }
+    };
+
+    // Import dynamically or assume it's available in scope if I added import.
+    // I need to add import { authEvents } ... at top of file.
+    // But replace_file_content usually does local chunks.
+    // I will use fully qualified name if possible or assumes top level import was added?
+    // No, I must add the import first.
+    authEvents.on('forbidden', handleForbidden);
+    return () => authEvents.off('forbidden', handleForbidden);
+  }, []);
 
   return (
     <AuthContext.Provider
