@@ -25,6 +25,8 @@ interface CarsContextType {
   favorites: string[];
   isLoading: boolean;
   addCar: (car: Omit<Car, "id" | "createdAt">) => Promise<Car | null>;
+  updateCar: (id: string, car: Partial<Car>) => Promise<Car | null>;
+  deleteCar: (id: string) => Promise<boolean>;
   toggleFavorite: (carId: string) => void;
   isFavorite: (carId: string) => boolean;
   refreshCars: () => Promise<void>;
@@ -263,6 +265,79 @@ export function CarsProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateCar = async (
+    id: string,
+    carData: Partial<Car>,
+  ): Promise<Car | null> => {
+    try {
+      const processedImages = await Promise.all(
+        (carData.images || []).map(async (img) => {
+          if (img.startsWith("file://")) {
+            try {
+              const formData = new FormData();
+              // @ts-ignore
+              formData.append("image", {
+                uri: img,
+                name: "image.jpg",
+                type: "image/jpeg",
+              });
+
+              const baseUrl = getApiUrl();
+              const uploadResponse = await fetch(`${baseUrl}api/upload`, {
+                method: "POST",
+                body: formData,
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+              });
+
+              if (uploadResponse.ok) {
+                const { imageUrl } = await uploadResponse.json();
+                return imageUrl;
+              }
+              return img;
+            } catch (e) {
+              console.error("Error uploading image:", e);
+              return img;
+            }
+          }
+          return img;
+        }),
+      );
+
+      const response = await apiRequest("PUT", `/api/cars/${id}`, {
+        ...carData,
+        images: processedImages.filter(img => !img.startsWith("file://")),
+      });
+
+      const updatedCar = await response.json();
+
+      // Update local state
+      setCars((prev) => prev.map(c => c.id === id ? { ...c, ...updatedCar } : c));
+
+      return updatedCar;
+    } catch (error) {
+      console.error("Error updating car:", error);
+      return null;
+    }
+  };
+
+  const deleteCar = async (id: string): Promise<boolean> => {
+    try {
+      if (token) {
+        await apiRequest("DELETE", `/api/cars/${id}`);
+      }
+
+      setCars((prev) => prev.filter((c) => c.id !== id));
+      setFeaturedCars((prev) => prev.filter((c) => c.id !== id));
+      return true;
+    } catch (error) {
+      console.error("Error deleting car:", error);
+      return false;
+    }
+  };
+
   const searchCars = async (filters: CarFilters): Promise<Car[]> => {
     try {
       const baseUrl = getApiUrl();
@@ -363,6 +438,8 @@ export function CarsProvider({ children }: { children: ReactNode }) {
         favorites,
         isLoading,
         addCar,
+        updateCar,
+        deleteCar,
         toggleFavorite,
         isFavorite,
         refreshCars,

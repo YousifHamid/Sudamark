@@ -639,9 +639,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .json({ error: "Not authorized to edit this car" });
         }
 
+        const {
+          make,
+          model,
+          year,
+          price,
+          mileage,
+          fuelType,
+          transmission,
+          color,
+          city,
+          description,
+          insuranceType,
+          advertiserType,
+          engineSize,
+          images,
+          category,
+        } = req.body;
+
         const [updatedCar] = await db
           .update(cars)
-          .set({ ...req.body, updatedAt: new Date(), isActive: false }) // Reset approval on edit
+          .set({
+            make,
+            model,
+            year,
+            price,
+            mileage,
+            fuelType,
+            transmission,
+            color,
+            city,
+            description,
+            insuranceType,
+            advertiserType,
+            engineSize,
+            images,
+            category,
+            updatedAt: new Date(),
+            isActive: false,
+          }) // Reset approval on edit
           .where(eq(cars.id, id))
           .returning();
         res.json(updatedCar);
@@ -669,6 +705,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res
             .status(403)
             .json({ error: "Not authorized to delete this car" });
+        }
+
+        // Delete associated images
+        if (existingCar.images && Array.isArray(existingCar.images)) {
+          for (const imageUrl of existingCar.images) {
+            if (typeof imageUrl === 'string' && imageUrl.startsWith('/uploads/')) {
+              const filename = imageUrl.split('/uploads/')[1];
+              const filePath = path.join(process.cwd(), "uploads", filename);
+              try {
+                if (fs.existsSync(filePath)) {
+                  await fs.promises.unlink(filePath);
+                }
+              } catch (err) {
+                console.error(`Failed to delete file: ${filePath}`, err);
+              }
+            }
+          }
         }
 
         await db.delete(cars).where(eq(cars.id, id));

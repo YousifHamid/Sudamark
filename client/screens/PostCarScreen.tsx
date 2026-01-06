@@ -116,7 +116,9 @@ export default function PostCarScreen() {
   const { t, isRTL } = useLanguage();
   const navigation = useNavigation<any>();
   const { user } = useAuth();
-  const { addCar } = useCars();
+  const { addCar, updateCar, deleteCar } = useCars();
+
+
 
   const categories = [
     { id: "small_salon", labelKey: "smallSalon" },
@@ -216,6 +218,12 @@ export default function PostCarScreen() {
     fetchListingStatus();
   }, []);
 
+  useEffect(() => {
+    navigation.setOptions({
+      title: isEditing ? (isRTL ? "تحديث الإعلان" : "Update Ad") : (isRTL ? "إضافة إعلان" : "Add Ad"),
+    });
+  }, [isEditing, isRTL, navigation]);
+
   const fetchListingStatus = async () => {
     try {
       const response = await fetch(
@@ -270,7 +278,7 @@ export default function PostCarScreen() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
     const newCar = {
-      id: Date.now().toString(),
+      id: isEditing ? carData.id : Date.now().toString(),
       title,
       make,
       model,
@@ -287,12 +295,47 @@ export default function PostCarScreen() {
       advertiserType,
       engineSize,
       color,
-      createdAt: new Date().toISOString(),
+      createdAt: isEditing ? carData.createdAt : new Date().toISOString(),
     };
 
-    await addCar(newCar);
+    if (isEditing) {
+      await updateCar(carData.id, newCar);
+    } else {
+      await addCar(newCar);
+    }
     setIsLoading(false);
     navigation.goBack();
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      isRTL ? "حذف الإعلان" : "Delete Ad",
+      isRTL
+        ? "هل أنت متأكد أنك تريد حذف هذا الإعلان؟ لا يمكن التراجع عن هذا الإجراء."
+        : "Are you sure you want to delete this ad? This action cannot be undone.",
+      [
+        {
+          text: t("cancel"),
+          style: "cancel",
+        },
+        {
+          text: t("delete"),
+          style: "destructive",
+          onPress: async () => {
+            setIsLoading(true);
+            const success = await deleteCar(carData.id);
+            setIsLoading(false);
+            if (success) {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              navigation.popToTop();
+            } else {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+              Alert.alert(t("error"), t("deleteFailed") || "Failed to delete ad");
+            }
+          },
+        },
+      ],
+    );
   };
 
   const validateCoupon = async () => {
@@ -1452,12 +1495,26 @@ export default function PostCarScreen() {
         >
           {isLoading
             ? t("posting")
-            : listingStatus?.requiresPayment
-              ? isRTL
-                ? "متابعة للدفع"
-                : "Continue to Payment"
-              : t("postListing")}
+            : isEditing
+              ? isRTL ? "تحديث الإعلان" : "Update Ad"
+              : listingStatus?.requiresPayment
+                ? isRTL
+                  ? "متابعة للدفع"
+                  : "Continue to Payment"
+                : t("postListing")}
         </Button>
+
+        {isEditing && (
+          <Button
+            variant="outline"
+            onPress={handleDelete}
+            disabled={isLoading}
+            style={[styles.submitButton, { marginTop: Spacing.md, borderColor: theme.error }]}
+            textStyle={{ color: theme.error }}
+          >
+            {isRTL ? "حذف الإعلان" : "Delete Ad"}
+          </Button>
+        )}
       </KeyboardAwareScrollViewCompat>
       <SelectionModal
         visible={activeModal === 'category'}

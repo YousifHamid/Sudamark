@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { StyleSheet, Pressable, ViewStyle, StyleProp } from "react-native";
+import { StyleSheet, Pressable, ViewStyle, TextStyle, StyleProp } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -15,6 +15,8 @@ interface ButtonProps {
   onPress?: () => void;
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
+  variant?: "primary" | "outline" | "ghost";
   disabled?: boolean;
 }
 
@@ -32,6 +34,8 @@ export function Button({
   onPress,
   children,
   style,
+  textStyle,
+  variant = "primary",
   disabled = false,
 }: ButtonProps) {
   const { theme } = useTheme();
@@ -53,6 +57,26 @@ export function Button({
     }
   };
 
+  const getBackgroundColor = () => {
+    switch (variant) {
+      case "outline":
+      case "ghost":
+        return "transparent";
+      default:
+        return theme.link;
+    }
+  };
+
+  const getTextColor = () => {
+    switch (variant) {
+      case "outline":
+      case "ghost":
+        return theme.text;
+      default:
+        return theme.buttonText;
+    }
+  };
+
   return (
     <AnimatedPressable
       onPress={disabled ? undefined : onPress}
@@ -62,8 +86,10 @@ export function Button({
       style={[
         styles.button,
         {
-          backgroundColor: theme.link,
+          backgroundColor: getBackgroundColor(),
           opacity: disabled ? 0.5 : 1,
+          borderWidth: variant === "outline" ? 1 : 0,
+          borderColor: theme.border,
         },
         style,
         animatedStyle,
@@ -71,7 +97,11 @@ export function Button({
     >
       <ThemedText
         type="body"
-        style={[styles.buttonText, { color: theme.buttonText }]}
+        style={[
+          styles.buttonText,
+          { color: getTextColor() },
+          textStyle,
+        ]}
       >
         {children}
       </ThemedText>
