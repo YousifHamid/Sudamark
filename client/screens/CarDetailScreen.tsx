@@ -374,6 +374,44 @@ export default function CarDetailScreen() {
             ))}
           </View>
 
+          <View style={styles.section}>
+            <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>
+              {isRTL ? "تفاصيل إضافية" : "Additional Details"}
+            </ThemedText>
+            <View style={[styles.specsGrid, { backgroundColor: theme.backgroundDefault, marginTop: Spacing.sm }]}>
+              {[
+                { label: t("doors"), value: car.doors || "-" },
+                { label: t("seats"), value: car.seats || "-" },
+                { label: t("seatType"), value: car.seatType ? t(car.seatType) : "-" },
+                { label: t("exteriorColor"), value: (car.exteriorColor || car.color) ? t(car.exteriorColor || car.color || "") : "-" },
+                { label: t("interiorColor"), value: car.interiorColor ? t(car.interiorColor) : "-" },
+                { label: t("fuelType"), value: car.fuelType ? t(car.fuelType) : "-" },
+                { label: t("gearType"), value: car.gearType ? t(car.gearType) : (car.transmission ? t(car.transmission) : "-") },
+                { label: t("engineSize"), value: car.engineSize || "-" },
+                { label: t("cylinders"), value: car.cylinders || "-" },
+                { label: t("wheels"), value: car.wheels ? t(`rims${car.wheels}`) : "-" },
+              ].map((spec, index) => (
+                <View key={index} style={styles.specItem}>
+                  <ThemedText
+                    type="small"
+                    style={[
+                      { color: theme.textSecondary },
+                      isRTL && styles.rtlText,
+                    ]}
+                  >
+                    {spec.label}
+                  </ThemedText>
+                  <ThemedText
+                    type="body"
+                    style={[{ fontWeight: "600", marginTop: 4 }, isRTL && styles.rtlText]}
+                  >
+                    {spec.value}
+                  </ThemedText>
+                </View>
+              ))}
+            </View>
+          </View>
+
           {car.description ? (
             <View style={styles.section}>
               <ThemedText

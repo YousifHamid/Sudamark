@@ -144,12 +144,52 @@ export default function PostCarScreen() {
     { id: "none", labelKey: "none" },
   ];
 
+  const fuelTypes = [
+    { id: "petrol", labelKey: "petrol" },
+    { id: "diesel", labelKey: "diesel" },
+    { id: "hybrid", labelKey: "hybrid" },
+    { id: "electric", labelKey: "electric" },
+  ];
+
+  const gearTypes = [
+    { id: "automatic", labelKey: "automatic" },
+    { id: "manual", labelKey: "manual" },
+    { id: "tiptronic", labelKey: "tiptronic" },
+  ];
+
+  const seatTypes = [
+    { id: "leather", labelKey: "leather" },
+    { id: "fabric", labelKey: "fabric" },
+    { id: "velvet", labelKey: "velvet" },
+  ];
+
+  const colors = [
+    { id: "white", labelKey: "white" },
+    { id: "black", labelKey: "black" },
+    { id: "silver", labelKey: "silver" },
+    { id: "grey", labelKey: "grey" },
+    { id: "red", labelKey: "red" },
+    { id: "blue", labelKey: "blue" },
+    { id: "brown", labelKey: "brown" },
+    { id: "gold", labelKey: "gold" },
+    { id: "green", labelKey: "green" },
+    { id: "beige", labelKey: "beige" },
+  ];
+
+  const wheelSizes = ["15", "16", "17", "18", "19", "20"].map(s => ({ id: s, labelKey: `rims${s}` }));
+  const cylinderCounts = ["3", "4", "6", "8", "12"].map(s => ({ id: s, label: s }));
+  const doorCounts = ["2", "3", "4", "5"].map(s => ({ id: s, label: s }));
+  const seatCounts = ["2", "4", "5", "7", "8"].map(s => ({ id: s, label: s }));
+  const engineSizes = ["1.0L", "1.2L", "1.4L", "1.6L", "1.8L", "2.0L", "2.4L", "3.0L", "3.5L", "4.0L", "5.0L"].map(s => ({ id: s, label: s }));
+
+
   const route = useRoute<any>();
   const carData = route.params?.carData;
   const isEditing = !!carData;
 
+
   const [step, setStep] = useState<ScreenStep>("form");
-  const [activeModal, setActiveModal] = useState<'city' | 'category' | 'advertiser' | 'insurance' | 'condition' | null>(null);
+  const [activeModal, setActiveModal] = useState<'city' | 'category' | 'advertiser' | 'insurance' | 'condition' | 'fuel' | 'gear' | 'seatType' | 'exteriorColor' | 'interiorColor' | 'wheels' | 'cylinders' | 'doors' | 'seats' | 'engineSize' | null>(null);
   const [listingStatus, setListingStatus] = useState<ListingStatus | null>(
     null,
   );
@@ -167,8 +207,16 @@ export default function PostCarScreen() {
   const [condition, setCondition] = useState("used");
   const [insuranceType, setInsuranceType] = useState(carData?.insuranceType || "mandatory");
   const [advertiserType, setAdvertiserType] = useState(carData?.advertiserType || "owner");
-  const [color, setColor] = useState(carData?.color || "");
-  const [engineSize, setEngineSize] = useState(carData?.engineSize || "");
+  const [exteriorColor, setExteriorColor] = useState(carData?.exteriorColor || "white");
+  const [interiorColor, setInteriorColor] = useState(carData?.interiorColor || "beige");
+  const [engineSize, setEngineSize] = useState(carData?.engineSize || "1.6L");
+  const [fuelType, setFuelType] = useState(carData?.fuelType || "petrol");
+  const [gearType, setGearType] = useState(carData?.gearType || "automatic");
+  const [seatType, setSeatType] = useState(carData?.seatType || "fabric");
+  const [cylinders, setCylinders] = useState(carData?.cylinders || "4");
+  const [wheels, setWheels] = useState(carData?.wheels || "16");
+  const [doors, setDoors] = useState(carData?.doors || "4");
+  const [seats, setSeats] = useState(carData?.seats || "5");
 
   const [carImages, setCarImages] = useState<Record<string, string | null>>({
     front: carData?.images?.[0] || null,
@@ -293,8 +341,18 @@ export default function PostCarScreen() {
       condition,
       insuranceType,
       advertiserType,
+
       engineSize,
-      color,
+      color: exteriorColor, // Mapping back to legacy field if needed, or just use exteriorColor
+      exteriorColor,
+      interiorColor,
+      fuelType,
+      gearType,
+      seatType,
+      cylinders,
+      wheels,
+      doors,
+      seats,
       createdAt: isEditing ? carData.createdAt : new Date().toISOString(),
     };
 
@@ -1355,63 +1413,110 @@ export default function PostCarScreen() {
           <Feather name="chevron-down" size={20} color={theme.textSecondary} />
         </Pressable>
 
-        <View style={[styles.row, isRTL && styles.rowRTL]}>
-          <View style={styles.halfInput}>
-            <ThemedText
-              type="small"
-              style={[
-                styles.label,
-                { color: theme.textSecondary },
-                isRTL && styles.rtlText,
-              ]}
-            >
-              {isRTL ? "اللون" : "Color"}
-            </ThemedText>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.backgroundSecondary,
-                  color: theme.text,
-                  borderColor: theme.border,
-                },
-                isRTL && styles.rtlInput,
-              ]}
-              placeholder={isRTL ? "مثال: أبيض" : "e.g. White"}
-              placeholderTextColor={theme.textSecondary}
-              value={color}
-              onChangeText={setColor}
-              textAlign={isRTL ? "right" : "left"}
-            />
-          </View>
-          <View style={styles.halfInput}>
-            <ThemedText
-              type="small"
-              style={[
-                styles.label,
-                { color: theme.textSecondary },
-                isRTL && styles.rtlText,
-              ]}
-            >
-              {isRTL ? "سعة المحرك" : "Engine Size"}
-            </ThemedText>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.backgroundSecondary,
-                  color: theme.text,
-                  borderColor: theme.border,
-                },
-                isRTL && styles.rtlInput,
-              ]}
-              placeholder={isRTL ? "مثال: 2.4L" : "e.g. 2.4L"}
-              placeholderTextColor={theme.textSecondary}
-              value={engineSize}
-              onChangeText={setEngineSize}
-              textAlign={isRTL ? "right" : "left"}
-            />
-          </View>
+        <ThemedText
+          type="h4"
+          style={{
+            marginTop: Spacing.xl,
+            marginBottom: Spacing.md,
+            textAlign: isRTL ? 'right' : 'left'
+          }}
+        >
+          {isRTL ? "تفاصيل إضافية عن السيارة" : "Additional Car Details"}
+        </ThemedText>
+
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md, direction: isRTL ? 'rtl' : 'ltr' }}>
+          {[
+            { key: 'seats', label: 'seats', icon: 'users', modal: 'seats', value: seats },
+            { key: 'doors', label: 'doors', icon: 'sidebar', modal: 'doors', value: doors },
+            {
+              key: 'exteriorColor',
+              label: 'exteriorColor',
+              icon: 'droplet',
+              modal: 'exteriorColor',
+              value: (() => {
+                const c = colors.find(i => i.id === exteriorColor);
+                return c ? t(c.labelKey) : exteriorColor;
+              })()
+            },
+            {
+              key: 'seatType',
+              label: 'seatType',
+              icon: 'layers',
+              modal: 'seatType',
+              value: (() => {
+                const c = seatTypes.find(i => i.id === seatType);
+                return c ? t(c.labelKey) : seatType;
+              })()
+            },
+            {
+              key: 'fuel',
+              label: 'fuelType',
+              icon: 'zap',
+              modal: 'fuel',
+              value: (() => {
+                const c = fuelTypes.find(i => i.id === fuelType);
+                return c ? t(c.labelKey) : fuelType;
+              })()
+            },
+            {
+              key: 'interiorColor',
+              label: 'interiorColor',
+              icon: 'circle',
+              modal: 'interiorColor',
+              value: (() => {
+                const c = colors.find(i => i.id === interiorColor);
+                return c ? t(c.labelKey) : interiorColor;
+              })()
+            },
+            { key: 'engine', label: 'engineSize', icon: 'cpu', modal: 'engineSize', value: engineSize },
+            {
+              key: 'gear',
+              label: 'gearType',
+              icon: 'settings',
+              modal: 'gear',
+              value: (() => {
+                const c = gearTypes.find(i => i.id === gearType);
+                return c ? t(c.labelKey) : gearType;
+              })()
+            },
+            { key: 'cylinders', label: 'cylinders', icon: 'grid', modal: 'cylinders', value: cylinders },
+            {
+              key: 'wheels',
+              label: 'wheels',
+              icon: 'disc',
+              modal: 'wheels',
+              value: (() => {
+                const c = wheelSizes.find(i => i.id === wheels);
+                return c ? t(c.labelKey) : wheels;
+              })()
+            },
+          ].map((item: any, index) => (
+            <View key={index} style={{ width: '47%' }}>
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginBottom: Spacing.xs, gap: 6 }}>
+                <Feather name={item.icon || 'circle'} size={14} color={theme.primary} />
+                <ThemedText type="small" style={{ color: theme.textSecondary }}>{t(item.label)}</ThemedText>
+              </View>
+              <Pressable
+                onPress={() => setActiveModal(item.modal)}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: theme.backgroundSecondary,
+                    borderColor: theme.border,
+                    flexDirection: isRTL ? 'row-reverse' : 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingHorizontal: 12
+                  }
+                ]}
+              >
+                <ThemedText style={{ color: theme.text, textAlign: isRTL ? 'right' : 'left' }}>
+                  {item.value}
+                </ThemedText>
+                <Feather name="chevron-down" size={20} color={theme.textSecondary} />
+              </Pressable>
+            </View>
+          ))}
         </View>
 
         <ThemedText
@@ -1567,6 +1672,116 @@ export default function PostCarScreen() {
         items={insuranceTypes.map(c => ({ id: c.id, label: t(c.labelKey) }))}
         onSelect={setInsuranceType}
         selectedId={insuranceType}
+        theme={theme}
+        isRTL={isRTL}
+        t={t}
+      />
+      <SelectionModal
+        visible={activeModal === 'fuel'}
+        onClose={() => setActiveModal(null)}
+        title={t("fuelType")}
+        items={fuelTypes.map(c => ({ id: c.id, label: t(c.labelKey) }))}
+        onSelect={setFuelType}
+        selectedId={fuelType}
+        theme={theme}
+        isRTL={isRTL}
+        t={t}
+      />
+      <SelectionModal
+        visible={activeModal === 'gear'}
+        onClose={() => setActiveModal(null)}
+        title={t("gearType")}
+        items={gearTypes.map(c => ({ id: c.id, label: t(c.labelKey) }))}
+        onSelect={setGearType}
+        selectedId={gearType}
+        theme={theme}
+        isRTL={isRTL}
+        t={t}
+      />
+      <SelectionModal
+        visible={activeModal === 'seatType'}
+        onClose={() => setActiveModal(null)}
+        title={t("seatType")}
+        items={seatTypes.map(c => ({ id: c.id, label: t(c.labelKey) }))}
+        onSelect={setSeatType}
+        selectedId={seatType}
+        theme={theme}
+        isRTL={isRTL}
+        t={t}
+      />
+      <SelectionModal
+        visible={activeModal === 'exteriorColor'}
+        onClose={() => setActiveModal(null)}
+        title={t("exteriorColor")}
+        items={colors.map(c => ({ id: c.id, label: t(c.labelKey) }))}
+        onSelect={setExteriorColor}
+        selectedId={exteriorColor}
+        theme={theme}
+        isRTL={isRTL}
+        t={t}
+      />
+      <SelectionModal
+        visible={activeModal === 'interiorColor'}
+        onClose={() => setActiveModal(null)}
+        title={t("interiorColor")}
+        items={colors.map(c => ({ id: c.id, label: t(c.labelKey) }))}
+        onSelect={setInteriorColor}
+        selectedId={interiorColor}
+        theme={theme}
+        isRTL={isRTL}
+        t={t}
+      />
+      <SelectionModal
+        visible={activeModal === 'wheels'}
+        onClose={() => setActiveModal(null)}
+        title={t("wheels")}
+        items={wheelSizes.map(c => ({ id: c.id, label: t(c.labelKey) }))}
+        onSelect={setWheels}
+        selectedId={wheels}
+        theme={theme}
+        isRTL={isRTL}
+        t={t}
+      />
+      <SelectionModal
+        visible={activeModal === 'cylinders'}
+        onClose={() => setActiveModal(null)}
+        title={t("cylinders")}
+        items={cylinderCounts}
+        onSelect={setCylinders}
+        selectedId={cylinders}
+        theme={theme}
+        isRTL={isRTL}
+        t={t}
+      />
+      <SelectionModal
+        visible={activeModal === 'doors'}
+        onClose={() => setActiveModal(null)}
+        title={t("doors")}
+        items={doorCounts}
+        onSelect={setDoors}
+        selectedId={doors}
+        theme={theme}
+        isRTL={isRTL}
+        t={t}
+      />
+      <SelectionModal
+        visible={activeModal === 'seats'}
+        onClose={() => setActiveModal(null)}
+        title={t("seats")}
+        items={seatCounts}
+        onSelect={setSeats}
+        selectedId={seats}
+        theme={theme}
+        isRTL={isRTL}
+        t={t}
+      />
+      <SelectionModal
+        visible={activeModal === 'engineSize'}
+        onClose={() => setActiveModal(null)}
+        title={t("engineSize")}
+        items={engineSizes}
+        onSelect={setEngineSize}
+        selectedId={engineSize}
         theme={theme}
         isRTL={isRTL}
         t={t}

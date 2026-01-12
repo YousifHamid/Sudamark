@@ -39,6 +39,16 @@ export interface Car {
     avatar?: string;
   };
   contactPhone?: string;
+  seats?: string;
+  doors?: string;
+  exteriorColor?: string;
+  interiorColor?: string;
+  fuelType?: string;
+  gearType?: string;
+  cylinders?: string;
+  wheels?: string;
+  seatType?: string;
+  transmission?: string;
 }
 
 interface CarCardProps {

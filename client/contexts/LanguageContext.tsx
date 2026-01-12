@@ -191,7 +191,6 @@ export const translations: Translations = {
   fourByFour: { ar: "دفع رباعي", en: "4x4" },
   sports: { ar: "رياضية", en: "Sports" },
   luxury: { ar: "فاخرة", en: "Luxury" },
-  electric: { ar: "كهربائية", en: "Electric" },
   truck: { ar: "شاحنة", en: "Truck" },
 
   // Search
@@ -204,10 +203,10 @@ export const translations: Translations = {
 
   // Services
   all: { ar: "الكل", en: "All" },
-  mechanics: { ar: "ميكانيكيين", en: "Mechanics" },
-  electricians: { ar: "كهربائيين", en: "Electricians" },
-  lawyers: { ar: "محامين", en: "Lawyers" },
-  inspection: { ar: "مراكز فحص", en: "Inspection" },
+  mechanics: { ar: "ميكانيكي", en: "Mechanic" },
+  electricians: { ar: "كهربائي", en: "Electrician" },
+  lawyers: { ar: "محامي", en: "Lawyer" },
+  inspection: { ar: "مركز فحص", en: "Inspection Center" },
   noProvidersFound: {
     ar: "لم يتم العثور على مزودي خدمات",
     en: "No providers found",
@@ -516,6 +515,48 @@ export const translations: Translations = {
   accountNameLabel: { ar: "الاسم: ", en: "Name: " },
   bankNameValue: { ar: "بنك الخرطوم", en: "Bank of Khartoum" },
   accountNameValue: { ar: "سودامارك", en: "Sudamark" },
+
+  // New Car Details
+  doors: { ar: "الابواب", en: "Doors" },
+  seats: { ar: "المقاعد", en: "Seats" },
+  seatType: { ar: "نوع المقاعد", en: "Seat Type" },
+  exteriorColor: { ar: "اللون الخارجي", en: "Exterior Color" },
+  interiorColor: { ar: "اللون الداخلي", en: "Interior Color" },
+  gearType: { ar: "نوع الجير", en: "Transmission" },
+  cylinders: { ar: "عدد الأسطوانات", en: "Cylinders" },
+  wheels: { ar: "العجلات", en: "Wheels" },
+
+  // Options
+  leather: { ar: "جلد", en: "Leather" },
+  fabric: { ar: "قماش", en: "Fabric" },
+  velvet: { ar: "مخمل", en: "Velvet" },
+
+  petrol: { ar: "بنزين", en: "Petrol" },
+  diesel: { ar: "ديزل", en: "Diesel" },
+  hybrid: { ar: "هايبرد", en: "Hybrid" },
+  electric: { ar: "كهرباء", en: "Electric" },
+
+  automatic: { ar: "أوتوماتيك", en: "Automatic" },
+  manual: { ar: "عادي", en: "Manual" },
+  tiptronic: { ar: "تيبترونيك", en: "Tiptronic" },
+
+  white: { ar: "أبيض", en: "White" },
+  black: { ar: "أسود", en: "Black" },
+  silver: { ar: "فضي", en: "Silver" },
+  grey: { ar: "رمادي", en: "Grey" },
+  red: { ar: "أحمر", en: "Red" },
+  blue: { ar: "أزرق", en: "Blue" },
+  brown: { ar: "بني", en: "Brown" },
+  gold: { ar: "ذهبي", en: "Gold" },
+  green: { ar: "أخضر", en: "Green" },
+  beige: { ar: "بيج", en: "Beige" },
+
+  rims15: { ar: "15 بوصة", en: "15 inch" },
+  rims16: { ar: "16 بوصة", en: "16 inch" },
+  rims17: { ar: "17 بوصة", en: "17 inch" },
+  rims18: { ar: "18 بوصة", en: "18 inch" },
+  rims19: { ar: "19 بوصة", en: "19 inch" },
+  rims20: { ar: "20 بوصة", en: "20 inch" },
 };
 
 interface LanguageContextType {

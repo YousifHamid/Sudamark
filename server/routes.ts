@@ -732,6 +732,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           engineSize,
           images,
           category,
+          seats,
+          doors,
+          exteriorColor,
+          interiorColor,
+          gearType,
+          cylinders,
+          wheels,
+          seatType,
         } = req.body;
 
         const [updatedCar] = await db
@@ -754,6 +762,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             category,
             updatedAt: new Date(),
             isActive: false,
+            seats,
+            doors,
+            exteriorColor,
+            interiorColor,
+            gearType,
+            cylinders,
+            wheels,
+            seatType,
           }) // Reset approval on edit
           .where(eq(cars.id, id))
           .returning();
