@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, StyleSheet, FlatList, Pressable } from "react-native";
+import React, { useState, useCallback } from "react";
+import { View, StyleSheet, FlatList, Pressable, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useNavigation } from "@react-navigation/native";
@@ -21,8 +21,20 @@ export default function ServicesScreen() {
   const { t, isRTL } = useLanguage();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { providers } = useServiceProviders();
+  const { providers, refreshProviders } = useServiceProviders();
   const [activeTab, setActiveTab] = useState("all");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refreshProviders();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshProviders]);
 
   const TABS = [
     { id: "all", labelKey: "all", icon: "grid" as const },
@@ -117,6 +129,14 @@ export default function ServicesScreen() {
               {t("checkBackLater")}
             </ThemedText>
           </View>
+        }
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.primary}
+            colors={[theme.primary]}
+          />
         }
       />
     </View>

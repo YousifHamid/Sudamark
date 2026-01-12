@@ -8,9 +8,11 @@ import React, {
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Car } from "@/components/CarCard";
-import { getApiUrl, apiRequest } from "@/lib/query-client";
+import { getApiUrl, apiRequest, throwIfResNotOk } from "@/lib/query-client";
 import { useAuth } from "@/contexts/AuthContext";
 import * as FileSystem from "expo-file-system";
+
+const TOKEN_STORAGE_KEY = "@sudamark_token";
 
 interface SliderImage {
   id: string;
@@ -56,7 +58,10 @@ export function CarsProvider({ children }: { children: ReactNode }) {
   const loadCars = useCallback(async () => {
     try {
       const baseUrl = getApiUrl();
-      const response = await fetch(`${baseUrl}api/cars`);
+      const token = await AsyncStorage.getItem(TOKEN_STORAGE_KEY);
+      const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await fetch(`${baseUrl}api/cars`, { headers });
+      await throwIfResNotOk(response);
       if (response.ok) {
         const apiCars = await response.json();
         // Transformation logic ...
@@ -97,7 +102,10 @@ export function CarsProvider({ children }: { children: ReactNode }) {
   const loadFeaturedCars = useCallback(async () => {
     try {
       const baseUrl = getApiUrl();
-      const response = await fetch(`${baseUrl}api/cars/featured`);
+      const token = await AsyncStorage.getItem(TOKEN_STORAGE_KEY);
+      const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await fetch(`${baseUrl}api/cars/featured`, { headers });
+      await throwIfResNotOk(response);
       if (response.ok) {
         const apiFeaturedCars = await response.json();
         const formattedFeatured = apiFeaturedCars.map((car: any) => ({
@@ -132,7 +140,10 @@ export function CarsProvider({ children }: { children: ReactNode }) {
   const loadSliderImages = useCallback(async () => {
     try {
       const baseUrl = getApiUrl();
-      const response = await fetch(`${baseUrl}api/slider-images`);
+      const token = await AsyncStorage.getItem(TOKEN_STORAGE_KEY);
+      const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await fetch(`${baseUrl}api/slider-images`, { headers });
+      await throwIfResNotOk(response);
       if (response.ok) {
         const images = await response.json();
         if (images.length > 0) {
@@ -351,7 +362,9 @@ export function CarsProvider({ children }: { children: ReactNode }) {
         params.append("maxPrice", filters.maxPrice.toString());
       if (filters.search) params.append("search", filters.search);
 
-      const response = await fetch(`${baseUrl}api/cars?${params.toString()}`);
+      const token = await AsyncStorage.getItem(TOKEN_STORAGE_KEY);
+      const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await fetch(`${baseUrl}api/cars?${params.toString()}`, { headers });
       if (response.ok) {
         const apiCars = await response.json();
         return apiCars.map((car: any) => ({

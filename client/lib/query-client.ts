@@ -11,7 +11,8 @@ export function getApiUrl(): string {
     // Fallback for development if not set
     if (__DEV__) {
       // NOTE: Update this IP address to your machine's local IP (check with 'ipconfig' or 'ifconfig')
-      return "http://192.168.1.42:5000/";
+      return "http://192.168.1.86:5000/";
+      // return "https://sudamark.up.railway.app/"; // Safe fallback
     }
     console.warn("EXPO_PUBLIC_DOMAIN is not set");
     return "https://sudamark.up.railway.app/"; // Safe fallback
@@ -56,7 +57,7 @@ async function getAuthToken(): Promise<string | null> {
   }
 }
 
-async function throwIfResNotOk(res: Response) {
+export async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
 
@@ -64,8 +65,15 @@ async function throwIfResNotOk(res: Response) {
     if (res.status === 403 && text.includes("ACCOUNT_BLOCKED")) {
       authEvents.emit('forbidden', 'ACCOUNT_BLOCKED');
     }
-    if (res.status === 401 && text.includes("USER_DELETED")) {
-      authEvents.emit('forbidden', 'USER_DELETED');
+
+    if (res.status === 401) {
+      if (text.includes("USER_DELETED")) {
+        authEvents.emit('forbidden', 'USER_DELETED');
+      } else if (text.includes("ACCOUNT_BLOCKED")) {
+        authEvents.emit('forbidden', 'ACCOUNT_BLOCKED');
+      } else {
+        authEvents.emit('unauthorized');
+      }
     }
 
     throw new Error(`${res.status}: ${text}`);

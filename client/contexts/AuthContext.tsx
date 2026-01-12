@@ -59,6 +59,7 @@ interface AuthContextType {
   completeOnboarding: () => Promise<void>;
   pendingPhoneNumber: string | null;
   pendingCountryCode: string;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -80,6 +81,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     loadUser();
   }, []);
+
+  const refreshUser = async () => {
+    if (!token) return;
+    try {
+      const baseUrl = getApiUrl();
+      const response = await fetch(`${baseUrl}api/users/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        // Keep the phone from local if needed or use from server
+        // usually server has correct phone
+        const updatedUser = {
+          ...user,
+          ...userData,
+          phoneNumber: userData.phone || user?.phoneNumber,
+        };
+        await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedUser));
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error("Error refreshing user:", error);
+    }
+  };
 
   const loadUser = async () => {
     try {
@@ -292,8 +320,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // But replace_file_content usually does local chunks.
     // I will use fully qualified name if possible or assumes top level import was added?
     // No, I must add the import first.
+    const handleUnauthorized = () => {
+      logout();
+    };
+
     authEvents.on('forbidden', handleForbidden);
-    return () => authEvents.off('forbidden', handleForbidden);
+    authEvents.on('unauthorized', handleUnauthorized);
+
+    return () => {
+      authEvents.off('forbidden', handleForbidden);
+      authEvents.off('unauthorized', handleUnauthorized);
+    };
   }, []);
 
   return (
@@ -311,6 +348,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         completeOnboarding,
         pendingPhoneNumber,
         pendingCountryCode,
+        refreshUser,
       }}
     >
       {children}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
   Modal,
   TextInput,
   Linking,
+  RefreshControl,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -41,7 +42,19 @@ export default function ProfileScreen() {
         NativeStackNavigationProp<RootStackParamList>
       >
     >();
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refreshUser();
+    } catch (error) {
+      console.error("Refresh error:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshUser]);
 
   const handleLogout = () => {
     Alert.alert(
@@ -131,23 +144,25 @@ export default function ProfileScreen() {
 
     // Default to main number, could offer choice
     const phone = "201157155248";
+    const cleanPhone = phone.replace(/[^0-9]/g, "");
+
     const text = isRTL
       ? `*طلب إعلان / شراكة*\nالاسم: ${adName}\nالنشاط: ${adBusiness}\nالرسالة: ${adMessage}`
       : `*Ad/Partnership Request*\nName: ${adName}\nBusiness: ${adBusiness}\nMessage: ${adMessage}`;
 
-    const url = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}`;
-    const webUrl = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+    const url = `whatsapp://send?phone=${cleanPhone}&text=${encodeURIComponent(text)}`;
+    const webUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
 
     try {
-      const canOpen = await Linking.canOpenURL(url);
-      if (canOpen) {
-        Linking.openURL(url);
-      } else {
-        Linking.openURL(webUrl);
-      }
+      await Linking.openURL(url);
       setShowAdModal(false);
     } catch (e) {
-      Alert.alert("Error", "Could not open WhatsApp");
+      try {
+        await Linking.openURL(webUrl);
+        setShowAdModal(false);
+      } catch (e2) {
+        Alert.alert("Error", "Could not open WhatsApp");
+      }
     }
   };
 
@@ -160,6 +175,16 @@ export default function ProfileScreen() {
         paddingHorizontal: Spacing.lg,
       }}
       scrollIndicatorInsets={{ bottom: insets.bottom }}
+      alwaysBounceVertical={true}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={theme.primary}
+          colors={[theme.primary]}
+          progressViewOffset={headerHeight + Spacing.xl}
+        />
+      }
     >
       <View
         style={[

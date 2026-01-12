@@ -71,17 +71,16 @@ export default function RequestInspectionScreen() {
     const message = isRTL
       ? `مرحباً، أريد الاستفسار عن السيارة: ${car?.title}`
       : `Hello, I'm interested in the car: ${car?.title}`;
-    const whatsappUrl = `whatsapp://send?phone=${sellerWhatsApp}&text=${encodeURIComponent(message)}`;
-    const webWhatsappUrl = `https://wa.me/${sellerWhatsApp.replace("+", "")}?text=${encodeURIComponent(message)}`;
+    const cleanPhone = sellerWhatsApp.replace(/[^0-9]/g, "");
+    const whatsappUrl = `whatsapp://send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
+    const webWhatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 
-    const canOpen = await Linking.canOpenURL(whatsappUrl);
-    if (canOpen) {
-      Linking.openURL(whatsappUrl);
-    } else {
-      const canOpenWeb = await Linking.canOpenURL(webWhatsappUrl);
-      if (canOpenWeb) {
-        Linking.openURL(webWhatsappUrl);
-      } else {
+    try {
+      await Linking.openURL(whatsappUrl);
+    } catch (err) {
+      try {
+        await Linking.openURL(webWhatsappUrl);
+      } catch (err2) {
         Alert.alert(t("error"), t("whatsappNotAvailable"));
       }
     }

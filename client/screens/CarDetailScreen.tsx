@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   StyleSheet,
@@ -11,6 +11,7 @@ import {
   Share,
   Linking,
   Image,
+  RefreshControl,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
@@ -41,7 +42,7 @@ export default function CarDetailScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<CarDetailRouteProp>();
-  const { cars, toggleFavorite, isFavorite } = useCars();
+  const { cars, toggleFavorite, isFavorite, refreshCars } = useCars();
   const { token, user } = useAuth();
 
   const car = cars.find((c) => c.id === route.params.carId);
@@ -52,6 +53,18 @@ export default function CarDetailScreen() {
   const [offerPrice, setOfferPrice] = useState("");
   const [offerMessage, setOfferMessage] = useState("");
   const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refreshCars();
+    } catch (error) {
+      console.error("Refresh error:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshCars]);
 
   if (!car) {
     return (
@@ -117,18 +130,17 @@ export default function CarDetailScreen() {
       ? `مرحباً، أريد تقديم عرض سعر للسيارة: ${car.title}\nالسعر المقترح: ${parseInt(offerPrice).toLocaleString()} جنيه`
       : `Hello, I would like to make an offer for the car: ${car.title}\nOffered Price: ${parseInt(offerPrice).toLocaleString()} SDG`;
 
-    const whatsappUrl = `whatsapp://send?phone=${sellerPhone}&text=${encodeURIComponent(message)}`;
-    const webWhatsappUrl = `https://wa.me/${sellerPhone.replace("+", "")}?text=${encodeURIComponent(message)}`;
+    const cleanPhone = sellerPhone.replace(/[^0-9]/g, "");
+    const whatsappUrl = `whatsapp://send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
+    const webWhatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 
     try {
-      const canOpen = await Linking.canOpenURL(whatsappUrl);
-      if (canOpen) {
-        Linking.openURL(whatsappUrl);
-      } else {
-        const canOpenWeb = await Linking.canOpenURL(webWhatsappUrl);
-        if (canOpenWeb) {
-          Linking.openURL(webWhatsappUrl);
-        } else {
+      try {
+        await Linking.openURL(whatsappUrl);
+      } catch (err) {
+        try {
+          await Linking.openURL(webWhatsappUrl);
+        } catch (err2) {
           Alert.alert(
             isRTL ? "تنبيه" : "Alert",
             isRTL ? "واتساب غير مثبت" : "WhatsApp is not installed"
@@ -167,20 +179,18 @@ export default function CarDetailScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     // @ts-ignore - owner is joined from backend
     const sellerPhone = car.owner?.phone || car.contactPhone || "+249123456789";
-    const url = `tel:${sellerPhone}`;
+    // Sanitize phone number to remove spaces and special characters that might break the URL
+    const cleanPhone = sellerPhone.replace(/[\s\-\(\)]/g, "");
+    const url = `tel:${cleanPhone}`;
 
     try {
-      const canOpen = await Linking.canOpenURL(url);
-      if (canOpen) {
-        await Linking.openURL(url);
-      } else {
-        Alert.alert(
-          isRTL ? "خطأ" : "Error",
-          isRTL ? "لا يمكن إجراء مكالمة" : "Cannot make a call",
-        );
-      }
+      await Linking.openURL(url);
     } catch (e) {
       console.error("Call error:", e);
+      Alert.alert(
+        isRTL ? "خطأ" : "Error",
+        isRTL ? "لا يمكن إجراء مكالمة" : "Cannot make a call",
+      );
     }
   };
 
@@ -191,17 +201,14 @@ export default function CarDetailScreen() {
     const message = isRTL
       ? `مرحباً، أريد الاستفسار عن السيارة: ${car.title}`
       : `Hello, I'm interested in the car: ${car.title}`;
-    const whatsappUrl = `whatsapp://send?phone=${sellerPhone}&text=${encodeURIComponent(message)}`;
-    const webWhatsappUrl = `https://wa.me/${sellerPhone.replace("+", "")}?text=${encodeURIComponent(message)}`;
+    const cleanPhone = sellerPhone.replace(/[^0-9]/g, "");
+    const whatsappUrl = `whatsapp://send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
+    const webWhatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 
-    const canOpen = await Linking.canOpenURL(whatsappUrl);
-    if (canOpen) {
-      Linking.openURL(whatsappUrl);
-    } else {
-      const canOpenWeb = await Linking.canOpenURL(webWhatsappUrl);
-      if (canOpenWeb) {
-        Linking.openURL(webWhatsappUrl);
-      }
+    try {
+      await Linking.openURL(whatsappUrl);
+    } catch {
+      Linking.openURL(webWhatsappUrl).catch(() => { });
     }
   };
 
@@ -222,6 +229,14 @@ export default function CarDetailScreen() {
         style={styles.scrollView}
         contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.primary}
+            colors={[theme.primary]}
+          />
+        }
       >
         <View style={styles.imageContainer}>
           <ScrollView

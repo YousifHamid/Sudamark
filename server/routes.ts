@@ -142,7 +142,7 @@ async function authMiddleware(req: AuthRequest, res: Response, next: NextFunctio
       }
 
       if (!user.isActive) {
-        return res.status(403).json({ error: "ACCOUNT_BLOCKED" });
+        return res.status(401).json({ error: "ACCOUNT_BLOCKED" });
       }
 
       req.user = { id: user.id, phone: user.phone, roles: user.roles };
@@ -154,6 +154,42 @@ async function authMiddleware(req: AuthRequest, res: Response, next: NextFunctio
 
   } catch {
     return res.status(401).json({ error: "Invalid token" });
+  }
+}
+
+async function optionalAuthMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) {
+    return next(); // Proceed as guest
+  }
+
+  const token = authHeader.substring(7);
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      id: string;
+      phone: string;
+      roles: string[];
+    };
+
+    // Verify user status in DB
+    try {
+      const [user] = await db.select().from(users).where(eq(users.id, decoded.id));
+
+      if (user) {
+        if (!user.isActive) {
+          return res.status(401).json({ error: "ACCOUNT_BLOCKED" });
+        }
+        req.user = { id: user.id, phone: user.phone, roles: user.roles };
+      }
+      next();
+    } catch (err) {
+      console.error("Optional auth middleware DB check failed", err);
+      next(); // Proceed as guest if DB fails? Or fail? Better proceed or fail silent.
+    }
+
+  } catch {
+    next(); // Invalid token -> proceed as guest (or should return 401 if token is present but invalid? Usually better to ignore bad token for optional auth, or return 401. Let's return 401 to be strict if they try to send one)
+    // Actually for optional auth, if token is bad, we usually treat as guest.
   }
 }
 
@@ -183,7 +219,7 @@ function adminAuthMiddleware(
       try {
         const [admin] = await db.select().from(admins).where(eq(admins.id, decoded.id));
         if (!admin || !admin.isActive) {
-          return res.status(403).json({ error: "ACCOUNT_BLOCKED" });
+          return res.status(401).json({ error: "ACCOUNT_BLOCKED" });
         }
         req.admin = decoded;
         next();
@@ -317,7 +353,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           if (existingUser) {
             if (!existingUser.isActive) {
-              return res.status(403).json({ error: "ACCOUNT_BLOCKED" });
+              return res.status(401).json({ error: "ACCOUNT_BLOCKED" });
             }
             const token = jwt.sign(
               {
@@ -335,7 +371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const [emailUser] = await db.select().from(users).where(eq(users.email, email)).limit(1);
               if (emailUser) {
                 if (!emailUser.isActive) {
-                  return res.status(403).json({ error: "ACCOUNT_BLOCKED" });
+                  return res.status(401).json({ error: "ACCOUNT_BLOCKED" });
                 }
                 // Start of linking account logic, but for now just return isNewUser with extra details
                 // or auto-link?. Let's return isNewUser = true but with flag 'linkAccount' or just googleId
@@ -380,7 +416,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         if (!existingUser.isActive) {
-          return res.status(403).json({ error: "ACCOUNT_BLOCKED" });
+          return res.status(401).json({ error: "ACCOUNT_BLOCKED" });
         }
 
         // Verify Password
@@ -536,7 +572,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // --- Car Routes ---
 
-  app.get("/api/cars", async (req: Request, res: Response) => {
+  app.get("/api/cars", optionalAuthMiddleware, async (req: AuthRequest, res: Response) => {
     try {
       const { category, city, minPrice, maxPrice, search } = req.query;
 
@@ -589,7 +625,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/cars/featured", async (_req: Request, res: Response) => {
+  app.get("/api/cars/featured", optionalAuthMiddleware, async (_req: Request, res: Response) => {
     try {
       const result = await db
         .select()
@@ -845,7 +881,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   );
 
-  app.get("/api/service-providers", async (req: Request, res: Response) => {
+  app.get("/api/service-providers", optionalAuthMiddleware, async (req: Request, res: Response) => {
     try {
       const { type, city } = req.query;
       let conditions: any[] = [];
@@ -888,7 +924,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/slider-images", async (_req: Request, res: Response) => {
+  app.get("/api/slider-images", optionalAuthMiddleware, async (_req: Request, res: Response) => {
     try {
       const images = await db
         .select()

@@ -11,7 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -25,6 +25,7 @@ import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { useCars } from "@/hooks/useCars";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getApiUrl } from "@/lib/query-client";
+import { log } from "console";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -36,16 +37,52 @@ export default function HomeScreen() {
   const { t, isRTL } = useLanguage();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { cars, featuredCars, isLoading: isCarsLoading } = useCars();
+  const { cars, featuredCars, isLoading: isCarsLoading, refreshCars } = useCars();
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = React.useState(false);
 
-  const onRefresh = React.useCallback(async () => {
-    setRefreshing(true);
-    await queryClient.invalidateQueries({ queryKey: ["cars"] });
-    await queryClient.invalidateQueries({ queryKey: ["slider-images"] });
-    setRefreshing(false);
+  const timerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const refreshData = React.useCallback(async () => {
+    await Promise.all([
+      refreshCars(),
+      queryClient.invalidateQueries({ queryKey: ["slider-images"] }),
+    ]);
+  }, [refreshCars, queryClient]);
+
+  const startAutoRefresh = React.useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      refreshData().catch((e) => console.error("Auto-refresh error:", e));
+    }, 10000);
+  }, [refreshData]);
+
+  const stopAutoRefresh = React.useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      startAutoRefresh();
+      return () => stopAutoRefresh();
+    }, [startAutoRefresh, stopAutoRefresh])
+  );
+
+  const onRefresh = React.useCallback(async () => {
+    stopAutoRefresh();
+    setRefreshing(true);
+    try {
+      await refreshData();
+    } catch (e) {
+      console.error("Refresh error:", e);
+    } finally {
+      setRefreshing(false);
+      startAutoRefresh();
+    }
+  }, [refreshData, startAutoRefresh, stopAutoRefresh]);
 
   const { data: sliderImages = [] } = useQuery({
     queryKey: ["slider-images"],
@@ -111,7 +148,12 @@ export default function HomeScreen() {
       scrollIndicatorInsets={{ bottom: insets.bottom }}
       showsVerticalScrollIndicator={false}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={theme.primary}
+          progressViewOffset={150}
+        />
       }
     >
       <View

@@ -7,7 +7,10 @@ import React, {
   useCallback,
 } from "react";
 import { ServiceProvider } from "@/components/ServiceProviderCard";
-import { getApiUrl } from "@/lib/query-client";
+import { getApiUrl, throwIfResNotOk } from "@/lib/query-client";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const TOKEN_STORAGE_KEY = "@sudamark_token";
 
 interface ServiceProvidersContextType {
   providers: ServiceProvider[];
@@ -34,7 +37,10 @@ export function ServiceProvidersProvider({
   const loadProviders = useCallback(async () => {
     try {
       const baseUrl = getApiUrl();
-      const response = await fetch(`${baseUrl}api/service-providers`);
+      const token = await AsyncStorage.getItem(TOKEN_STORAGE_KEY);
+      const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await fetch(`${baseUrl}api/service-providers`, { headers });
+      await throwIfResNotOk(response);
       if (response.ok) {
         const apiProviders = await response.json();
         if (apiProviders.length > 0) {
