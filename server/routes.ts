@@ -40,7 +40,7 @@ const adminLoginAttempts = new Map<
   { count: number; blockedUntil: number }
 >();
 const ADMIN_MAX_ATTEMPTS = 5;
-const ADMIN_BLOCK_DURATION_MS = 15 * 60 * 1000;
+const ADMIN_BLOCK_DURATION_MS = 5 * 60 * 1000;
 
 import multer from "multer";
 import * as fs from "fs";
@@ -115,7 +115,7 @@ function clearAdminLoginAttempts(ip: string): void {
 
 interface AuthRequest extends Request {
   user?: { id: string; phone: string; roles: string[] };
-  admin?: { id: string; email: string; role: string };
+  admin?: { id: string; email: string; role: string; permissions?: string[] };
 }
 
 
@@ -221,7 +221,13 @@ function adminAuthMiddleware(
         if (!admin || !admin.isActive) {
           return res.status(401).json({ error: "ACCOUNT_BLOCKED" });
         }
-        req.admin = decoded;
+        req.admin = { ...decoded, permissions: admin.permissions || [] };
+
+        // Update last seen asynchronously
+        await db.update(admins)
+          .set({ lastSeen: new Date() })
+          .where(eq(admins.id, admin.id));
+
         next();
       } catch (err) {
         console.error("Admin auth middleware DB check failed", err);
@@ -873,6 +879,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (req: Request, res: Response) => {
       try {
+        const authReq = req as AuthRequest;
+        if (authReq.admin!.role !== "admin" && authReq.admin!.role !== "super_admin" && !authReq.admin!.permissions?.includes("cars")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const { id } = req.params;
         const { isActive, isFeatured } = req.body;
 
@@ -1022,16 +1032,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post(
     "/api/admin/login",
-    authLimiter,
     async (req: Request, res: Response) => {
       try {
         const clientIp = req.ip || req.socket.remoteAddress || "unknown";
+        const deviceId = req.header("x-device-id");
+        const limitKey = (typeof deviceId === 'string' && deviceId) ? `device:${deviceId}` : clientIp;
+
         const { email, password } = req.body;
 
-        const loginCheck = checkAdminLoginAllowed(clientIp);
+        const loginCheck = checkAdminLoginAllowed(limitKey);
         if (!loginCheck.allowed) {
           return res.status(403).json({
-            error: `تم حظر IP الخاص بك لمدة ${loginCheck.remainingTime} دقيقة بسبب محاولات تسجيل دخول فاشلة متعددة`,
+            error: `تم حظر جهازك لمدة ${loginCheck.remainingTime} دقيقة بسبب محاولات تسجيل دخول فاشلة متعددة`,
           });
         }
 
@@ -1041,7 +1053,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .where(and(eq(admins.email, email), eq(admins.isActive, true)));
 
         if (!admin) {
-          recordAdminLoginFailure(clientIp);
+          recordAdminLoginFailure(limitKey);
           console.log(
             `[ADMIN SECURITY] Failed login attempt from IP: ${clientIp} - Invalid email`,
           );
@@ -1053,14 +1065,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           admin.passwordHash,
         );
         if (!isValidPassword) {
-          recordAdminLoginFailure(clientIp);
+          recordAdminLoginFailure(limitKey);
           console.log(
             `[ADMIN SECURITY] Failed login attempt from IP: ${clientIp} - Invalid password`,
           );
           return res.status(401).json({ error: "بيانات الدخول غير صحيحة" });
         }
 
-        clearAdminLoginAttempts(clientIp);
+        clearAdminLoginAttempts(limitKey);
         console.log(
           `[ADMIN SECURITY] Successful login from IP: ${clientIp} for admin: ${admin.email}`,
         );
@@ -1077,12 +1089,186 @@ export async function registerRoutes(app: Express): Promise<Server> {
             email: admin.email,
             name: admin.name,
             role: admin.role,
+            permissions: admin.permissions,
           },
           token,
         });
       } catch (error) {
         console.error("Admin login error:", error);
         res.status(500).json({ error: "فشل تسجيل الدخول" });
+      }
+    },
+  );
+
+  app.post(
+    "/api/admin/change-password",
+    adminAuthMiddleware,
+    async (req: AuthRequest, res: Response) => {
+      try {
+        const { currentPassword, newPassword } = req.body;
+        const adminId = req.admin!.id;
+
+        const [admin] = await db
+          .select()
+          .from(admins)
+          .where(eq(admins.id, adminId));
+
+        if (!admin) {
+          return res.status(404).json({ error: "Admin not found" });
+        }
+
+        const isValid = await bcrypt.compare(currentPassword, admin.passwordHash);
+        if (!isValid) {
+          return res.status(400).json({ error: "كلمة المرور الحالية غير صحيحة" });
+        }
+
+        const passwordHash = await bcrypt.hash(newPassword, 12);
+        await db
+          .update(admins)
+          .set({ passwordHash })
+          .where(eq(admins.id, adminId));
+
+        res.json({ success: true });
+      } catch (error) {
+        res.status(500).json({ error: "Failed to change password" });
+      }
+    },
+  );
+
+  // Employee Management Routes
+  app.get(
+    "/api/admin/employees",
+    adminAuthMiddleware,
+    async (req: AuthRequest, res: Response) => {
+      try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin") {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
+
+        const employees = await db
+          .select({
+            id: admins.id,
+            name: admins.name,
+            email: admins.email,
+            role: admins.role,
+            permissions: admins.permissions,
+            isActive: admins.isActive,
+            lastSeen: admins.lastSeen,
+            createdAt: admins.createdAt,
+          })
+          .from(admins)
+          .where(eq(admins.role, "employee"))
+          .orderBy(desc(admins.createdAt));
+
+        res.json(employees);
+      } catch (error) {
+        res.status(500).json({ error: "Failed to fetch employees" });
+      }
+    },
+  );
+
+  app.post(
+    "/api/admin/employees",
+    adminAuthMiddleware,
+    async (req: AuthRequest, res: Response) => {
+      try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin") {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
+
+        const { name, email, password, permissions } = req.body;
+
+        const [existing] = await db
+          .select()
+          .from(admins)
+          .where(eq(admins.email, email));
+
+        if (existing) {
+          return res.status(400).json({ error: "Email already exists" });
+        }
+
+        const passwordHash = await bcrypt.hash(password, 12);
+
+        const [newEmployee] = await db
+          .insert(admins)
+          .values({
+            name,
+            email,
+            passwordHash,
+            role: "employee",
+            permissions: permissions || [],
+            isActive: true,
+          })
+          .returning();
+
+        res.json({
+          id: newEmployee.id,
+          name: newEmployee.name,
+          email: newEmployee.email,
+          role: newEmployee.role,
+          permissions: newEmployee.permissions,
+          isActive: newEmployee.isActive,
+        });
+      } catch (error) {
+        res.status(500).json({ error: "Failed to create employee" });
+      }
+    },
+  );
+
+  app.put(
+    "/api/admin/employees/:id",
+    adminAuthMiddleware,
+    async (req: AuthRequest, res: Response) => {
+      try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin") {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
+
+        const { id } = req.params;
+        const { name, permissions, isActive, password } = req.body;
+
+        const updateData: any = {};
+        if (name) updateData.name = name;
+        if (permissions) updateData.permissions = permissions;
+        if (isActive !== undefined) updateData.isActive = isActive;
+        if (password) {
+          updateData.passwordHash = await bcrypt.hash(password, 12);
+        }
+
+        const [updated] = await db
+          .update(admins)
+          .set(updateData)
+          .where(eq(admins.id, id))
+          .returning();
+
+        res.json({
+          id: updated.id,
+          name: updated.name,
+          email: updated.email,
+          role: updated.role,
+          permissions: updated.permissions,
+          isActive: updated.isActive,
+        });
+      } catch (error) {
+        res.status(500).json({ error: "Failed to update employee" });
+      }
+    },
+  );
+
+  app.delete(
+    "/api/admin/employees/:id",
+    adminAuthMiddleware,
+    async (req: AuthRequest, res: Response) => {
+      try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin") {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
+
+        const { id } = req.params;
+        await db.delete(admins).where(eq(admins.id, id));
+        res.json({ success: true });
+      } catch (error) {
+        res.status(500).json({ error: "Failed to delete employee" });
       }
     },
   );
@@ -1106,11 +1292,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .select({ count: sql<number>`count(*)` })
           .from(serviceProviders);
 
+        const [employeesCount] = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(admins)
+          .where(eq(admins.role, "employee"));
+
         res.json({
           totalUsers: Number(usersCount.count),
           totalCars: Number(carsCount.count),
           activeCars: Number(activeCarsCount.count),
           totalProviders: Number(providersCount.count),
+          totalEmployees: Number(employeesCount.count),
         });
       } catch (error) {
         res.status(500).json({ error: "Failed to fetch stats" });
@@ -1121,8 +1313,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get(
     "/api/admin/users",
     adminAuthMiddleware,
-    async (_req: AuthRequest, res: Response) => {
+    async (req: AuthRequest, res: Response) => {
       try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("users")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const allUsers = await db
           .select()
           .from(users)
@@ -1139,6 +1334,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (req: AuthRequest, res: Response) => {
       try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("users")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const { id } = req.params;
         const { name, phone, roles, isActive } = req.body;
 
@@ -1171,6 +1369,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (req: AuthRequest, res: Response) => {
       try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("users")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const { id } = req.params;
 
         // 1. Get user's cars
@@ -1218,6 +1419,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (req: AuthRequest, res: Response) => {
       try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("cars")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const {
           make,
           model,
@@ -1292,6 +1496,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (req: AuthRequest, res: Response) => {
       try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("cars")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const { id } = req.params;
         const {
           isActive,
@@ -1337,6 +1544,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (req: AuthRequest, res: Response) => {
       try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("cars")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const { id } = req.params;
         await db.delete(cars).where(eq(cars.id, id));
         res.json({ success: true });
@@ -1367,6 +1577,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (req: AuthRequest, res: Response) => {
       try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("providers")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const [newProvider] = await db
           .insert(serviceProviders)
           .values(req.body)
@@ -1383,6 +1596,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (req: AuthRequest, res: Response) => {
       try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("providers")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const { id } = req.params;
         const [updatedProvider] = await db
           .update(serviceProviders)
@@ -1401,6 +1617,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (req: AuthRequest, res: Response) => {
       try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("providers")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const { id } = req.params;
         await db.delete(serviceProviders).where(eq(serviceProviders.id, id));
         res.json({ success: true });
@@ -1415,6 +1634,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (_req: AuthRequest, res: Response) => {
       try {
+        if (_req.admin!.role !== "admin" && _req.admin!.role !== "super_admin" && !_req.admin!.permissions?.includes("ads")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const images = await db
           .select()
           .from(sliderImages)
@@ -1431,6 +1653,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (req: AuthRequest, res: Response) => {
       try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("ads")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const [newImage] = await db
           .insert(sliderImages)
           .values(req.body)
@@ -1447,6 +1672,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (req: AuthRequest, res: Response) => {
       try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("ads")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const { id } = req.params;
         await db.delete(sliderImages).where(eq(sliderImages.id, id));
         res.json({ success: true });
@@ -1847,6 +2075,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (req: AuthRequest, res: Response) => {
       try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("payments")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const allPayments = await db
           .select({
             payment: payments,
@@ -1871,6 +2102,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (req: AuthRequest, res: Response) => {
       try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("payments")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const { id } = req.params;
         const adminId = req.admin!.id;
 
@@ -1911,6 +2145,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (req: AuthRequest, res: Response) => {
       try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("payments")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const { id } = req.params;
         const adminId = req.admin!.id;
 
@@ -1936,6 +2173,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (req: AuthRequest, res: Response) => {
       try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("payments")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const [setting] = await db
           .select()
           .from(appSettings)
@@ -1952,6 +2192,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     adminAuthMiddleware,
     async (req: AuthRequest, res: Response) => {
       try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("payments")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
         const { autoApprove } = req.body;
         const value = autoApprove ? "true" : "false";
 

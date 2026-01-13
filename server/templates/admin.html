@@ -50,16 +50,23 @@
             <span class="text-xl text-gray-400">|</span>
             <span class="text-xl font-bold text-white">لوحة التحكم</span>
           </div>
-          <div class="flex items-center gap-4">
-            <span id="admin-name" class="text-gray-300"></span>
-            <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-sm">تسجيل
-              الخروج</button>
-          </div>
         </div>
+        <div class="flex items-center gap-4">
+          <span id="admin-name" class="text-gray-300"></span>
+          <button onclick="showChangePassword()" class="text-gray-400 hover:text-white text-sm">تغيير كلمة
+            المرور</button>
+          <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-sm">تسجيل
+            الخروج</button>
+        </div>
+
       </nav>
 
       <div class="container mx-auto p-4">
-        <div id="stats" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div id="stats" class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+          <div class="glass rounded-xl p-6 border border-gray-700 hidden" id="card-employees">
+            <div class="text-3xl font-bold text-pink-400" id="stat-employees">0</div>
+            <div class="text-gray-400">الموظفين</div>
+          </div>
           <div class="glass rounded-xl p-6 border border-gray-700">
             <div class="text-3xl font-bold text-blue-400" id="stat-users">0</div>
             <div class="text-gray-400">المستخدمين</div>
@@ -84,15 +91,33 @@
           <button onclick="showTab('cars')"
             class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">السيارات</button>
           <button onclick="showTab('providers')"
-            class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">مزودي الخدمات</button>
+            class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">مزودي
+            الخدمات</button>
           <button onclick="showTab('payments')"
             class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">المدفوعات</button>
-          <button onclick="showTab('slider')" class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">إعلانات
+          <button onclick="showTab('slider')" id="btn-slider"
+            class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 hidden">إعلانات
             البانر</button>
+          <button onclick="showTab('employees')" id="btn-employees"
+            class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 hidden">الموظفين</button>
         </div>
 
         <div id="users-tab" class="tab-content hidden">
-          <!-- ... existing users tab ... -->
+          <div class="glass rounded-xl border border-gray-700 overflow-hidden overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-800">
+                <tr>
+                  <th class="p-4 text-right">الاسم</th>
+                  <th class="p-4 text-right">الهاتف</th>
+                  <th class="p-4 text-right">الموقع</th>
+                  <th class="p-4 text-right">الأدوار</th>
+                  <th class="p-4 text-right">التاريخ</th>
+                  <th class="p-4 text-right">الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="users-table"></tbody>
+            </table>
+          </div>
         </div>
 
         <!-- ... existing other tabs ... -->
@@ -118,24 +143,7 @@
           </div>
         </div>
 
-        <div id="payments-tab" class="tab-content hidden">
-          <!-- ... existing payments tab ... -->
-        </div>
-        <div class="glass rounded-xl border border-gray-700 overflow-hidden overflow-x-auto">
-          <table class="w-full">
-            <thead class="bg-gray-800">
-              <tr>
-                <th class="p-4 text-right">الاسم</th>
-                <th class="p-4 text-right">الهاتف</th>
-                <th class="p-4 text-right">الموقع</th>
-                <th class="p-4 text-right">الأدوار</th>
-                <th class="p-4 text-right">التاريخ</th>
-                <th class="p-4 text-right">الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody id="users-table"></tbody>
-          </table>
-        </div>
+
       </div>
 
       <div id="cars-tab" class="tab-content hidden">
@@ -214,7 +222,31 @@
           </table>
         </div>
       </div>
+
+
+      <div id="employees-tab" class="tab-content hidden">
+        <div class="flex justify-end mb-4">
+          <button onclick="showAddEmployee()" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg">إضافة
+            موظف</button>
+        </div>
+        <div class="glass rounded-xl border border-gray-700 overflow-hidden overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-800">
+              <tr>
+                <th class="p-4 text-right">الاسم</th>
+                <th class="p-4 text-right">البريد الإلكتروني</th>
+                <th class="p-4 text-right">الدور</th>
+                <th class="p-4 text-right">الصلاحيات</th>
+                <th class="p-4 text-right">الحالة</th>
+                <th class="p-4 text-right">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="employees-table"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
+  </div>
   </div>
 
   <div id="add-car-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -365,6 +397,68 @@
     </div>
   </div>
 
+  <div id="add-employee-modal"
+    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="glass rounded-2xl p-6 w-full max-w-md border border-gray-700">
+      <h2 class="text-xl font-bold mb-4" id="employee-modal-title">إضافة موظف</h2>
+      <input type="hidden" id="edit-employee-id">
+
+      <input type="text" id="emp-name" placeholder="الاسم"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
+      <input type="email" id="emp-email" placeholder="البريد الإلكتروني"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
+      <input type="password" id="emp-password" placeholder="كلمة المرور"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
+
+      <div class="mb-4">
+        <label class="block text-gray-400 text-sm mb-2">الصلاحيات</label>
+        <div class="space-y-2">
+          <label class="flex items-center"><input type="checkbox" value="users"
+              class="perm-checkbox form-checkbox text-orange-500 rounded ml-2 bg-gray-800 border-gray-600"> إدارة
+            المستخدمين</label>
+          <label class="flex items-center"><input type="checkbox" value="cars"
+              class="perm-checkbox form-checkbox text-orange-500 rounded ml-2 bg-gray-800 border-gray-600"> إدارة
+            السيارات</label>
+          <label class="flex items-center"><input type="checkbox" value="providers"
+              class="perm-checkbox form-checkbox text-orange-500 rounded ml-2 bg-gray-800 border-gray-600"> مزودي
+            الخدمات</label>
+          <label class="flex items-center"><input type="checkbox" value="payments"
+              class="perm-checkbox form-checkbox text-orange-500 rounded ml-2 bg-gray-800 border-gray-600">
+            المدفوعات</label>
+          <label class="flex items-center"><input type="checkbox" value="ads"
+              class="perm-checkbox form-checkbox text-orange-500 rounded ml-2 bg-gray-800 border-gray-600"> إعلانات
+            البانر</label>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="saveEmployee()" class="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-lg">حفظ</button>
+        <button onclick="hideAddEmployee()" class="flex-1 bg-gray-600 hover:bg-gray-700 py-3 rounded-lg">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="change-password-modal"
+    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="glass rounded-2xl p-6 w-full max-w-md border border-gray-700">
+      <h2 class="text-xl font-bold mb-4">تغيير كلمة المرور</h2>
+      <input type="password" id="cp-current" placeholder="كلمة المرور الحالية"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
+      <input type="password" id="cp-new" placeholder="كلمة المرور الجديدة"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
+      <input type="password" id="cp-confirm" placeholder="تأكيد كلمة المرور"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-4">
+
+      <div class="flex gap-3">
+        <button onclick="changePassword()" class="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-lg">تغيير</button>
+        <button onclick="hideChangePassword()"
+          class="flex-1 bg-gray-600 hover:bg-gray-700 py-3 rounded-lg">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
   <script>
     const API_BASE = window.location.origin;
     let token = localStorage.getItem('adminToken');
@@ -372,17 +466,65 @@
 
     // ... (existing api, login, logout functions) ...
 
+    let currentTabInterval;
+    let currentActiveTab;
+
+    function startRefreshTimer() {
+      if (currentTabInterval) clearInterval(currentTabInterval);
+      if (!currentActiveTab) return;
+
+      const loadActions = {
+        'users': loadUsers,
+        'cars': loadCars,
+        'providers': loadProviders,
+        'payments': loadPayments,
+        'slider': loadSlider,
+        'employees': loadEmployees
+      };
+
+      if (loadActions[currentActiveTab]) {
+        currentTabInterval = setInterval(loadActions[currentActiveTab], 60000);
+      }
+    }
+
     function showTab(tab) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('bg-orange-500'));
       document.getElementById(`${tab}-tab`).classList.remove('hidden');
-      event?.target?.classList.add('bg-orange-500');
-      if (tab === 'users') loadUsers();
-      if (tab === 'cars') loadCars();
-      if (tab === 'providers') loadProviders();
-      if (tab === 'payments') loadPayments();
-      if (tab === 'slider') loadSlider();
+      const btn = document.querySelector(`button[onclick="showTab('${tab}')"]`);
+      if (btn) btn.classList.add('bg-orange-500');
+
+      currentActiveTab = tab;
+
+      const loadActions = {
+        'users': loadUsers,
+        'cars': loadCars,
+        'providers': loadProviders,
+        'payments': loadPayments,
+        'slider': loadSlider,
+        'employees': loadEmployees
+      };
+
+      if (loadActions[tab]) {
+        loadActions[tab]();
+        startRefreshTimer();
+      }
     }
+
+    let interactionTimeout;
+    function onUserInteraction() {
+      if (interactionTimeout) return;
+
+      startRefreshTimer();
+
+      interactionTimeout = setTimeout(() => {
+        interactionTimeout = null;
+      }, 1000);
+    }
+
+    ['click', 'keydown', 'mousemove', 'scroll', 'touchstart'].forEach(evt =>
+      window.addEventListener(evt, onUserInteraction, { passive: true })
+    );
 
     async function loadSlider() {
       try {
@@ -393,13 +535,13 @@
           return;
         }
         tbody.innerHTML = sliders.map(s => `
-          <tr class="border-t border-gray-700">
-            <td class="p-4"><img src="${s.imageUrl}" class="w-20 h-10 object-cover rounded"></td>
-            <td class="p-4">${s.title || '-'}</td>
-            <td class="p-4 text-xs text-gray-400 truncate max-w-[150px]">${s.linkUrl || '-'}</td>
+          <tr class="border-t border-gray-700 hover:bg-white/5 transition-colors">
+            <td class="p-4"><img src="${s.imageUrl}" class="w-20 h-10 object-cover rounded border border-gray-600"></td>
+            <td class="p-4 font-medium">${s.title || '-'}</td>
+            <td class="p-4 text-xs text-gray-400 truncate max-w-[150px] dir-ltr text-right">${s.linkUrl || '-'}</td>
             <td class="p-4">${s.order}</td>
             <td class="p-4">
-              <button onclick="deleteSlider('${s.id}')" class="text-red-400 hover:underline">حذف</button>
+              <button onclick="deleteSlider('${s.id}')" class="text-red-400 hover:text-red-300 transition-colors bg-red-400/10 px-3 py-1 rounded hover:bg-red-400/20">حذف</button>
             </td>
           </tr>
         `).join('');
@@ -515,11 +657,25 @@
       return data;
     }
 
+    function getDeviceId() {
+      let deviceId = localStorage.getItem('admin_device_id');
+      if (!deviceId) {
+        deviceId = 'device_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+        localStorage.setItem('admin_device_id', deviceId);
+      }
+      return deviceId;
+    }
+
     async function login() {
       try {
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
-        const result = await api('/api/admin/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+        const deviceId = getDeviceId();
+        const result = await api('/api/admin/login', {
+          method: 'POST',
+          body: JSON.stringify({ email, password }),
+          headers: { 'X-Device-Id': deviceId }
+        });
         token = result.token;
         adminData = result.admin;
         localStorage.setItem('adminToken', token);
@@ -548,8 +704,49 @@
       document.getElementById('login-page').classList.add('hidden');
       document.getElementById('dashboard-page').classList.remove('hidden');
       document.getElementById('admin-name').textContent = adminData.name;
+      checkPermissions();
       await loadStats();
-      showTab('cars');
+
+      // Default tab
+      if (hasPermission('cars')) showTab('cars');
+      else if (hasPermission('users')) showTab('users');
+      else if (hasPermission('providers')) showTab('providers');
+      else if (hasPermission('payments')) showTab('payments');
+      else if (hasPermission('ads')) showTab('slider');
+      else showChangePassword();
+    }
+
+    function hasPermission(perm) {
+      if (adminData.role === 'admin' || adminData.role === 'super_admin') return true;
+      return adminData.permissions && adminData.permissions.includes(perm);
+    }
+
+    function checkPermissions() {
+      const tabs = {
+        'users': document.querySelector('button[onclick="showTab(\'users\')"]'),
+        'cars': document.querySelector('button[onclick="showTab(\'cars\')"]'),
+        'providers': document.querySelector('button[onclick="showTab(\'providers\')"]'),
+        'payments': document.querySelector('button[onclick="showTab(\'payments\')"]'),
+        'slider': document.getElementById('btn-slider'),
+        'employees': document.getElementById('btn-employees')
+      };
+
+      // Reset visibility
+      for (let k in tabs) if (tabs[k]) tabs[k].classList.add('hidden');
+
+      if (hasPermission('users')) tabs['users'].classList.remove('hidden');
+      if (hasPermission('cars')) tabs['cars'].classList.remove('hidden');
+      if (hasPermission('providers')) tabs['providers'].classList.remove('hidden');
+      if (hasPermission('payments')) tabs['payments'].classList.remove('hidden');
+      if (hasPermission('ads')) tabs['slider'].classList.remove('hidden');
+
+      if (adminData.role === 'admin' || adminData.role === 'super_admin') {
+        tabs['employees'].classList.remove('hidden');
+        document.getElementById('card-employees').classList.remove('hidden');
+        // Admin has all perms so all tabs should be visible, logic above handles specific perms but admin should have them. 
+        // If manual logic needed:
+        for (let k in tabs) if (tabs[k]) tabs[k].classList.remove('hidden');
+      }
     }
 
     async function loadStats() {
@@ -559,6 +756,9 @@
         document.getElementById('stat-cars').textContent = stats.totalCars;
         document.getElementById('stat-active-cars').textContent = stats.activeCars;
         document.getElementById('stat-providers').textContent = stats.totalProviders;
+        if (stats.totalEmployees !== undefined) {
+          document.getElementById('stat-employees').textContent = stats.totalEmployees;
+        }
       } catch (err) {
         console.error('Failed to load stats:', err);
       }
@@ -572,21 +772,21 @@
         window.usersData = users; // Store for edit
         const tbody = document.getElementById('users-table');
         tbody.innerHTML = users.map(u => `
-          <tr class="border-t border-gray-700">
+          <tr class="border-t border-gray-700 hover:bg-white/5 transition-colors">
             <td class="p-4">
-                ${u.name}
-                ${!u.isActive ? '<span class="text-red-500 text-xs font-bold block">(محظور)</span>' : ''}
+                <div class="font-medium">${u.name}</div>
+                ${!u.isActive ? '<span class="text-red-400 text-xs font-bold block mt-1 bg-red-400/10 w-fit px-2 py-0.5 rounded">(محظور)</span>' : ''}
             </td>
-            <td class="p-4 text-gray-400">${u.phone}</td>
+            <td class="p-4 text-gray-400 font-mono text-sm" dir="ltr">${u.phone}</td>
             <td class="p-4">${u.city || 'غير محدد'}</td>
-            <td class="p-4"><span class="bg-blue-500 px-2 py-1 rounded text-xs">${(u.roles || []).join(', ')}</span></td>
-            <td class="p-4 text-gray-400">${new Date(u.createdAt).toLocaleDateString('ar')}</td>
-            <td class="p-4 flex gap-2 flex-wrap">
-                <button onclick="editUser('${u.id}')" class="text-yellow-400 hover:underline">تعديل</button>
-                <button onclick="toggleUserBlock('${u.id}', ${!u.isActive}, '${u.name}')" class="text-orange-400 hover:underline">
+            <td class="p-4"><span class="bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-1 rounded text-xs">${(u.roles || []).join(', ')}</span></td>
+            <td class="p-4 text-gray-400 text-sm whitespace-nowrap">${new Date(u.createdAt).toLocaleDateString('ar')}</td>
+            <td class="p-4 flex gap-2 flex-wrap items-center">
+                <button onclick="editUser('${u.id}')" class="text-yellow-400 hover:text-yellow-300 transition-colors bg-yellow-400/10 px-3 py-1 rounded hover:bg-yellow-400/20">تعديل</button>
+                <button onclick="toggleUserBlock('${u.id}', ${!u.isActive}, '${u.name}')" class="text-orange-400 hover:text-orange-300 transition-colors bg-orange-400/10 px-3 py-1 rounded hover:bg-orange-400/20">
                     ${u.isActive ? 'حظر' : 'تفعيل'}
                 </button>
-                <button onclick="deleteUser('${u.id}', '${u.name}')" class="text-red-400 hover:underline">حذف</button>
+                <button onclick="deleteUser('${u.id}', '${u.name}')" class="text-red-400 hover:text-red-300 transition-colors bg-red-400/10 px-3 py-1 rounded hover:bg-red-400/20">حذف</button>
             </td>
           </tr>
         `).join('');
@@ -668,26 +868,32 @@
         window.carsData = cars;
         const tbody = document.getElementById('cars-table');
         tbody.innerHTML = cars.map(c => `
-          <tr class="border-t border-gray-700">
-            <td class="p-4">${c.car.make} ${c.car.model} (${c.car.year})</td>
-            <td class="p-4 text-green-400">${c.car.price?.toLocaleString()} SDG</td>
-            <td class="p-4">${c.car.city}</td>
-            <td class="p-4 text-gray-400">${c.owner?.name || 'غير معروف'}</td>
+          <tr class="border-t border-gray-700 hover:bg-white/5 transition-colors">
             <td class="p-4">
-              <span class="px-2 py-1 rounded text-xs ${c.car.isActive ? 'bg-green-500' : 'bg-red-500'}">
+                <div class="font-medium">${c.car.make} ${c.car.model}</div>
+                <div class="text-gray-400 text-sm">${c.car.year}</div>
+            </td>
+            <td class="p-4 text-green-400 font-bold whitespace-nowrap">${c.car.price?.toLocaleString()} SDG</td>
+            <td class="p-4 text-gray-300 text-sm whitespace-nowrap">${c.car.city}</td>
+            <td class="p-4 text-gray-400 text-sm">
+                <div>${c.owner?.name || 'غير معروف'}</div>
+                ${c.owner?.phone ? `<div class="text-xs font-mono mt-1" dir="ltr">${c.owner.phone}</div>` : ''}
+            </td>
+            <td class="p-4">
+              <span class="px-2 py-1 rounded text-xs ${c.car.isActive ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-red-500/20 text-red-300 border border-red-500/30'}">
                 ${c.car.isActive ? 'نشط' : 'معلق'}
               </span>
-              ${c.car.isFeatured ? '<span class="bg-orange-500 px-2 py-1 rounded text-xs mr-1">مميز</span>' : ''}
+              ${c.car.isFeatured ? '<span class="bg-orange-500/20 text-orange-300 border border-orange-500/30 px-2 py-1 rounded text-xs mr-1">مميز</span>' : ''}
             </td>
-            <td class="p-4 flex gap-2 flex-wrap">
-              <button onclick="editCar('${c.car.id}')" class="text-yellow-400 hover:underline">تعديل</button>
-              <button onclick="toggleCar('${c.car.id}', ${!c.car.isActive})" class="text-blue-400 hover:underline">
+            <td class="p-4 flex gap-2 flex-wrap items-center">
+              <button onclick="editCar('${c.car.id}')" class="text-yellow-400 hover:text-yellow-300 transition-colors bg-yellow-400/10 px-3 py-1 rounded hover:bg-yellow-400/20">تعديل</button>
+              <button onclick="toggleCar('${c.car.id}', ${!c.car.isActive})" class="text-blue-400 hover:text-blue-300 transition-colors bg-blue-400/10 px-3 py-1 rounded hover:bg-blue-400/20">
                 ${c.car.isActive ? 'تعليق' : 'تفعيل'}
               </button>
-              <button onclick="toggleFeatured('${c.car.id}', ${!c.car.isFeatured})" class="text-orange-400 hover:underline">
+              <button onclick="toggleFeatured('${c.car.id}', ${!c.car.isFeatured})" class="text-orange-400 hover:text-orange-300 transition-colors bg-orange-400/10 px-3 py-1 rounded hover:bg-orange-400/20">
                 ${c.car.isFeatured ? 'إلغاء التمييز' : 'تمييز'}
               </button>
-              <button onclick="deleteCar('${c.car.id}')" class="text-red-400 hover:underline">حذف</button>
+              <button onclick="deleteCar('${c.car.id}')" class="text-red-400 hover:text-red-300 transition-colors bg-red-400/10 px-3 py-1 rounded hover:bg-red-400/20">حذف</button>
             </td>
           </tr>
         `).join('');
@@ -867,22 +1073,25 @@
         }
 
         tbody.innerHTML = payments.map(p => `
-          <tr class="border-t border-gray-700">
-            <td class="p-4">${p.user?.name || 'غير معروف'}<br><span class="text-gray-500 text-xs">${p.user?.phone || ''}</span></td>
-            <td class="p-4 font-mono text-sm">${p.payment.trxNo}</td>
-            <td class="p-4 text-green-400">${p.payment.amount?.toLocaleString()} SDG</td>
-            <td class="p-4">${p.payment.paidAt}</td>
+          <tr class="border-t border-gray-700 hover:bg-white/5 transition-colors">
             <td class="p-4">
-              <span class="px-2 py-1 rounded text-xs ${statusColors[p.payment.status] || 'bg-gray-500'}">
+                <div class="font-medium">${p.user?.name || 'غير معروف'}</div>
+                ${p.user?.phone ? `<div class="text-gray-500 text-xs font-mono" dir="ltr">${p.user.phone}</div>` : ''}
+            </td>
+            <td class="p-4 font-mono text-sm text-gray-300">${p.payment.trxNo}</td>
+            <td class="p-4 text-green-400 font-bold whitespace-nowrap">${p.payment.amount?.toLocaleString()} SDG</td>
+            <td class="p-4 text-gray-400 text-sm whitespace-nowrap">${p.payment.paidAt || '-'}</td>
+            <td class="p-4">
+              <span class="px-2 py-1 rounded text-xs ${statusColors[p.payment.status] || 'bg-gray-500/20 text-gray-400 border border-gray-500/30'}">
                 ${statusLabels[p.payment.status] || p.payment.status}
               </span>
             </td>
-            <td class="p-4 text-gray-400 text-sm">${new Date(p.payment.createdAt).toLocaleString('ar')}</td>
-            <td class="p-4">
+            <td class="p-4 text-gray-400 text-xs whitespace-nowrap">${new Date(p.payment.createdAt).toLocaleString('ar')}</td>
+            <td class="p-4 flex items-center gap-2">
               ${p.payment.status === 'pending' ? `
-                <button onclick="approvePayment('${p.payment.id}')" class="text-green-400 hover:underline ml-2">قبول</button>
-                <button onclick="rejectPayment('${p.payment.id}')" class="text-red-400 hover:underline">رفض</button>
-              ` : '<span class="text-gray-500">-</span>'}
+                <button onclick="approvePayment('${p.payment.id}')" class="text-green-400 hover:text-green-300 transition-colors bg-green-400/10 px-3 py-1 rounded hover:bg-green-400/20">قبول</button>
+                <button onclick="rejectPayment('${p.payment.id}')" class="text-red-400 hover:text-red-300 transition-colors bg-red-400/10 px-3 py-1 rounded hover:bg-red-400/20">رفض</button>
+              ` : '<span class="text-gray-600 text-sm">-</span>'}
             </td>
           </tr>
         `).join('');
@@ -922,7 +1131,165 @@
     }
 
     if (token && adminData) {
-      showDashboard();
+      // Verify session before showing dashboard
+      api('/api/admin/stats')
+        .then(() => {
+          showDashboard();
+        })
+        .catch((err) => {
+          console.error('Session validation failed:', err);
+          logout();
+        });
+    }
+    // --- Employee Management ---
+    async function loadEmployees() {
+      try {
+        const employees = await api('/api/admin/employees');
+        window.employeesData = employees;
+        const tbody = document.getElementById('employees-table');
+        tbody.innerHTML = employees.map(e => `
+                <tr class="border-t border-gray-700 hover:bg-white/5 transition-colors">
+                    <td class="p-4">
+                       <div class="flex items-center gap-3">
+                           <div class="relative">
+                               <div class="w-3 h-3 rounded-full ${e.lastSeen && (new Date() - new Date(e.lastSeen) < 5 * 60 * 1000) ? 'bg-green-500 shadow-lg shadow-green-500/50' : 'bg-gray-600'}" title="${e.lastSeen ? 'آخر ظهور: ' + new Date(e.lastSeen).toLocaleString('ar') : 'غير متصل'}"></div>
+                           </div>
+                           <span class="font-medium">${e.name}</span>
+                       </div>
+                    </td>
+                    <td class="p-4 text-gray-400 text-sm font-mono" dir="ltr">${e.email}</td>
+                    <td class="p-4"><span class="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded text-xs">${e.role}</span></td>
+                    <td class="p-4 text-xs text-gray-400 max-w-xs truncate" title="${(e.permissions || []).join(', ')}">${(e.permissions || []).join(', ')}</td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 rounded text-xs ${e.isActive ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-red-500/20 text-red-300 border border-red-500/30'}">
+                            ${e.isActive ? 'نشط' : 'محظور'}
+                        </span>
+                    </td>
+                    <td class="p-4 flex gap-2 items-center">
+                         ${e.role !== 'super_admin' ? `
+                        <button onclick="editEmployee('${e.id}')" class="text-yellow-400 hover:text-yellow-300 transition-colors bg-yellow-400/10 px-3 py-1 rounded hover:bg-yellow-400/20">تعديل</button>
+                        <button onclick="toggleEmployeeBlock('${e.id}', ${!e.isActive}, '${e.name}')" class="text-orange-400 hover:text-orange-300 transition-colors bg-orange-400/10 px-3 py-1 rounded hover:bg-orange-400/20">
+                            ${e.isActive ? 'حظر' : 'تفعيل'}
+                        </button>
+                        <button onclick="deleteEmployee('${e.id}', '${e.name}')" class="text-red-400 hover:text-red-300 transition-colors bg-red-400/10 px-3 py-1 rounded hover:bg-red-400/20">حذف</button>
+                        ` : ''}
+                    </td>
+                </tr>
+            `).join('');
+      } catch (err) {
+        console.error('Failed to load employees:', err);
+      }
+    }
+
+    function showAddEmployee() {
+      document.getElementById('employee-modal-title').textContent = 'إضافة موظف';
+      document.getElementById('edit-employee-id').value = '';
+      document.getElementById('emp-name').value = '';
+      document.getElementById('emp-email').value = '';
+      document.getElementById('emp-password').value = '';
+      document.getElementById('emp-email').disabled = false;
+      document.querySelectorAll('.perm-checkbox').forEach(cb => cb.checked = false);
+      document.getElementById('add-employee-modal').classList.remove('hidden');
+    }
+
+    function hideAddEmployee() {
+      document.getElementById('add-employee-modal').classList.add('hidden');
+    }
+
+    function editEmployee(id) {
+      const emp = window.employeesData.find(e => e.id === id);
+      if (!emp) return;
+
+      document.getElementById('employee-modal-title').textContent = 'تعديل موظف';
+      document.getElementById('edit-employee-id').value = id;
+      document.getElementById('emp-name').value = emp.name;
+      document.getElementById('emp-email').value = emp.email;
+      document.getElementById('emp-email').disabled = true; // Cannot change email
+      document.getElementById('emp-password').value = ''; // Leave blank to keep current
+
+      const perms = emp.permissions || [];
+      document.querySelectorAll('.perm-checkbox').forEach(cb => cb.checked = perms.includes(cb.value));
+
+      document.getElementById('add-employee-modal').classList.remove('hidden');
+    }
+
+    async function saveEmployee() {
+      try {
+        const id = document.getElementById('edit-employee-id').value;
+        const name = document.getElementById('emp-name').value;
+        const email = document.getElementById('emp-email').value;
+        const password = document.getElementById('emp-password').value;
+
+        const permissions = [];
+        document.querySelectorAll('.perm-checkbox:checked').forEach(cb => permissions.push(cb.value));
+
+        const data = { name, permissions };
+        if (password) data.password = password;
+
+        if (id) {
+          await api(`/api/admin/employees/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+        } else {
+          data.email = email;
+          await api('/api/admin/employees', { method: 'POST', body: JSON.stringify(data) });
+        }
+
+        hideAddEmployee();
+        loadEmployees();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function toggleEmployeeBlock(id, isActive, name) {
+      if (!confirm(`هل أنت متأكد من ${isActive ? 'تفعيل' : 'حظر'} الموظف ${name}؟`)) return;
+      try {
+        await api(`/api/admin/employees/${id}`, { method: 'PUT', body: JSON.stringify({ isActive }) });
+        loadEmployees();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function deleteEmployee(id, name) {
+      if (!confirm(`هل أنت متأكد من حذف الموظف ${name}؟`)) return;
+      try {
+        await api(`/api/admin/employees/${id}`, { method: 'DELETE' });
+        loadEmployees();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // --- Password Management ---
+    function showChangePassword() {
+      document.getElementById('cp-current').value = '';
+      document.getElementById('cp-new').value = '';
+      document.getElementById('cp-confirm').value = '';
+      document.getElementById('change-password-modal').classList.remove('hidden');
+    }
+
+    function hideChangePassword() {
+      document.getElementById('change-password-modal').classList.add('hidden');
+    }
+
+    async function changePassword() {
+      const currentPassword = document.getElementById('cp-current').value;
+      const newPassword = document.getElementById('cp-new').value;
+      const confirmPassword = document.getElementById('cp-confirm').value;
+
+      if (!currentPassword || !newPassword || !confirmPassword) return alert('جميع الحقول مطلوبة');
+      if (newPassword !== confirmPassword) return alert('كلمة المرور الجديدة غير متطابقة');
+
+      try {
+        await api('/api/admin/change-password', {
+          method: 'POST',
+          body: JSON.stringify({ currentPassword, newPassword })
+        });
+        alert('تم تغيير كلمة المرور بنجاح');
+        hideChangePassword();
+      } catch (err) {
+        alert(err.message);
+      }
     }
   </script>
 </body>

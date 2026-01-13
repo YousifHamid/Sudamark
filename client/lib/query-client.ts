@@ -11,8 +11,8 @@ export function getApiUrl(): string {
     // Fallback for development if not set
     if (__DEV__) {
       // NOTE: Update this IP address to your machine's local IP (check with 'ipconfig' or 'ifconfig')
-      return "http://192.168.1.86:5000/";
-      // return "https://sudamark.up.railway.app/"; // Safe fallback
+      // return "http://192.168.1.86:5000/";
+      return "https://sudamark.up.railway.app/"; // Safe fallback
     }
     console.warn("EXPO_PUBLIC_DOMAIN is not set");
     return "https://sudamark.up.railway.app/"; // Safe fallback

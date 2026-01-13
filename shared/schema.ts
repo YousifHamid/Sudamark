@@ -19,7 +19,11 @@ export const admins = pgTable("admins", {
   passwordHash: text("password_hash").notNull(),
   name: text("name").notNull(),
   role: text("role").default("admin"),
+  permissions: jsonb("permissions")
+    .$type<string[]>()
+    .default(sql`'[]'::jsonb`),
   isActive: boolean("is_active").default(true),
+  lastSeen: timestamp("last_seen"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

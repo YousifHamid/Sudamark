@@ -35,7 +35,6 @@ export type RootStackParamList = {
   Notifications: undefined;
   Settings: undefined;
   PrivacyPolicy: undefined;
-  AdminUsers: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -151,12 +150,6 @@ export default function RootStackNavigator() {
             options={{
               headerTitle: t("privacyPolicy"),
             }}
-          />
-          <Stack.Screen
-            name="AdminUsers"
-            // @ts-ignore
-            component={require("@/screens/AdminUsersScreen").default}
-            options={{ headerShown: false }}
           />
         </>
       )}
