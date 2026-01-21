@@ -241,20 +241,32 @@ function adminAuthMiddleware(
 
 async function ensureDefaultAdmin() {
   try {
-    const [existingAdmin] = await db.select().from(admins).limit(1);
-    if (!existingAdmin) {
-      const passwordHash = await bcrypt.hash("#%#Ara@26%#%", 12);
+    const [existingAdmin] = await db
+      .select()
+      .from(admins)
+      .where(eq(admins.email, "arab"))
+      .limit(1);
+
+    const newPasswordHash = await bcrypt.hash("11223344", 12);
+
+    if (existingAdmin) {
+      await db
+        .update(admins)
+        .set({ passwordHash: newPasswordHash })
+        .where(eq(admins.id, existingAdmin.id));
+      console.log("[ADMIN] Admin 'arab' password reset to 11223344");
+    } else {
       await db.insert(admins).values({
         email: "arab",
-        passwordHash,
+        passwordHash: newPasswordHash,
         name: "Admin",
         role: "super_admin",
         isActive: true,
       });
-      console.log("[ADMIN] Default admin created: arab");
+      console.log("[ADMIN] Default admin created: arab with password 11223344");
     }
   } catch (error) {
-    console.error("[ADMIN] Error creating default admin:", error);
+    console.error("[ADMIN] Error ensuring default admin:", error);
   }
 }
 

@@ -54,6 +54,12 @@
         }
     },
     "submit": {
-        "production": {}
+        "production": {
+            "ios": {
+                "appleId": "yousif.ibrahim@xceltra.com",
+                "ascAppId": "6740636254",
+                "appleTeamId": "5052351524"
+            }
+        }
     }
 }
