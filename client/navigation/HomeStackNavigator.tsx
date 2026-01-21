@@ -1,10 +1,11 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Pressable } from "react-native";
+import { Pressable, Image, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
 import HomeScreen from "@/screens/HomeScreen";
 import { HeaderTitle } from "@/components/HeaderTitle";
+import { AnimatedHeaderBackground } from "@/components/AnimatedHeaderBackground";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
 
@@ -26,8 +27,9 @@ export default function HomeStackNavigator() {
         options={{
           headerTitle: () => <HeaderTitle />,
           headerTitleAlign: "left", // Allow custom component to fill width from start
+          headerBackground: () => <AnimatedHeaderBackground />,
           headerStyle: {
-            backgroundColor: theme.backgroundRoot,
+            backgroundColor: "transparent",
             // @ts-ignore
             height: 120, // Increased height for larger logo
           },

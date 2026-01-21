@@ -35,8 +35,9 @@ export default function ServiceProviderDetailScreen() {
 
   const handleCall = () => {
     Haptics.selectionAsync();
-    const phoneUrl = `tel:${provider.phone}`;
-    Linking.canOpenURL(phoneUrl).then((supported) => {
+    const cleanPhone = provider.phone?.replace(/[\s\-\(\)]/g, "");
+    const phoneUrl = `tel:${cleanPhone}`;
+    Linking.openURL(phoneUrl).then((supported) => {
       if (supported) {
         Linking.openURL(phoneUrl);
       } else {
@@ -163,22 +164,6 @@ export default function ServiceProviderDetailScreen() {
 
         <View
           style={[
-            styles.ratingSection,
-            { backgroundColor: theme.backgroundDefault },
-          ]}
-        >
-          <View style={styles.ratingRow}>
-            <View style={styles.starsContainer}>
-              {renderStars(provider.rating || 0)}
-            </View>
-            <ThemedText style={{ color: theme.textSecondary }}>
-              ({provider.reviewCount || 0} {t("reviews")})
-            </ThemedText>
-          </View>
-        </View>
-
-        <View
-          style={[
             styles.infoSection,
             { backgroundColor: theme.backgroundDefault },
           ]}
@@ -190,7 +175,7 @@ export default function ServiceProviderDetailScreen() {
             {isRTL ? "معلومات التواصل" : "Contact Info"}
           </ThemedText>
 
-          <View style={[styles.infoRow, isRTL && styles.infoRowRTL]}>
+          <View style={styles.infoRow}>
             <View
               style={[
                 styles.infoIcon,
@@ -210,7 +195,7 @@ export default function ServiceProviderDetailScreen() {
             </View>
           </View>
 
-          <View style={[styles.infoRow, isRTL && styles.infoRowRTL]}>
+          <View style={styles.infoRow}>
             <View
               style={[
                 styles.infoIcon,
@@ -228,7 +213,7 @@ export default function ServiceProviderDetailScreen() {
           </View>
 
           {provider.price ? (
-            <View style={[styles.infoRow, isRTL && styles.infoRowRTL]}>
+            <View style={styles.infoRow}>
               <View
                 style={[
                   styles.infoIcon,

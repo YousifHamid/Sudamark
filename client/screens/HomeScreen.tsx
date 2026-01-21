@@ -132,6 +132,8 @@ export default function HomeScreen() {
     { id: "truck", labelKey: "truck", icon: "truck" as const },
     { id: "suv", labelKey: "suv", icon: "activity" as const },
     { id: "sedan", labelKey: "sedan", icon: "disc" as const },
+    { id: "motor", labelKey: "motor", icon: "zap" as const },
+    { id: "raksha", labelKey: "raksha", icon: "package" as const },
   ];
 
   const handleSearchPress = () => {
@@ -163,7 +165,6 @@ export default function HomeScreen() {
           style={[
             styles.searchBar,
             { backgroundColor: theme.backgroundSecondary },
-            isRTL && styles.searchBarRTL,
           ]}
         >
           <Pressable
@@ -180,7 +181,7 @@ export default function HomeScreen() {
             onPress={handleSearchPress}
             style={{
               flex: 1,
-              flexDirection: isRTL ? "row-reverse" : "row",
+              flexDirection: "row",
               alignItems: "center",
               gap: 8,
               height: "100%",
@@ -278,7 +279,6 @@ export default function HomeScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={[
             styles.categoriesScrollContent,
-            isRTL && styles.categoriesScrollContentRTL,
             { paddingHorizontal: Spacing.lg }, // explicit padding
           ]}
           style={{ marginBottom: Spacing.sm }}
@@ -307,8 +307,13 @@ export default function HomeScreen() {
       </View>
 
       {featuredCars.length > 0 && (
-        <View style={styles.section}>
-          <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRTL]}>
+        <View style={{ marginBottom: Spacing.xl }}>
+          <View
+            style={[
+              styles.sectionHeader,
+              { paddingHorizontal: Spacing.lg },
+            ]}
+          >
             <ThemedText type="h4" style={isRTL ? styles.rtlText : undefined}>
               {t("featuredCars")}
             </ThemedText>
@@ -321,7 +326,10 @@ export default function HomeScreen() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.carsRow}
+            contentContainerStyle={[
+              styles.carsRow,
+              { paddingHorizontal: Spacing.lg },
+            ]}
           >
             {featuredCars.map((car) => (
               <CarCard
@@ -337,8 +345,13 @@ export default function HomeScreen() {
         </View>
       )}
 
-      <View style={styles.section}>
-        <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRTL]}>
+      <View style={{ marginBottom: Spacing.xl }}>
+        <View
+          style={[
+            styles.sectionHeader,
+            { paddingHorizontal: Spacing.lg },
+          ]}
+        >
           <ThemedText type="h4" style={isRTL ? styles.rtlText : undefined}>
             {t("recentListings")}
           </ThemedText>
@@ -348,7 +361,7 @@ export default function HomeScreen() {
             </ThemedText>
           </Pressable>
         </View>
-        <View style={styles.carsGrid}>
+        <View style={[styles.carsGrid, { paddingHorizontal: Spacing.lg }]}>
           {cars.map((car) => (
             <View key={car.id} style={styles.gridItem}>
               <CarCard
@@ -408,7 +421,7 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-end",
     marginBottom: Spacing.md,
   },
   sectionHeaderRTL: {

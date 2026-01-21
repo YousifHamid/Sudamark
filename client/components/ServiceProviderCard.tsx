@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable, Linking, Alert } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import Animated, {
   useAnimatedStyle,
@@ -10,17 +10,17 @@ import Animated, {
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
-import { Spacing, BorderRadius } from "@/constants/theme";
+import { Spacing, BorderRadius, isRTL } from "@/constants/theme";
 
 export interface ServiceProvider {
   id: string;
   name: string;
   role:
-    | "mechanic"
-    | "electrician"
-    | "lawyer"
-    | "inspection_center"
-    | "spare_parts";
+  | "mechanic"
+  | "electrician"
+  | "lawyer"
+  | "inspection_center"
+  | "spare_parts";
   city: string;
   rating: number;
   reviewCount: number;
@@ -109,31 +109,31 @@ export function ServiceProviderCard({
             {ROLE_LABELS[provider.role]}
           </ThemedText>
         </View>
-        <View style={styles.infoRow}>
-          <View style={styles.ratingContainer}>
-            <Feather name="star" size={14} color={theme.secondary} />
-            <ThemedText type="small" style={{ marginLeft: 4 }}>
-              {provider.rating.toFixed(1)}
-            </ThemedText>
-            <ThemedText
-              type="small"
-              style={{ color: theme.textSecondary, marginLeft: 2 }}
-            >
-              ({provider.reviewCount})
-            </ThemedText>
-          </View>
-          <View style={styles.locationContainer}>
-            <Feather name="map-pin" size={12} color={theme.textSecondary} />
-            <ThemedText
-              type="small"
-              style={{ color: theme.textSecondary, marginLeft: 4 }}
-            >
-              {provider.city}
-            </ThemedText>
-          </View>
+        <View style={styles.locationContainer}>
+          <Feather name="map-pin" size={12} color={theme.textSecondary} />
+          <ThemedText
+            type="small"
+            style={{ color: theme.textSecondary, marginLeft: 4 }}
+          >
+            {provider.city}
+          </ThemedText>
         </View>
       </View>
       <Pressable
+        onPress={async () => {
+          const cleanPhone = provider.phone?.replace(/[\s\-\(\)]/g, "");
+          const url = `tel:${cleanPhone}`;
+
+          try {
+            await Linking.openURL(url);
+          } catch (e) {
+            console.error("Call error:", e);
+            Alert.alert(
+              isRTL ? "خطأ" : "Error",
+              isRTL ? "لا يمكن إجراء مكالمة" : "Cannot make a call",
+            );
+          }
+        }}
         style={[styles.contactButton, { backgroundColor: theme.primary }]}
       >
         <Feather name="phone" size={18} color="#FFFFFF" />

@@ -319,7 +319,7 @@ export default function CarDetailScreen() {
         </View>
 
         <View style={styles.content}>
-          <View style={[styles.priceRow, isRTL && styles.priceRowRTL]}>
+          <View style={styles.priceRow}>
             <ThemedText type="h2" style={{ color: theme.primary }}>
               {car.price.toLocaleString()} {t("sdg")}
             </ThemedText>
@@ -329,14 +329,14 @@ export default function CarDetailScreen() {
             {car.title}
           </ThemedText>
 
-          <View style={[styles.locationRow, isRTL && styles.locationRowRTL]}>
+          <View style={styles.locationRow}>
             <Feather name="map-pin" size={16} color={theme.textSecondary} />
             <ThemedText
               type="small"
               style={[
                 {
                   color: theme.textSecondary,
-                  marginLeft: isRTL ? 0 : Spacing.xs,
+                  marginLeft: isRTL ? Spacing.xs : 0,
                   marginRight: isRTL ? Spacing.xs : 0,
                 },
                 isRTL && styles.rtlText,
@@ -442,11 +442,10 @@ export default function CarDetailScreen() {
               style={[
                 styles.sellerCard,
                 { backgroundColor: theme.backgroundDefault },
-                isRTL && styles.sellerCardRTL,
               ]}
             >
               <View
-                style={[styles.sellerButtons, isRTL && styles.sellerButtonsRTL]}
+                style={styles.sellerButtons}
               >
                 <Pressable
                   style={[
@@ -476,7 +475,6 @@ export default function CarDetailScreen() {
             paddingBottom: insets.bottom + Spacing.md,
             backgroundColor: theme.backgroundRoot,
           },
-          isRTL && styles.footerRTL,
         ]}
       >
         {isOwnCar ? (
@@ -534,7 +532,6 @@ export default function CarDetailScreen() {
               style={[
                 styles.modalHeader,
                 { borderBottomColor: theme.border },
-                isRTL && styles.modalHeaderRTL,
               ]}
             >
               <ThemedText type="h3" style={isRTL ? styles.rtlText : undefined}>

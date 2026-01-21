@@ -179,6 +179,7 @@ export const translations: Translations = {
   profile: { ar: "الملف", en: "Profile" },
 
   // Home
+  featured: { ar: "مميز", en: "Featured" },
   featuredCars: { ar: "سيارات مميزة", en: "Featured Cars" },
   recentListings: { ar: "إعلانات حديثة", en: "Recent Listings" },
   categories: { ar: "التصنيفات", en: "Categories" },
@@ -192,6 +193,8 @@ export const translations: Translations = {
   sports: { ar: "رياضية", en: "Sports" },
   luxury: { ar: "فاخرة", en: "Luxury" },
   truck: { ar: "شاحنة", en: "Truck" },
+  motor: { ar: "موتر", en: "Motorcycle" },
+  raksha: { ar: "راكشة", en: "Raksha" },
 
   // Search
   searchCars: { ar: "ابحث عن سيارات...", en: "Search cars..." },

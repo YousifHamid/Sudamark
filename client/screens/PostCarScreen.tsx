@@ -125,6 +125,8 @@ export default function PostCarScreen() {
     { id: "4x4", labelKey: "fourByFour" },
     { id: "bus", labelKey: "bus" },
     { id: "truck", labelKey: "truck" },
+    { id: "motor", labelKey: "motor" },
+    { id: "raksha", labelKey: "raksha" },
   ];
 
   const conditions = [
@@ -597,13 +599,13 @@ export default function PostCarScreen() {
               { backgroundColor: theme.backgroundSecondary },
             ]}
           >
-            <View style={[styles.summaryRow, isRTL && styles.rowRTL]}>
+            <View style={styles.summaryRow}>
               <ThemedText style={{ color: theme.textSecondary }}>
                 {t("transactionIdLabel")}
               </ThemedText>
               <ThemedText style={styles.summaryValue}>{trxNo}</ThemedText>
             </View>
-            <View style={[styles.summaryRow, isRTL && styles.rowRTL]}>
+            <View style={styles.summaryRow}>
               <ThemedText style={{ color: theme.textSecondary }}>
                 {t("amountLabel")}
               </ThemedText>
@@ -611,7 +613,7 @@ export default function PostCarScreen() {
                 {paymentAmount} {t("sdg")}
               </ThemedText>
             </View>
-            <View style={[styles.summaryRow, isRTL && styles.rowRTL]}>
+            <View style={styles.summaryRow}>
               <ThemedText style={{ color: theme.textSecondary }}>
                 {t("dateLabel")}
               </ThemedText>
@@ -668,7 +670,7 @@ export default function PostCarScreen() {
             {t("choosePaymentMethod")}
           </ThemedText>
 
-          <View style={[styles.paymentOptions, isRTL && styles.rowRTL]}>
+          <View style={styles.paymentOptions}>
             <Pressable
               style={[
                 styles.paymentOption,
@@ -754,7 +756,7 @@ export default function PostCarScreen() {
               >
                 {t("enterCouponCode")}
               </ThemedText>
-              <View style={[styles.couponInputRow, isRTL && styles.rowRTL]}>
+              <View style={styles.couponInputRow}>
                 <TextInput
                   style={[
                     styles.couponInput,

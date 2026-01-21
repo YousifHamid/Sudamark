@@ -21,18 +21,12 @@ export function PrivacyPolicyScreen() {
         contentContainerStyle={[
           styles.content,
           {
-            paddingTop: headerHeight + Spacing.lg,
+            paddingTop: Spacing.lg,
             paddingBottom: insets.bottom + Spacing.xl,
           },
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <ThemedText
-          type="h3"
-          style={[styles.sectionTitle, isRTL && styles.rtlText]}
-        >
-          {isRTL ? "سياسة الخصوصية" : "Privacy Policy"}
-        </ThemedText>
 
         <ThemedText
           style={[
@@ -41,7 +35,7 @@ export function PrivacyPolicyScreen() {
             isRTL && styles.rtlText,
           ]}
         >
-          {isRTL ? "آخر تحديث: ديسمبر 2025" : "Last updated: December 2025"}
+          {isRTL ? "آخر تحديث: يناير 2026" : "Last updated: January 2026"}
         </ThemedText>
 
         <View

@@ -90,8 +90,8 @@ export default function SettingsScreen() {
             {isRTL ? "التفضيلات" : "Preferences"}
           </ThemedText>
 
-          <View style={[styles.row, isRTL && styles.rowRTL]}>
-            <View style={[styles.labelContainer, isRTL && styles.rowRTL]}>
+          <View style={styles.row}>
+            <View style={styles.labelContainer}>
               <Feather name="bell" size={20} color={theme.text} />
               <ThemedText style={{ marginHorizontal: Spacing.sm }}>
                 {isRTL ? "الإشعارات" : "Notifications"}
@@ -106,8 +106,8 @@ export default function SettingsScreen() {
 
           <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
-          <View style={[styles.row, isRTL && styles.rowRTL]}>
-            <View style={[styles.labelContainer, isRTL && styles.rowRTL]}>
+          <View style={styles.row}> 
+            <View style={styles.labelContainer}>
               <Feather name="map-pin" size={20} color={theme.text} />
               <ThemedText style={{ marginHorizontal: Spacing.sm }}>
                 {isRTL ? "خدمات الموقع" : "Location Services"}
@@ -123,7 +123,7 @@ export default function SettingsScreen() {
           <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
           <View style={[styles.row, isRTL && styles.rowRTL]}>
-            <View style={[styles.labelContainer, isRTL && styles.rowRTL]}>
+            <View style={styles.labelContainer}>
               <Feather name="globe" size={20} color={theme.text} />
               <ThemedText style={{ marginHorizontal: Spacing.sm }}>
                 {isRTL ? "لغة التطبيق" : "App Language"}

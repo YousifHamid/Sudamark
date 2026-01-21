@@ -159,7 +159,7 @@ export default function RequestInspectionScreen() {
           >
             {t("sellerContact")}
           </ThemedText>
-          <View style={[styles.contactRow, isRTL && styles.contactRowRTL]}>
+          <View style={styles.contactRow}>
             <Pressable
               style={[
                 styles.contactButton,
@@ -211,7 +211,7 @@ export default function RequestInspectionScreen() {
           {t("chooseLocation")}
         </ThemedText>
         <View
-          style={[styles.locationOptions, isRTL && styles.locationOptionsRTL]}
+          style={styles.locationOptions}
         >
           <Pressable
             style={[
@@ -317,7 +317,7 @@ export default function RequestInspectionScreen() {
         >
           {t("selectDate")}
         </ThemedText>
-        <View style={[styles.datesRow, isRTL && styles.datesRowRTL]}>
+        <View style={styles.datesRow}>
           {dates.map((date) => (
             <Pressable
               key={date.id}

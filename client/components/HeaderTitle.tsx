@@ -94,12 +94,12 @@ export function HeaderTitle() {
       <View style={styles.leftSection}>
         <View style={styles.greetingContainer}>
           <ThemedText
-            style={{ fontSize: 11, fontWeight: "700", color: theme.primary }}
+            style={{ fontSize: 12, fontWeight: "700", color: theme.primary }}
           >
             {getGreeting()}
           </ThemedText>
           <ThemedText
-            style={{ fontSize: 9, color: theme.textSecondary, marginTop: 1 }}
+            style={{ fontSize: 12, color: theme.textSecondary, marginTop: .5 }}
           >
             {getUserCountry()}
           </ThemedText>

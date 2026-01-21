@@ -86,6 +86,8 @@ export default function SearchScreen() {
     { id: "sedan", labelKey: "sedan" },
     { id: "suv", labelKey: "suv" },
     { id: "truck", labelKey: "truck" },
+    { id: "motor", labelKey: "motor" },
+    { id: "raksha", labelKey: "raksha" },
   ];
 
   const conditions = [
@@ -351,7 +353,7 @@ export default function SearchScreen() {
               { paddingBottom: insets.bottom + Spacing.lg },
             ]}
           >
-            <View style={[styles.modalHeader, isRTL && styles.modalHeaderRTL]}>
+            <View style={styles.modalHeader}>
               <ThemedText type="h3" style={isRTL ? styles.rtlText : undefined}>
                 {t("filters")}
               </ThemedText>
@@ -374,7 +376,6 @@ export default function SearchScreen() {
                 <View
                   style={[
                     styles.priceInputsRow,
-                    isRTL && styles.priceInputsRowRTL,
                   ]}
                 >
                   <View style={styles.priceInputContainer}>
@@ -429,7 +430,6 @@ export default function SearchScreen() {
                 <View
                   style={[
                     styles.chipsContainer,
-                    isRTL && styles.chipsContainerRTL,
                   ]}
                 >
                   <FilterChip
@@ -507,7 +507,7 @@ export default function SearchScreen() {
               </View>
             </ScrollView>
 
-            <View style={[styles.modalFooter, isRTL && styles.modalFooterRTL]}>
+            <View style={styles.modalFooter}>
               <Pressable
                 style={[styles.resetButton, { borderColor: theme.border }]}
                 onPress={resetFilters}

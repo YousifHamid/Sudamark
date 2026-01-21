@@ -233,7 +233,7 @@ export default function EditProfileScreen() {
           >
             {t("city")}
           </ThemedText>
-          <View style={[styles.cityChips, isRTL && { flexDirection: "row-reverse" }]}>
+          <View style={styles.cityChips}>
             {cities.map((c) => (
               <Pressable
                 key={c.id}

@@ -264,7 +264,7 @@ export default function ProfileScreen() {
               onPress={() => handleMenuPress(item.id)}
             >
               <View
-                style={[styles.menuItemLeft, isRTL && styles.menuItemLeftRTL]}
+                style={styles.menuItemLeft}
               >
                 <View
                   style={[
@@ -279,7 +279,7 @@ export default function ProfileScreen() {
                 </ThemedText>
               </View>
               <View
-                style={[styles.menuItemRight, isRTL && styles.menuItemRightRTL]}
+                style={styles.menuItemRight}
               >
                 {item.badge ? (
                   <View
@@ -331,7 +331,7 @@ export default function ProfileScreen() {
               onPress={item.onPress || (() => Haptics.selectionAsync())}
             >
               <View
-                style={[styles.menuItemLeft, isRTL && styles.menuItemLeftRTL]}
+                style={styles.menuItemLeft}
               >
                 <View
                   style={[
@@ -346,7 +346,7 @@ export default function ProfileScreen() {
                 </ThemedText>
               </View>
               <View
-                style={[styles.menuItemRight, isRTL && styles.menuItemRightRTL]}
+                style={styles.menuItemRight}
               >
                 {"value" in item && item.value ? (
                   <ThemedText
@@ -401,7 +401,7 @@ export default function ProfileScreen() {
             ]}
             onPress={(e) => e.stopPropagation()}
           >
-            <View style={[styles.modalHeader, isRTL && styles.modalHeaderRTL]}>
+            <View style={[styles.modalHeader]}>
               <Pressable
                 onPress={() => setShowAdModal(false)}
                 style={{ zIndex: 1 }}

@@ -103,6 +103,7 @@ export function CarsProvider({ children }: { children: ReactNode }) {
             color: car.color,
             insuranceType: car.insuranceType,
             advertiserType: car.advertiserType,
+            isFeatured: car.isFeatured,
             createdAt: car.createdAt,
           }));
           setCars(formattedCars);
@@ -156,6 +157,7 @@ export function CarsProvider({ children }: { children: ReactNode }) {
           color: car.color,
           insuranceType: car.insuranceType,
           advertiserType: car.advertiserType,
+          isFeatured: car.isFeatured,
           createdAt: car.createdAt,
         }));
         setFeaturedCars(formattedFeatured);
@@ -301,6 +303,7 @@ export function CarsProvider({ children }: { children: ReactNode }) {
         createdAt: newCar.createdAt,
         insuranceType: newCar.insuranceType,
         advertiserType: newCar.advertiserType,
+        isFeatured: newCar.isFeatured,
         engineSize: newCar.engineSize,
         color: newCar.color,
         seats: newCar.seats,
@@ -448,6 +451,7 @@ export function CarsProvider({ children }: { children: ReactNode }) {
           color: car.color,
           insuranceType: car.insuranceType,
           advertiserType: car.advertiserType,
+          isFeatured: car.isFeatured,
           createdAt: car.createdAt,
         }));
       }
