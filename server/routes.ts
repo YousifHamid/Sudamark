@@ -1341,6 +1341,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   );
 
+  app.post(
+    "/api/admin/users",
+    adminAuthMiddleware,
+    async (req: AuthRequest, res: Response) => {
+      try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("users") && !req.admin!.permissions?.includes("cars")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
+        const { phone, name, roles, countryCode, city, password } = req.body;
+
+        const [existingUser] = await db
+          .select()
+          .from(users)
+          .where(eq(users.phone, phone))
+          .limit(1);
+        if (existingUser) {
+          return res.status(400).json({ error: "User already exists" });
+        }
+
+
+
+        let passwordHash = null;
+        if (password) {
+          passwordHash = await bcrypt.hash(password, 10);
+        }
+
+        const [newUser] = await db
+          .insert(users)
+          .values({
+            phone,
+            email: null,
+            emailVerified: false,
+            name,
+            roles: roles || ["buyer"],
+            countryCode: countryCode || "+249",
+            city: city || null,
+            passwordHash,
+            authProvider: "phone",
+            isActive: true,
+          })
+          .returning();
+
+        res.json(newUser);
+      } catch (error) {
+        console.error("Create user error:", error);
+        res.status(500).json({ error: "Failed to create user" });
+      }
+    },
+  );
+
   app.put(
     "/api/admin/users/:id",
     adminAuthMiddleware,
@@ -1449,9 +1499,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           advertiserType,
           engineSize,
           color,
+          userPhone,
         } = req.body;
 
+        console.log("Create car request body:", JSON.stringify(req.body));
+        console.log("User phone provided:", userPhone);
+
         let ownerId = userId;
+        if (userPhone) {
+          console.log("Looking up user by phone:", userPhone);
+          const [phoneUser] = await db.select().from(users).where(eq(users.phone, userPhone)).limit(1);
+          if (phoneUser) {
+            console.log("Found user:", phoneUser.id);
+            ownerId = phoneUser.id;
+          } else {
+            console.log("User not found for phone:", userPhone);
+            return res.status(400).json({ error: "User with this phone not found" });
+          }
+        }
+
         if (!ownerId) {
           const [adminUser] = await db
             .select()
@@ -1522,8 +1588,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           mileage,
           city,
           transmission,
+
           fuelType,
           description,
+          userId,
+          userPhone,
         } = req.body;
 
         const updateData: Record<string, any> = { updatedAt: new Date() };
@@ -1538,6 +1607,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (transmission) updateData.transmission = transmission;
         if (fuelType) updateData.fuelType = fuelType;
         if (description !== undefined) updateData.description = description;
+        if (userId) updateData.userId = userId;
+        if (userPhone) {
+          const [phoneUser] = await db.select().from(users).where(eq(users.phone, userPhone)).limit(1);
+          if (phoneUser) {
+            updateData.userId = phoneUser.id;
+          }
+          // If not found, we ignore or could error, but ignoring keeps current user if type-o. 
+          // However, for admin panel it's better to be explicit.
+          // But existing code structure allows partial updates. Let's just update if found.
+        }
 
         const [updatedCar] = await db
           .update(cars)
@@ -1675,6 +1754,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json(newImage);
       } catch (error) {
         res.status(500).json({ error: "Failed to create slider image" });
+      }
+    },
+  );
+
+  app.put(
+    "/api/admin/slider-images/:id",
+    adminAuthMiddleware,
+    async (req: AuthRequest, res: Response) => {
+      try {
+        if (req.admin!.role !== "admin" && req.admin!.role !== "super_admin" && !req.admin!.permissions?.includes("ads")) {
+          return res.status(403).json({ error: "Unauthorized" });
+        }
+        const { id } = req.params;
+        const [updatedImage] = await db
+          .update(sliderImages)
+          .set(req.body)
+          .where(eq(sliderImages.id, id))
+          .returning();
+        res.json(updatedImage);
+      } catch (error) {
+        res.status(500).json({ error: "Failed to update slider image" });
       }
     },
   );

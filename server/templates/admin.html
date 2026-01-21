@@ -103,6 +103,10 @@
         </div>
 
         <div id="users-tab" class="tab-content hidden">
+          <div class="flex justify-end mb-4">
+            <button onclick="showAddUser()" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg">إضافة
+              مستخدم</button>
+          </div>
           <div class="glass rounded-xl border border-gray-700 overflow-hidden overflow-x-auto">
             <table class="w-full">
               <thead class="bg-gray-800">
@@ -204,11 +208,15 @@
           <div class="text-sm text-gray-400">
             أول 1000 إعلان مجاني - بعدها 10,000 جنيه لكل إعلان
           </div>
+          <button onclick="printPayments()" class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg text-sm">طباعة
+            المحدد</button>
         </div>
         <div class="glass rounded-xl border border-gray-700 overflow-hidden overflow-x-auto">
           <table class="w-full">
             <thead class="bg-gray-800">
               <tr>
+                <th class="p-4 text-right"><input type="checkbox" aria-label="تحديد الكل"
+                    onchange="toggleSelectAllPayments(this)" class="accent-orange-500 w-4 h-4"></th>
                 <th class="p-4 text-right">المستخدم</th>
                 <th class="p-4 text-right">رقم العملية</th>
                 <th class="p-4 text-right">المبلغ</th>
@@ -264,12 +272,19 @@
           class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
         <input type="number" id="car-mileage" placeholder="المسافة المقطوعة (كم)"
           class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+        <input type="text" id="car-user-phone-input" placeholder="رقم هاتف المستخدم (المالك)"
+          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
         <select id="car-city" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3" aria-label="المدينة">
           <option value="الخرطوم">الخرطوم</option>
           <option value="أم درمان">أم درمان</option>
           <option value="بحري">بحري</option>
           <option value="بورتسودان">بورتسودان</option>
           <option value="كسلا">كسلا</option>
+          <option value="الأبيض">الأبيض</option>
+          <option value="القضارف">القضارف</option>
+          <option value="عطبرة">عطبرة</option>
+          <option value="نيالا">نيالا</option>
+          <option value="الفاشر">الفاشر</option>
         </select>
         <select id="car-transmission" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3"
           aria-label="ناقل الحركة">
@@ -295,7 +310,8 @@
   <div id="add-provider-modal"
     class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="glass rounded-2xl p-6 w-full max-w-md border border-gray-700">
-      <h2 class="text-xl font-bold mb-4">إضافة مزود خدمة</h2>
+      <h2 class="text-xl font-bold mb-4" id="provider-modal-title">إضافة مزود خدمة</h2>
+      <input type="hidden" id="edit-provider-id">
       <input type="text" id="provider-name" placeholder="الاسم"
         class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
       <select id="provider-type" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3"
@@ -328,7 +344,8 @@
   <div id="add-slider-modal"
     class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="glass rounded-2xl p-6 w-full max-w-md border border-gray-700">
-      <h2 class="text-xl font-bold mb-4">إضافة إعلان بانر</h2>
+      <h2 class="text-xl font-bold mb-4" id="slider-modal-title">إضافة إعلان بانر</h2>
+      <input type="hidden" id="edit-slider-id">
       <input type="text" id="slider-title" placeholder="العنوان" aria-label="العنوان"
         class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
 
@@ -359,7 +376,7 @@
   <div id="edit-user-modal"
     class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="glass rounded-2xl p-6 w-full max-w-md border border-gray-700">
-      <h2 class="text-xl font-bold mb-4">تعديل المستخدم</h2>
+      <h2 class="text-xl font-bold mb-4" id="user-modal-title">تعديل المستخدم</h2>
       <input type="hidden" id="edit-user-id">
 
       <div class="mb-3">
@@ -372,6 +389,31 @@
         <label class="block text-gray-400 text-sm mb-1" for="edit-user-phone">الهاتف</label>
         <input type="text" id="edit-user-phone" placeholder="الهاتف" aria-label="الهاتف"
           class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+      </div>
+
+
+      <div class="mb-3">
+        <label class="block text-gray-400 text-sm mb-1" for="edit-user-password">كلمة المرور (اتركها فارغة لعدم
+          التغيير)</label>
+        <input type="password" id="edit-user-password" placeholder="كلمة المرور"
+          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+      </div>
+      <div class="mb-3">
+        <label class="block text-gray-400 text-sm mb-1" for="edit-user-city">المدينة</label>
+        <select id="edit-user-city" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3"
+          aria-label="المدينة">
+          <option value="">اختر المدينة</option>
+          <option value="الخرطوم">الخرطوم</option>
+          <option value="أم درمان">أم درمان</option>
+          <option value="بحري">بحري</option>
+          <option value="بورتسودان">بورتسودان</option>
+          <option value="كسلا">كسلا</option>
+          <option value="الأبيض">الأبيض</option>
+          <option value="القضارف">القضارف</option>
+          <option value="عطبرة">عطبرة</option>
+          <option value="نيالا">نيالا</option>
+          <option value="الفاشر">الفاشر</option>
+        </select>
       </div>
 
       <div class="mb-4">
@@ -529,6 +571,7 @@
     async function loadSlider() {
       try {
         const sliders = await api('/api/admin/slider-images');
+        window.slidersData = sliders;
         const tbody = document.getElementById('slider-table');
         if (sliders.length === 0) {
           tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-400">لا توجد إعلانات. سيتم إخفاء السلايدر في التطبيق.</td></tr>';
@@ -540,8 +583,9 @@
             <td class="p-4 font-medium">${s.title || '-'}</td>
             <td class="p-4 text-xs text-gray-400 truncate max-w-[150px] dir-ltr text-right">${s.linkUrl || '-'}</td>
             <td class="p-4">${s.order}</td>
-            <td class="p-4">
-              <button onclick="deleteSlider('${s.id}')" class="text-red-400 hover:text-red-300 transition-colors bg-red-400/10 px-3 py-1 rounded hover:bg-red-400/20">حذف</button>
+            <td class="p-4 flex gap-2">
+               <button onclick="editSlider('${s.id}')" class="text-yellow-400 hover:text-yellow-300 transition-colors bg-yellow-400/10 px-3 py-1 rounded hover:bg-yellow-400/20">تعديل</button>
+               <button onclick="deleteSlider('${s.id}')" class="text-red-400 hover:text-red-300 transition-colors bg-red-400/10 px-3 py-1 rounded hover:bg-red-400/20">حذف</button>
             </td>
           </tr>
         `).join('');
@@ -551,6 +595,35 @@
     }
 
     function showAddSlider() {
+      document.getElementById('slider-modal-title').textContent = 'إضافة إعلان بانر';
+      document.getElementById('edit-slider-id').value = '';
+      document.getElementById('slider-title').value = '';
+      document.getElementById('slider-image-base64').value = '';
+      document.getElementById('slider-link').value = '';
+      document.getElementById('slider-order').value = '';
+      document.getElementById('image-preview').classList.add('hidden');
+      document.getElementById('upload-status').classList.add('hidden');
+
+      document.getElementById('add-slider-modal').classList.remove('hidden');
+    }
+
+    function editSlider(id) {
+      const slider = window.slidersData?.find(s => s.id === id);
+      if (!slider) return;
+
+      document.getElementById('slider-modal-title').textContent = 'تعديل إعلان بانر';
+      document.getElementById('edit-slider-id').value = id;
+      document.getElementById('slider-title').value = slider.title || '';
+      // Assuming we don't reload image in file input, but we can show preview. 
+      // editing image is tricky via file input without re-upload, so we keep imageURL if not changed.
+      document.getElementById('slider-image-base64').value = slider.imageUrl;
+      document.getElementById('slider-link').value = slider.linkUrl || '';
+      document.getElementById('slider-order').value = slider.order || 0;
+
+      const preview = document.getElementById('image-preview');
+      preview.classList.remove('hidden');
+      preview.querySelector('img').src = slider.imageUrl;
+
       document.getElementById('add-slider-modal').classList.remove('hidden');
     }
 
@@ -560,6 +633,7 @@
 
     async function addSlider() {
       try {
+        const id = document.getElementById('edit-slider-id').value;
         const imageBase64 = document.getElementById('slider-image-base64').value;
         if (!imageBase64) return alert('يرجى اختيار صورة');
 
@@ -570,7 +644,13 @@
           order: parseInt(document.getElementById('slider-order').value) || 0,
           isActive: true
         };
-        await api('/api/admin/slider-images', { method: 'POST', body: JSON.stringify(data) });
+
+        if (id) {
+          await api(`/api/admin/slider-images/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+        } else {
+          await api('/api/admin/slider-images', { method: 'POST', body: JSON.stringify(data) });
+        }
+
         hideAddSlider();
         loadSlider();
       } catch (err) {
@@ -750,6 +830,9 @@
     }
 
     async function loadStats() {
+      // ... (existing loadStats update if needed, but keeping it same is fine)
+      // Actually we need to make sure users are loaded for dropdown if cars tab is active?
+      // Better to fetch users on demand when opening modal.
       try {
         const stats = await api('/api/admin/stats');
         document.getElementById('stat-users').textContent = stats.totalUsers;
@@ -761,6 +844,82 @@
         }
       } catch (err) {
         console.error('Failed to load stats:', err);
+      }
+    }
+
+
+
+    async function showAddCar() {
+      document.getElementById('car-modal-title').textContent = 'إضافة سيارة';
+      document.getElementById('edit-car-id').value = '';
+      document.getElementById('car-make').value = '';
+      document.getElementById('car-model').value = '';
+      document.getElementById('car-year').value = '';
+      document.getElementById('car-price').value = '';
+      document.getElementById('car-mileage').value = '';
+      document.getElementById('car-city').value = 'الخرطوم';
+      document.getElementById('car-transmission').value = 'automatic';
+      document.getElementById('car-fuel').value = 'petrol';
+      document.getElementById('car-description').value = '';
+
+      document.getElementById('car-user-phone-input').value = '';
+
+      document.getElementById('add-car-modal').classList.remove('hidden');
+    }
+
+    function hideAddCar() {
+      document.getElementById('add-car-modal').classList.add('hidden');
+    }
+
+    async function editCar(id) {
+      const carData = window.carsData?.find(c => c.car.id === id);
+      if (!carData) return alert('لم يتم العثور على السيارة');
+      const car = carData.car;
+
+      document.getElementById('car-modal-title').textContent = 'تعديل السيارة';
+      document.getElementById('edit-car-id').value = id;
+      document.getElementById('car-make').value = car.make || '';
+      document.getElementById('car-model').value = car.model || '';
+      document.getElementById('car-year').value = car.year || '';
+      document.getElementById('car-price').value = car.price || '';
+      document.getElementById('car-mileage').value = car.mileage || '';
+      document.getElementById('car-city').value = car.city || 'الخرطوم';
+      document.getElementById('car-transmission').value = car.transmission || 'automatic';
+      document.getElementById('car-fuel').value = car.fuelType || 'petrol';
+      document.getElementById('car-description').value = car.description || '';
+
+      document.getElementById('car-user-phone-input').value = car.owner?.phone || '';
+
+      document.getElementById('add-car-modal').classList.remove('hidden');
+    }
+
+    async function saveCar() {
+      try {
+        const editId = document.getElementById('edit-car-id').value;
+        const data = {
+          make: document.getElementById('car-make').value,
+          model: document.getElementById('car-model').value,
+          year: parseInt(document.getElementById('car-year').value),
+          price: parseInt(document.getElementById('car-price').value),
+          mileage: parseInt(document.getElementById('car-mileage').value) || 0,
+          city: document.getElementById('car-city').value,
+          transmission: document.getElementById('car-transmission').value,
+          fuelType: document.getElementById('car-fuel').value,
+          description: document.getElementById('car-description').value,
+          userPhone: document.getElementById('car-user-phone-input').value
+        };
+        console.log('Sending car data:', data);
+
+        if (editId) {
+          await api(`/api/admin/cars/${editId}`, { method: 'PUT', body: JSON.stringify(data) });
+        } else {
+          await api('/api/admin/cars', { method: 'POST', body: JSON.stringify(data) });
+        }
+        hideAddCar();
+        loadCars();
+        loadStats();
+      } catch (err) {
+        alert(err.message);
       }
     }
 
@@ -817,16 +976,30 @@
       }
     }
 
+    function showAddUser() {
+      document.getElementById('user-modal-title').textContent = 'إضافة مستخدم';
+      document.getElementById('edit-user-id').value = '';
+      document.getElementById('edit-user-name').value = '';
+      document.getElementById('edit-user-phone').value = '';
+      document.getElementById('edit-user-city').value = '';
+      document.getElementById('edit-user-password').value = '';
+      document.querySelectorAll('.role-checkbox').forEach(cb => cb.checked = false);
+      // Default buyer
+      document.querySelector('.role-checkbox[value="buyer"]').checked = true;
+      document.getElementById('edit-user-modal').classList.remove('hidden');
+    }
+
     function editUser(id) {
       const user = window.usersData?.find(u => u.id === id);
       if (!user) return alert('User not found');
 
+      document.getElementById('user-modal-title').textContent = 'تعديل مستخدم';
       document.getElementById('edit-user-id').value = id;
       document.getElementById('edit-user-name').value = user.name;
       document.getElementById('edit-user-phone').value = user.phone;
+      document.getElementById('edit-user-city').value = user.city || '';
+      document.getElementById('edit-user-password').value = '';
 
-      // Roles checkbox logic could be added here, currently just text for simplicity or fixed roles
-      // We can add checkboxes for roles in the modal
       const roles = user.roles || [];
       document.querySelectorAll('.role-checkbox').forEach(cb => {
         cb.checked = roles.includes(cb.value);
@@ -844,16 +1017,28 @@
         const id = document.getElementById('edit-user-id').value;
         const name = document.getElementById('edit-user-name').value;
         const phone = document.getElementById('edit-user-phone').value;
+        const city = document.getElementById('edit-user-city').value;
+        const password = document.getElementById('edit-user-password').value;
 
         const roles = [];
         document.querySelectorAll('.role-checkbox:checked').forEach(cb => {
           roles.push(cb.value);
         });
 
-        await api(`/api/admin/users/${id}`, {
-          method: 'PUT',
-          body: JSON.stringify({ name, phone, roles })
-        });
+        const data = { name, phone, city, roles };
+        if (password) data.password = password;
+
+        if (id) {
+          await api(`/api/admin/users/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+          });
+        } else {
+          await api('/api/admin/users', {
+            method: 'POST',
+            body: JSON.stringify(data)
+          });
+        }
 
         hideEditUser();
         loadUsers();
@@ -932,75 +1117,12 @@
       }
     }
 
-    function showAddCar() {
-      document.getElementById('car-modal-title').textContent = 'إضافة سيارة';
-      document.getElementById('edit-car-id').value = '';
-      document.getElementById('car-make').value = '';
-      document.getElementById('car-model').value = '';
-      document.getElementById('car-year').value = '';
-      document.getElementById('car-price').value = '';
-      document.getElementById('car-mileage').value = '';
-      document.getElementById('car-city').value = 'الخرطوم';
-      document.getElementById('car-transmission').value = 'automatic';
-      document.getElementById('car-fuel').value = 'petrol';
-      document.getElementById('car-description').value = '';
-      document.getElementById('add-car-modal').classList.remove('hidden');
-    }
 
-    function hideAddCar() {
-      document.getElementById('add-car-modal').classList.add('hidden');
-    }
-
-    function editCar(id) {
-      const carData = window.carsData?.find(c => c.car.id === id);
-      if (!carData) return alert('لم يتم العثور على السيارة');
-      const car = carData.car;
-
-      document.getElementById('car-modal-title').textContent = 'تعديل السيارة';
-      document.getElementById('edit-car-id').value = id;
-      document.getElementById('car-make').value = car.make || '';
-      document.getElementById('car-model').value = car.model || '';
-      document.getElementById('car-year').value = car.year || '';
-      document.getElementById('car-price').value = car.price || '';
-      document.getElementById('car-mileage').value = car.mileage || '';
-      document.getElementById('car-city').value = car.city || 'الخرطوم';
-      document.getElementById('car-transmission').value = car.transmission || 'automatic';
-      document.getElementById('car-fuel').value = car.fuelType || 'petrol';
-      document.getElementById('car-description').value = car.description || '';
-      document.getElementById('add-car-modal').classList.remove('hidden');
-    }
-
-    async function saveCar() {
-      try {
-        const editId = document.getElementById('edit-car-id').value;
-        const data = {
-          make: document.getElementById('car-make').value,
-          model: document.getElementById('car-model').value,
-          year: parseInt(document.getElementById('car-year').value),
-          price: parseInt(document.getElementById('car-price').value),
-          mileage: parseInt(document.getElementById('car-mileage').value) || 0,
-          city: document.getElementById('car-city').value,
-          transmission: document.getElementById('car-transmission').value,
-          fuelType: document.getElementById('car-fuel').value,
-          description: document.getElementById('car-description').value,
-        };
-
-        if (editId) {
-          await api(`/api/admin/cars/${editId}`, { method: 'PUT', body: JSON.stringify(data) });
-        } else {
-          await api('/api/admin/cars', { method: 'POST', body: JSON.stringify(data) });
-        }
-        hideAddCar();
-        loadCars();
-        loadStats();
-      } catch (err) {
-        alert(err.message);
-      }
-    }
 
     async function loadProviders() {
       try {
         const providers = await api('/api/admin/service-providers');
+        window.providersData = providers;
         const typeLabels = { mechanic: 'ميكانيكي', electrician: 'كهربائي', lawyer: 'محامي', inspection: 'مركز فحص' };
         const tbody = document.getElementById('providers-table');
         tbody.innerHTML = providers.map(p => `
@@ -1009,7 +1131,8 @@
             <td class="p-4"><span class="bg-purple-500 px-2 py-1 rounded text-xs">${typeLabels[p.type] || p.type}</span></td>
             <td class="p-4 text-gray-400">${p.phone}</td>
             <td class="p-4">${p.city}</td>
-            <td class="p-4">
+            <td class="p-4 flex gap-2">
+              <button onclick="editProvider('${p.id}')" class="text-yellow-400 hover:underline">تعديل</button>
               <button onclick="deleteProvider('${p.id}')" class="text-red-400 hover:underline">حذف</button>
             </td>
           </tr>
@@ -1020,6 +1143,29 @@
     }
 
     function showAddProvider() {
+      document.getElementById('provider-modal-title').textContent = 'إضافة مزود خدمة';
+      document.getElementById('edit-provider-id').value = '';
+      document.getElementById('provider-name').value = '';
+      document.getElementById('provider-type').value = 'mechanic';
+      document.getElementById('provider-phone').value = '';
+      document.getElementById('provider-city').value = 'الخرطوم';
+      document.getElementById('provider-address').value = '';
+      document.getElementById('provider-description').value = '';
+      document.getElementById('add-provider-modal').classList.remove('hidden');
+    }
+
+    function editProvider(id) {
+      const provider = window.providersData?.find(p => p.id === id);
+      if (!provider) return;
+
+      document.getElementById('provider-modal-title').textContent = 'تعديل مزود خدمة';
+      document.getElementById('edit-provider-id').value = id;
+      document.getElementById('provider-name').value = provider.name;
+      document.getElementById('provider-type').value = provider.type;
+      document.getElementById('provider-phone').value = provider.phone;
+      document.getElementById('provider-city').value = provider.city;
+      document.getElementById('provider-address').value = provider.address || '';
+      document.getElementById('provider-description').value = provider.description || '';
       document.getElementById('add-provider-modal').classList.remove('hidden');
     }
 
@@ -1029,6 +1175,7 @@
 
     async function addProvider() {
       try {
+        const id = document.getElementById('edit-provider-id').value;
         const data = {
           name: document.getElementById('provider-name').value,
           type: document.getElementById('provider-type').value,
@@ -1037,7 +1184,13 @@
           address: document.getElementById('provider-address').value,
           description: document.getElementById('provider-description').value,
         };
-        await api('/api/admin/service-providers', { method: 'POST', body: JSON.stringify(data) });
+
+        if (id) {
+          await api(`/api/admin/service-providers/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+        } else {
+          await api('/api/admin/service-providers', { method: 'POST', body: JSON.stringify(data) });
+        }
+
         hideAddProvider();
         loadProviders();
         loadStats();
@@ -1060,6 +1213,7 @@
     async function loadPayments() {
       try {
         const payments = await api('/api/admin/payments');
+        // keep payments in global var logic if needed or just use here
         const autoApproveSetting = await api('/api/admin/settings/auto-approve');
         document.getElementById('auto-approve-toggle').checked = autoApproveSetting.autoApprove;
 
@@ -1074,6 +1228,13 @@
 
         tbody.innerHTML = payments.map(p => `
           <tr class="border-t border-gray-700 hover:bg-white/5 transition-colors">
+            <td class="p-4"><input type="checkbox" aria-label="تحديد الدفع لـ ${p.user?.name || 'غير معروف'}" name="payment-check" value='${JSON.stringify({
+          id: p.payment.id,
+          trxNo: p.payment.trxNo,
+          amount: p.payment.amount,
+          user: p.user?.name || "N/A",
+          date: new Date(p.payment.createdAt).toLocaleDateString("ar")
+        })}' class="accent-orange-500 w-4 h-4"></td>
             <td class="p-4">
                 <div class="font-medium">${p.user?.name || 'غير معروف'}</div>
                 ${p.user?.phone ? `<div class="text-gray-500 text-xs font-mono" dir="ltr">${p.user.phone}</div>` : ''}
@@ -1098,6 +1259,66 @@
       } catch (err) {
         console.error('Failed to load payments:', err);
       }
+    }
+
+    function toggleSelectAllPayments(source) {
+      document.querySelectorAll('input[name="payment-check"]').forEach(cb => cb.checked = source.checked);
+    }
+
+    function printPayments() {
+      const selected = [];
+      document.querySelectorAll('input[name="payment-check"]:checked').forEach(cb => {
+        selected.push(JSON.parse(cb.value));
+      });
+
+      if (selected.length === 0) return alert('يرجى تحديد مدفوعات للطباعة');
+
+      const printWindow = window.open('', '', 'width=800,height=600');
+      printWindow.document.write(`
+        <html dir="rtl">
+        <head>
+          <title>تقرير المدفوعات</title>
+          <style>
+             body { font-family: sans-serif; padding: 20px; }
+             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+             th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+             th { background-color: #f2f2f2; }
+             .header { text-align: center; margin-bottom: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>تقرير المدفوعات المحدد</h1>
+            <p>تاريخ الطباعة: ${new Date().toLocaleString('ar')}</p>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                 <th>المستخدم</th>
+                 <th>رقم العملية</th>
+                 <th>المبلغ</th>
+                 <th>التاريخ</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${selected.map(p => `
+                 <tr>
+                   <td>${p.user}</td>
+                   <td>${p.trxNo}</td>
+                   <td>${p.amount?.toLocaleString()} SDG</td>
+                   <td>${p.date}</td>
+                 </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <div style="margin-top: 20px; text-align: left;">
+             <strong>الإجمالي: ${selected.reduce((sum, p) => sum + (p.amount || 0), 0).toLocaleString()} SDG</strong>
+          </div>
+          <script>window.print();<\/script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
     }
 
     async function approvePayment(id) {

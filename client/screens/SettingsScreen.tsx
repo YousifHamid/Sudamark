@@ -72,7 +72,7 @@ export default function SettingsScreen() {
         contentContainerStyle={[
           styles.content,
           {
-            paddingTop: headerHeight + Spacing.lg,
+            paddingTop: Spacing.lg,
             paddingBottom: insets.bottom + Spacing.xl,
           },
         ]}
@@ -122,7 +122,7 @@ export default function SettingsScreen() {
 
           <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
-          <View style={[styles.row, isRTL && styles.rowRTL]}>
+          <View style={[styles.row]}>
             <View style={styles.labelContainer}>
               <Feather name="globe" size={20} color={theme.text} />
               <ThemedText style={{ marginHorizontal: Spacing.sm }}>

@@ -28,7 +28,7 @@ export default function ProfileStackNavigator() {
       <Stack.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{
+        options={({ navigation }) => ({
           headerTitle: isRTL ? "الملف الشخصي" : "Profile",
           headerRight: () => (
             <Pressable
@@ -42,7 +42,7 @@ export default function ProfileStackNavigator() {
               <Feather name="settings" size={22} color={theme.text} />
             </Pressable>
           ),
-        }}
+        })}
       />
     </Stack.Navigator>
   );

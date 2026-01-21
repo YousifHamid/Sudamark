@@ -368,7 +368,7 @@ export default function ProfileScreen() {
       </View>
 
       <Pressable
-        style={[styles.logoutButton, { backgroundColor: theme.error + "15" }]}
+        style={[styles.logoutButton, { backgroundColor: theme.error + "15"}]}
         onPress={handleLogout}
       >
         <Feather name="log-out" size={20} color={theme.error} />
@@ -377,13 +377,6 @@ export default function ProfileScreen() {
         </ThemedText>
       </Pressable>
 
-      <ThemedText
-        type="small"
-        style={[styles.version, { color: theme.textSecondary }]}
-      >
-        {isRTL ? "الإصدار 1.0.0" : "Version 1.0.0"}
-      </ThemedText>
-
       <Modal
         visible={showAdModal}
         transparent
@@ -391,7 +384,7 @@ export default function ProfileScreen() {
         onRequestClose={() => setShowAdModal(false)}
       >
         <Pressable
-          style={styles.modalOverlay}
+          style={[styles.modalOverlay]}
           onPress={() => setShowAdModal(false)}
         >
           <Pressable

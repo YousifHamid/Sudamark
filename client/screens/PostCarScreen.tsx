@@ -288,7 +288,7 @@ export default function PostCarScreen() {
   const pickImage = async (slot: string) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
-      allowsEditing: true,
+      allowsEditing: false,
       quality: 0.8,
     });
 
@@ -949,7 +949,10 @@ export default function PostCarScreen() {
       <KeyboardAwareScrollViewCompat
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: insets.bottom + Spacing["2xl"] },
+          {
+            paddingBottom: insets.bottom + Spacing["2xl"],
+            paddingTop: insets.top
+          },
         ]}
       >
         {listingStatus?.requiresPayment ? (

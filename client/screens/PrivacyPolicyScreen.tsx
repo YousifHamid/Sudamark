@@ -12,7 +12,6 @@ import { Spacing, BorderRadius } from "@/constants/theme";
 export function PrivacyPolicyScreen() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const headerHeight = useHeaderHeight();
   const { isRTL } = useLanguage();
 
   return (
@@ -32,7 +31,6 @@ export function PrivacyPolicyScreen() {
           style={[
             styles.paragraph,
             { color: theme.textSecondary },
-            isRTL && styles.rtlText,
           ]}
         >
           {isRTL ? "آخر تحديث: يناير 2026" : "Last updated: January 2026"}
@@ -46,7 +44,7 @@ export function PrivacyPolicyScreen() {
         >
           <ThemedText
             type="h4"
-            style={[styles.heading, isRTL && styles.rtlText]}
+            style={[styles.heading]}
           >
             {isRTL ? "1. المعلومات التي نجمعها" : "1. Information We Collect"}
           </ThemedText>
@@ -54,7 +52,6 @@ export function PrivacyPolicyScreen() {
             style={[
               styles.text,
               { color: theme.textSecondary },
-              isRTL && styles.rtlText,
             ]}
           >
             {isRTL
@@ -71,7 +68,7 @@ export function PrivacyPolicyScreen() {
         >
           <ThemedText
             type="h4"
-            style={[styles.heading, isRTL && styles.rtlText]}
+            style={[styles.heading]}
           >
             {isRTL
               ? "2. كيف نستخدم معلوماتك"
@@ -81,7 +78,6 @@ export function PrivacyPolicyScreen() {
             style={[
               styles.text,
               { color: theme.textSecondary },
-              isRTL && styles.rtlText,
             ]}
           >
             {isRTL
@@ -98,7 +94,7 @@ export function PrivacyPolicyScreen() {
         >
           <ThemedText
             type="h4"
-            style={[styles.heading, isRTL && styles.rtlText]}
+            style={[styles.heading]}
           >
             {isRTL ? "3. أمان البيانات" : "3. Data Security"}
           </ThemedText>
@@ -106,7 +102,6 @@ export function PrivacyPolicyScreen() {
             style={[
               styles.text,
               { color: theme.textSecondary },
-              isRTL && styles.rtlText,
             ]}
           >
             {isRTL
@@ -123,7 +118,7 @@ export function PrivacyPolicyScreen() {
         >
           <ThemedText
             type="h4"
-            style={[styles.heading, isRTL && styles.rtlText]}
+            style={[styles.heading]}
           >
             {isRTL ? "4. حقوقك" : "4. Your Rights"}
           </ThemedText>
@@ -131,7 +126,6 @@ export function PrivacyPolicyScreen() {
             style={[
               styles.text,
               { color: theme.textSecondary },
-              isRTL && styles.rtlText,
             ]}
           >
             {isRTL
@@ -148,7 +142,7 @@ export function PrivacyPolicyScreen() {
         >
           <ThemedText
             type="h4"
-            style={[styles.heading, isRTL && styles.rtlText]}
+            style={[styles.heading]}
           >
             {isRTL ? "5. الموقع الجغرافي" : "5. Location Data"}
           </ThemedText>
@@ -156,7 +150,6 @@ export function PrivacyPolicyScreen() {
             style={[
               styles.text,
               { color: theme.textSecondary },
-              isRTL && styles.rtlText,
             ]}
           >
             {isRTL
@@ -173,7 +166,7 @@ export function PrivacyPolicyScreen() {
         >
           <ThemedText
             type="h4"
-            style={[styles.heading, isRTL && styles.rtlText]}
+            style={[styles.heading]}
           >
             {isRTL ? "6. التواصل معنا" : "6. Contact Us"}
           </ThemedText>
@@ -181,7 +174,6 @@ export function PrivacyPolicyScreen() {
             style={[
               styles.text,
               { color: theme.textSecondary },
-              isRTL && styles.rtlText,
             ]}
           >
             {isRTL
@@ -194,7 +186,6 @@ export function PrivacyPolicyScreen() {
           style={[
             styles.footer,
             { color: theme.textSecondary },
-            isRTL && styles.rtlText,
           ]}
         >
           {isRTL
@@ -234,9 +225,5 @@ const styles = StyleSheet.create({
     marginTop: Spacing.xl,
     textAlign: "center",
     fontStyle: "italic",
-  },
-  rtlText: {
-    textAlign: "right",
-    writingDirection: "rtl",
   },
 });

@@ -30,9 +30,7 @@ export default function HomeStackNavigator() {
           headerBackground: () => <AnimatedHeaderBackground />,
           headerStyle: {
             backgroundColor: "transparent",
-            // @ts-ignore
-            height: 120, // Increased height for larger logo
-          },
+          }
         }}
       />
     </Stack.Navigator>

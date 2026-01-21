@@ -12,6 +12,7 @@ import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as Haptics from "expo-haptics";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/hooks/useTheme";
@@ -27,6 +28,7 @@ export function HeaderTitle() {
   const { user, isAuthenticated } = useAuth();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const insets = useSafeAreaInsets();
 
   const handleSellPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -85,6 +87,8 @@ export function HeaderTitle() {
           source={require("../../assets/images/sudamark_logo.png")}
           style={styles.logo}
           resizeMode="contain"
+          width={40}
+          height={40}
         />
         <Text style={[styles.slogan, { color: theme.textSecondary }]}>
           {isRTL ? "يجمعنا كلنا والخير يعمنا" : "Bringing us together"}
@@ -115,17 +119,15 @@ const styles = StyleSheet.create({
   outerContainer: {
     flex: 1,
     flexDirection: "row", // Start -> End
-    justifyContent: "center", // Center everything together
+    justifyContent: "space-between", // Center everything together
     alignItems: "center",
     width: "100%",
-    gap: 0, // Closes gap
-    paddingHorizontal: 0,
-    paddingRight: 70, // Increased shift inwards (Left in RTL)
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xl,
   },
   logoSection: {
     alignItems: "center",
-    marginTop: 14, // Moved down further
-    marginLeft: 0, // Ensure no extra margin
+    marginTop: 0,
   },
   leftSection: {
     flexDirection: "row",
@@ -133,9 +135,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   greetingContainer: {
-    alignItems: "center",
+    alignItems: "flex-end", // Align text to the end
     justifyContent: "center",
-    paddingTop: 12, // Pushes text down to align with Logo
   },
 
   slogan: {
