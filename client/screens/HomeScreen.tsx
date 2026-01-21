@@ -132,8 +132,7 @@ export default function HomeScreen() {
     { id: "truck", labelKey: "truck", icon: "truck" as const },
     { id: "suv", labelKey: "suv", icon: "activity" as const },
     { id: "sedan", labelKey: "sedan", icon: "disc" as const },
-    { id: "motor", labelKey: "motor", icon: "zap" as const },
-    { id: "raksha", labelKey: "raksha", icon: "package" as const },
+    { id: "motor_raksha", labelKey: "motor_raksha", icon: "zap" as const },
   ];
 
   const handleSearchPress = () => {

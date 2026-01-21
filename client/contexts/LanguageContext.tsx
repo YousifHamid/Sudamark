@@ -194,7 +194,8 @@ export const translations: Translations = {
   luxury: { ar: "فاخرة", en: "Luxury" },
   truck: { ar: "شاحنة", en: "Truck" },
   motor: { ar: "موتر", en: "Motorcycle" },
-  raksha: { ar: "راكشة", en: "Raksha" },
+  raksha: { ar: "ركشة", en: "Raksha" },
+  motor_raksha: { ar: "موتر وركشة", en: "Motor & Raksha" },
 
   // Search
   searchCars: { ar: "ابحث عن سيارات...", en: "Search cars..." },

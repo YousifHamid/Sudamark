@@ -125,8 +125,7 @@ export default function PostCarScreen() {
     { id: "4x4", labelKey: "fourByFour" },
     { id: "bus", labelKey: "bus" },
     { id: "truck", labelKey: "truck" },
-    { id: "motor", labelKey: "motor" },
-    { id: "raksha", labelKey: "raksha" },
+    { id: "motor_raksha", labelKey: "motor_raksha" },
   ];
 
   const conditions = [

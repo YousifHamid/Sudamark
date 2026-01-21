@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sudamark",
     "slug": "sudamark",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sudamark",
@@ -21,7 +21,7 @@
           "mailto"
         ]
       },
-      "buildNumber": "2"
+      "buildNumber": "3"
     },
     "android": {
       "package": "com.sudamark.app",
@@ -29,7 +29,7 @@
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE"
       ],
-      "versionCode": 2
+      "versionCode": 3
     },
     "web": {
       "output": "single",
@@ -56,8 +56,7 @@
             "usesCleartextTraffic": true
           }
         }
-      ],
-      "expo-build-properties"
+      ]
     ],
     "experiments": {
       "reactCompiler": true

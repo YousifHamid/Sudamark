@@ -86,8 +86,7 @@ export default function SearchScreen() {
     { id: "sedan", labelKey: "sedan" },
     { id: "suv", labelKey: "suv" },
     { id: "truck", labelKey: "truck" },
-    { id: "motor", labelKey: "motor" },
-    { id: "raksha", labelKey: "raksha" },
+    { id: "motor_raksha", labelKey: "motor_raksha" },
   ];
 
   const conditions = [
