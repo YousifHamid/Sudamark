@@ -1,28 +1,26 @@
-import type { Express, Request, Response, NextFunction } from "express";
-import { createServer, type Server } from "node:http";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
-import { db } from "./db";
 import {
-  users,
-  cars,
-  serviceProviders,
-  favorites,
-  sliderImages,
   admins,
-  otpCodes,
-  magicTokens,
-  buyerOffers,
-  inspectionRequests,
-  payments,
   appSettings,
+  buyerOffers,
+  cars,
   couponCodes,
   couponUsages,
+  favorites,
+  inspectionRequests,
+  payments,
   reports,
+  serviceProviders,
+  sliderImages,
+  users
 } from "@shared/schema";
-import { eq, desc, and, gt, like, or, sql, inArray } from "drizzle-orm";
+import bcrypt from "bcryptjs";
+import { and, desc, eq, inArray, like, or, sql } from "drizzle-orm";
+import type { Express, NextFunction, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
 import { OAuth2Client } from "google-auth-library";
+import jwt from "jsonwebtoken";
+import { createServer, type Server } from "node:http";
+import { db } from "./db";
 
 // Initialize Google Client - user needs to set this env var
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -42,8 +40,8 @@ const adminLoginAttempts = new Map<
 const ADMIN_MAX_ATTEMPTS = 5;
 const ADMIN_BLOCK_DURATION_MS = 5 * 60 * 1000;
 
-import multer from "multer";
 import * as fs from "fs";
+import multer from "multer";
 import * as path from "path";
 
 // Configure Multer for local storage
@@ -1500,6 +1498,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           engineSize,
           color,
           userPhone,
+          images,
+          category,
+          condition,
+          exteriorColor,
+          interiorColor,
+          gearType,
+          seatType,
+          cylinders,
+          wheels,
+          doors,
+          seats,
         } = req.body;
 
         console.log("Create car request body:", JSON.stringify(req.body));
@@ -1514,7 +1523,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ownerId = phoneUser.id;
           } else {
             console.log("User not found for phone:", userPhone);
-            return res.status(400).json({ error: "User with this phone not found" });
+
+            // Check if force create is requested
+            const { forceCreateUser } = req.body;
+
+            if (!forceCreateUser) {
+              return res.status(404).json({
+                error: "User with this phone not found",
+                code: "USER_NOT_FOUND_CONFIRM"
+              });
+            }
+
+            // Create new user if confirmed
+            const hashedPassword = await bcrypt.hash("12345678", 10);
+            const [newUser] = await db
+              .insert(users)
+              .values({
+                phone: userPhone,
+                passwordHash: hashedPassword,
+                name: "User " + userPhone,
+                roles: ["buyer"],
+                countryCode: "+249",
+                authProvider: "phone",
+                isActive: true,
+              })
+              .returning();
+            ownerId = newUser.id;
           }
         }
 
@@ -1556,9 +1590,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
             advertiserType,
             engineSize,
             color,
+            category: category || "sedan",
+            condition: condition || "used",
+            exteriorColor,
+            interiorColor,
+            gearType,
+            seatType,
+            cylinders,
+            wheels,
+            doors,
+            seats,
             isActive: true,
             isFeatured: false,
-            images: [],
+            images: images || [],
           })
           .returning();
         res.json(newCar);
@@ -1593,6 +1637,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           description,
           userId,
           userPhone,
+          category,
+          condition,
+          insuranceType,
+          advertiserType,
+          engineSize,
+          exteriorColor,
+          interiorColor,
+          gearType,
+          seatType,
+          cylinders,
+          wheels,
+          doors,
+          seats,
+          images,
         } = req.body;
 
         const updateData: Record<string, any> = { updatedAt: new Date() };
@@ -1607,7 +1665,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (transmission) updateData.transmission = transmission;
         if (fuelType) updateData.fuelType = fuelType;
         if (description !== undefined) updateData.description = description;
+
         if (userId) updateData.userId = userId;
+        if (category) updateData.category = category;
+        if (condition) updateData.condition = condition;
+        if (insuranceType) updateData.insuranceType = insuranceType;
+        if (advertiserType) updateData.advertiserType = advertiserType;
+        if (engineSize) updateData.engineSize = engineSize;
+        if (exteriorColor) updateData.exteriorColor = exteriorColor;
+        if (interiorColor) updateData.interiorColor = interiorColor;
+        if (gearType) updateData.gearType = gearType;
+        if (seatType) updateData.seatType = seatType;
+        if (cylinders) updateData.cylinders = cylinders;
+        if (wheels) updateData.wheels = wheels;
+        if (doors) updateData.doors = doors;
+        if (seats) updateData.seats = seats;
+        if (images) updateData.images = images;
         if (userPhone) {
           const [phoneUser] = await db.select().from(users).where(eq(users.phone, userPhone)).limit(1);
           if (phoneUser) {

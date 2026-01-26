@@ -1,11 +1,11 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, {
   createContext,
-  useContext,
-  useState,
-  useEffect,
   ReactNode,
+  useContext,
+  useEffect,
+  useState,
 } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { I18nManager } from "react-native";
 
 export type Language = "ar" | "en";
@@ -144,6 +144,13 @@ export const translations: Translations = {
   },
   creatingAccount: { ar: "جاري إنشاء الحساب...", en: "Creating Account..." },
   selectCountry: { ar: "اختر البلد", en: "Select Country" },
+  loginRequired: { ar: "تسجيل الدخول مطلوب", en: "Login Required" },
+  mustLoginToContinue: { ar: "يجب عليك تسجيل الدخول للمتابعة", en: "You must login to continue" },
+  mustLoginToFavorite: { ar: "يجب تسجيل الدخول للإضافة للمفضلة", en: "You must login to add to favorites" },
+  mustLoginToOffer: { ar: "يجب تسجيل الدخول لتقديم عرض", en: "You must login to make an offer" },
+  mustLoginToReport: { ar: "يجب تسجيل الدخول للإبلاغ", en: "You must login to report" },
+  cancel: { ar: "إلغاء", en: "Cancel" },
+  login: { ar: "تسجيل الدخول", en: "Login" },
 
   // Roles
   buyer: { ar: "مشتري", en: "Buyer" },

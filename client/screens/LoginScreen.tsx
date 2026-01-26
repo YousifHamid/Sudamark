@@ -1,39 +1,36 @@
-import React, { useState } from "react";
-import {
-  View,
-  StyleSheet,
-  TextInput,
-  Pressable,
-  Modal,
-  FlatList,
-  Platform,
-  Image,
-} from "react-native";
-import * as WebBrowser from "expo-web-browser";
-import * as Google from "expo-auth-session/providers/google";
-import { makeRedirectUri } from "expo-auth-session";
-
-WebBrowser.maybeCompleteAuthSession();
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import * as WebBrowser from "expo-web-browser";
+import React, { useState } from "react";
+import {
+  FlatList,
+  Image,
+  Modal,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+WebBrowser.maybeCompleteAuthSession();
+
 import { Button } from "@/components/Button";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
-import { useTheme } from "@/hooks/useTheme";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { Spacing, BorderRadius } from "@/constants/theme";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { BorderRadius, Spacing } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/hooks/useTheme";
 
-import { SUPPORTED_COUNTRIES, Country } from "@/constants/countries";
+import { Country, SUPPORTED_COUNTRIES } from "@/constants/countries";
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
-  const { login, setUserRoles } = useAuth();
+  const { login, setUserRoles, loginAsGuest } = useAuth();
 
   const [step, setStep] = useState<"phone" | "role">("phone");
   const [isRegistering, setIsRegistering] = useState(false);
@@ -370,6 +367,23 @@ export default function LoginScreen() {
             </Pressable>
 
             <View style={{ height: 16 }} />
+
+            <Pressable
+              onPress={() => {
+                Haptics.selectionAsync();
+                loginAsGuest();
+              }}
+              style={{
+                marginTop: 8,
+                alignItems: 'center',
+                padding: 10
+              }}
+            >
+              <ThemedText style={{ color: theme.textSecondary, textDecorationLine: 'underline' }}>
+                {isRTL ? "المتابعة كزائر" : "Continue as Guest"}
+              </ThemedText>
+            </Pressable>
+
             {/* <Pressable
               onPress={() => {
                 Haptics.selectionAsync();

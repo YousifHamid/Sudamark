@@ -1,31 +1,31 @@
+import { Feather } from "@expo/vector-icons";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { useHeaderHeight } from "@react-navigation/elements";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import {
-  View,
-  StyleSheet,
-  ScrollView,
-  Pressable,
   Dimensions,
   Image,
+  Pressable,
   RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useHeaderHeight } from "@react-navigation/elements";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Feather } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 
-import { ThemedText } from "@/components/ThemedText";
-import { useTheme } from "@/hooks/useTheme";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { Spacing, BorderRadius } from "@/constants/theme";
 import { CarCard } from "@/components/CarCard";
-import { RootStackParamList } from "@/navigation/RootStackNavigator";
+import { ThemedText } from "@/components/ThemedText";
+import { BorderRadius, Spacing } from "@/constants/theme";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useCars } from "@/hooks/useCars";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTheme } from "@/hooks/useTheme";
 import { getApiUrl } from "@/lib/query-client";
-import { log } from "console";
+import { RootStackParamList } from "@/navigation/RootStackNavigator";
+import { SEARCH_CATEGORIES } from "@shared/constants";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -128,12 +128,9 @@ export default function HomeScreen() {
     return () => clearInterval(timer);
   }, [currentSlideIndex, displaySlides.length]);
 
-  const categories = [
-    { id: "truck", labelKey: "truck", icon: "truck" as const },
-    { id: "suv", labelKey: "suv", icon: "activity" as const },
-    { id: "sedan", labelKey: "sedan", icon: "disc" as const },
-    { id: "motor_raksha", labelKey: "motor_raksha", icon: "zap" as const },
-  ];
+
+
+  const categories = SEARCH_CATEGORIES;
 
   const handleSearchPress = () => {
     navigation.navigate("Search", {});

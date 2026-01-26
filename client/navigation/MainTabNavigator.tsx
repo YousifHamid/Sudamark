@@ -1,20 +1,21 @@
-import React from "react";
-import { View, Pressable, StyleSheet, Text } from "react-native";
-import {
-  createBottomTabNavigator,
-  BottomTabBarProps,
-} from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
+import {
+  BottomTabBarProps,
+  createBottomTabNavigator,
+} from "@react-navigation/bottom-tabs";
 import * as Haptics from "expo-haptics";
+import React from "react";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { BorderRadius, Spacing } from "@/constants/theme";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/hooks/useTheme";
 import HomeStackNavigator from "@/navigation/HomeStackNavigator";
 import ProfileStackNavigator from "@/navigation/ProfileStackNavigator";
 import SearchScreen from "@/screens/SearchScreen";
 import ServicesScreen from "@/screens/ServicesScreen";
-import { useTheme } from "@/hooks/useTheme";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { Spacing, BorderRadius } from "@/constants/theme";
 import { LinearGradient } from "expo-linear-gradient";
 
 export type MainTabParamList = {
@@ -33,8 +34,9 @@ function EmptyScreen() {
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const { theme } = useTheme();
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const insets = useSafeAreaInsets();
+  const { isGuest, logout } = useAuth();
 
   const tabs = [
     { name: "HomeTab", icon: "home" as const, labelKey: "home" },
@@ -62,6 +64,25 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
           const handlePress = () => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+            if (isGuest && (tab.name === "PostTab" || tab.name === "ServicesTab" || tab.name === "ProfileTab")) {
+              Alert.alert(
+                t("loginRequired"),
+                t("mustLoginToContinue"),
+                [
+                  {
+                    text: t("cancel"),
+                    style: "cancel",
+                  },
+                  {
+                    text: t("login"),
+                    onPress: () => logout(),
+                  },
+                ]
+              );
+              return;
+            }
+
             if (tab.name === "PostTab") {
               navigation.navigate("PostCar"); // Directly navigate to PostCar
             } else {

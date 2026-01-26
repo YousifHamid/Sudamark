@@ -1,29 +1,30 @@
-import React, { useState, useMemo } from "react";
+import { Feather } from "@expo/vector-icons";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import * as Haptics from "expo-haptics";
+import React, { useMemo, useState } from "react";
 import {
-  View,
-  StyleSheet,
   FlatList,
-  TextInput,
-  Pressable,
   Modal,
+  Pressable,
   ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Feather } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
 
+import { Button } from "@/components/Button";
+import { CarCard } from "@/components/CarCard";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Button } from "@/components/Button";
-import { useTheme } from "@/hooks/useTheme";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { Spacing, BorderRadius } from "@/constants/theme";
-import { CarCard } from "@/components/CarCard";
-import { RootStackParamList } from "@/navigation/RootStackNavigator";
-import { useCars } from "@/hooks/useCars";
+import { BorderRadius, Spacing } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useCars } from "@/hooks/useCars";
+import { useTheme } from "@/hooks/useTheme";
+import { RootStackParamList } from "@/navigation/RootStackNavigator";
+import { CITIES, SEARCH_CATEGORIES, SEARCH_CONDITIONS } from "../../shared/constants";
 
 type SearchScreenRouteProp = RouteProp<RootStackParamList, "Search">;
 
@@ -64,36 +65,11 @@ export default function SearchScreen() {
   const [tempMinPrice, setTempMinPrice] = useState(minPrice);
   const [tempMaxPrice, setTempMaxPrice] = useState(maxPrice);
 
-  const cities = [
-    { id: "omdurman", labelKey: "omdurman" },
-    { id: "bahri", labelKey: "bahri" },
-    { id: "khartoum", labelKey: "khartoum" },
-    { id: "portsudan", labelKey: "portSudan" },
-    { id: "kassala", labelKey: "kassala" },
-    { id: "gezira", labelKey: "gezira" },
-    { id: "kordofan", labelKey: "kordofan" },
-    { id: "darfur", labelKey: "darfur" },
-    { id: "river_nile", labelKey: "riverNile" },
-    { id: "white_nile", labelKey: "whiteNile" },
-    { id: "blue_nile", labelKey: "blueNile" },
-    { id: "northern", labelKey: "northern" },
-    { id: "red_sea", labelKey: "redSea" },
-    { id: "gedaref", labelKey: "gedaref" },
-    { id: "sennar", labelKey: "sennar" },
-  ];
 
-  const categories = [
-    { id: "sedan", labelKey: "sedan" },
-    { id: "suv", labelKey: "suv" },
-    { id: "truck", labelKey: "truck" },
-    { id: "motor_raksha", labelKey: "motor_raksha" },
-  ];
 
-  const conditions = [
-    { id: "excellent", labelKey: "excellent", ar: "ممتازة", en: "Excellent" },
-    { id: "good", labelKey: "good", ar: "جيدة", en: "Good" },
-    { id: "fair", labelKey: "fair", ar: "مقبولة", en: "Fair" },
-  ];
+  const cities = CITIES;
+  const categories = SEARCH_CATEGORIES;
+  const conditions = SEARCH_CONDITIONS;
 
   const filteredCars = useMemo(() => {
     let baseCars = cars;
