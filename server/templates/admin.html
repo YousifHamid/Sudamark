@@ -258,10 +258,26 @@
   </div>
 
   <div id="add-car-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="glass rounded-2xl p-6 w-full max-w-lg border border-gray-700 max-h-screen overflow-y-auto">
+    <div class="glass rounded-2xl p-6 w-full max-w-2xl border border-gray-700 max-h-[90vh] overflow-y-auto">
       <h2 class="text-xl font-bold mb-4" id="car-modal-title">إضافة سيارة</h2>
       <input type="hidden" id="edit-car-id">
-      <div class="grid grid-cols-2 gap-3">
+
+      <!-- Image Upload Section -->
+      <div class="mb-6">
+        <label class="block text-gray-400 text-sm mb-2">صور السيارة (يمكن اختيار أكثر من صورة)</label>
+        <div
+          class="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:border-orange-500 transition"
+          onclick="document.getElementById('car-images-input').click()">
+          <div class="text-orange-500 mb-2 text-2xl">+</div>
+          <p class="text-gray-400 text-sm">اضغط هنا لرفع الصور</p>
+        </div>
+        <input type="file" id="car-images-input" multiple accept="image/*" class="hidden"
+          onchange="handleCarImagesUpload(this)">
+        <div id="car-images-preview" class="grid grid-cols-4 gap-2 mt-4"></div>
+        <p id="car-upload-status" class="text-xs text-blue-400 mt-2 hidden">جاري رفع الصور...</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <input type="text" id="car-make" placeholder="الماركة (مثال: تويوتا)"
           class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
         <input type="text" id="car-model" placeholder="الموديل (مثال: كامري)"
@@ -274,7 +290,8 @@
           class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
         <input type="text" id="car-user-phone-input" placeholder="رقم هاتف المستخدم (المالك)"
           class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
-        <select id="car-city" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3" aria-label="المدينة">
+
+        <select id="car-city" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
           <option value="الخرطوم">الخرطوم</option>
           <option value="أم درمان">أم درمان</option>
           <option value="بحري">بحري</option>
@@ -286,20 +303,90 @@
           <option value="نيالا">نيالا</option>
           <option value="الفاشر">الفاشر</option>
         </select>
-        <select id="car-transmission" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3"
-          aria-label="ناقل الحركة">
+
+        <select id="car-category" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+          <option value="sedan">سيدان (صالون)</option>
+          <option value="suv">دفع رباعي (SUV)</option>
+          <option value="truck">شاحنة</option>
+          <option value="bus">حافلة</option>
+          <option value="motor_raksha">ركشة / موتور</option>
+        </select>
+
+        <select id="car-condition" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+          <option value="used">مستعمل</option>
+          <option value="new">جديد</option>
+        </select>
+
+        <select id="car-transmission" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
           <option value="automatic">أوتوماتيك</option>
           <option value="manual">عادي</option>
+          <option value="tiptronic">تيبترونيك</option>
         </select>
-        <select id="car-fuel" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3" aria-label="نوع الوقود">
+
+        <select id="car-fuel" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
           <option value="petrol">بنزين</option>
           <option value="diesel">ديزل</option>
           <option value="electric">كهرباء</option>
           <option value="hybrid">هايبرد</option>
         </select>
+
+        <select id="car-advertiser-type" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+          <option value="owner">المالك</option>
+          <option value="broker">وسيط</option>
+          <option value="office">مكتب</option>
+        </select>
+
+        <select id="car-insurance-type" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+          <option value="none">لا يوجد</option>
+          <option value="mandatory">إلزامي</option>
+          <option value="comprehensive">شامل</option>
+        </select>
+
+        <input type="text" id="car-engine-size" placeholder="حجم الماكينة (مثال: 1.6L)"
+          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+
+        <select id="car-exterior-color" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+          <option value="white">أبيض</option>
+          <option value="black">أسود</option>
+          <option value="silver">فضي</option>
+          <option value="grey">رمادي</option>
+          <option value="red">أحمر</option>
+          <option value="blue">أزرق</option>
+          <option value="brown">بني</option>
+          <option value="gold">ذهبي</option>
+          <option value="green">أخضر</option>
+          <option value="beige">بيج</option>
+        </select>
+
+        <select id="car-interior-color" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+          <option value="beige">بيج</option>
+          <option value="black">أسود</option>
+          <option value="grey">رمادي</option>
+          <option value="white">أبيض</option>
+          <option value="red">أحمر</option>
+          <option value="brown">بني</option>
+        </select>
+
+        <!-- Additional Details -->
+        <select id="car-seat-type" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+          <option value="fabric">قماش</option>
+          <option value="leather">جلد</option>
+          <option value="velvet">مخمل</option>
+        </select>
+
+        <input type="text" id="car-cylinders" placeholder="عدد السلندرات (مثال: 4)"
+          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+        <input type="text" id="car-wheels" placeholder="حجم الجنوط (مثال: 16)"
+          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+        <input type="text" id="car-doors" placeholder="عدد الأبواب (مثال: 4)"
+          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+        <input type="text" id="car-seats" placeholder="عدد المقاعد (مثال: 5)"
+          class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+
       </div>
       <textarea id="car-description" placeholder="الوصف"
         class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mt-3" rows="3"></textarea>
+
       <div class="flex gap-3 mt-4">
         <button onclick="saveCar()" class="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-lg">حفظ</button>
         <button onclick="hideAddCar()" class="flex-1 bg-gray-600 hover:bg-gray-700 py-3 rounded-lg">إلغاء</button>
@@ -849,21 +936,105 @@
 
 
 
+    let currentCarImages = [];
+
+    async function handleCarImagesUpload(input) {
+      if (!input.files || input.files.length === 0) return;
+
+      const statusEl = document.getElementById('car-upload-status');
+      statusEl.classList.remove('hidden');
+      statusEl.textContent = 'جاري رفع ' + input.files.length + ' صور...';
+
+      for (let file of input.files) {
+        const formData = new FormData();
+        formData.append('image', file);
+        try {
+          const res = await fetch(`${API_BASE}/api/upload`, {
+            method: 'POST',
+            body: formData
+          });
+          const data = await res.json();
+          if (data.imageUrl) {
+            currentCarImages.push(data.imageUrl);
+          }
+        } catch (err) {
+          console.error("Upload failed", err);
+          alert('فشل رفع بعض الصور');
+        }
+      }
+
+      statusEl.classList.add('hidden');
+      renderCarImages();
+      input.value = '';
+    }
+
+    function renderCarImages() {
+      const container = document.getElementById('car-images-preview');
+      container.innerHTML = currentCarImages.map((url, idx) => `
+        <div class="relative group h-20 w-24">
+          <img src="${url}" class="w-full h-full object-cover rounded-lg border border-gray-600">
+          <button onclick="deleteCarImage(${idx})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition">×</button>
+        </div>
+      `).join('');
+    }
+
+    function deleteCarImage(idx) {
+      currentCarImages.splice(idx, 1);
+      renderCarImages();
+    }
+
+    function toggleCarFields() {
+      const category = document.getElementById('car-category').value;
+      const isMotorRaksha = category === 'motor_raksha';
+      const fields = [
+        'car-transmission', 'car-fuel', 'car-engine-size',
+        'car-exterior-color', 'car-interior-color', 'car-seat-type',
+        'car-cylinders', 'car-wheels', 'car-doors', 'car-seats'
+      ];
+
+      fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          if (isMotorRaksha) el.classList.add('hidden');
+          else el.classList.remove('hidden');
+        }
+      });
+    }
+
+    document.getElementById('car-category').addEventListener('change', toggleCarFields);
+
     async function showAddCar() {
       document.getElementById('car-modal-title').textContent = 'إضافة سيارة';
       document.getElementById('edit-car-id').value = '';
+
+      // Reset Fields
       document.getElementById('car-make').value = '';
       document.getElementById('car-model').value = '';
       document.getElementById('car-year').value = '';
       document.getElementById('car-price').value = '';
       document.getElementById('car-mileage').value = '';
       document.getElementById('car-city').value = 'الخرطوم';
+      document.getElementById('car-category').value = 'sedan';
+      document.getElementById('car-condition').value = 'used';
       document.getElementById('car-transmission').value = 'automatic';
       document.getElementById('car-fuel').value = 'petrol';
+      document.getElementById('car-advertiser-type').value = 'owner';
+      document.getElementById('car-insurance-type').value = 'none';
+      document.getElementById('car-engine-size').value = '';
+      document.getElementById('car-exterior-color').value = 'white';
+      document.getElementById('car-interior-color').value = 'beige';
+      document.getElementById('car-seat-type').value = 'fabric';
+      document.getElementById('car-cylinders').value = '';
+      document.getElementById('car-wheels').value = '';
+      document.getElementById('car-doors').value = '';
+      document.getElementById('car-seats').value = '';
       document.getElementById('car-description').value = '';
-
       document.getElementById('car-user-phone-input').value = '';
 
+      currentCarImages = [];
+      renderCarImages();
+
+      toggleCarFields();
       document.getElementById('add-car-modal').classList.remove('hidden');
     }
 
@@ -878,38 +1049,69 @@
 
       document.getElementById('car-modal-title').textContent = 'تعديل السيارة';
       document.getElementById('edit-car-id').value = id;
+
       document.getElementById('car-make').value = car.make || '';
       document.getElementById('car-model').value = car.model || '';
       document.getElementById('car-year').value = car.year || '';
       document.getElementById('car-price').value = car.price || '';
       document.getElementById('car-mileage').value = car.mileage || '';
       document.getElementById('car-city').value = car.city || 'الخرطوم';
-      document.getElementById('car-transmission').value = car.transmission || 'automatic';
+      document.getElementById('car-category').value = car.category || 'sedan';
+      document.getElementById('car-condition').value = car.condition || 'used'; // Assuming schema uses condition field not text description?
+      document.getElementById('car-transmission').value = car.transmission || car.gearType || 'automatic';
       document.getElementById('car-fuel').value = car.fuelType || 'petrol';
+      document.getElementById('car-advertiser-type').value = car.advertiserType || 'owner';
+      document.getElementById('car-insurance-type').value = car.insuranceType || 'none';
+      document.getElementById('car-engine-size').value = car.engineSize || '';
+      document.getElementById('car-exterior-color').value = car.exteriorColor || 'white';
+      document.getElementById('car-interior-color').value = car.interiorColor || 'beige';
+      document.getElementById('car-seat-type').value = car.seatType || 'fabric';
+      document.getElementById('car-cylinders').value = car.cylinders || '';
+      document.getElementById('car-wheels').value = car.wheels || '';
+      document.getElementById('car-doors').value = car.doors || '';
+      document.getElementById('car-seats').value = car.seats || '';
       document.getElementById('car-description').value = car.description || '';
-
       document.getElementById('car-user-phone-input').value = car.owner?.phone || '';
 
+      currentCarImages = car.images || [];
+      renderCarImages();
+
+      toggleCarFields();
       document.getElementById('add-car-modal').classList.remove('hidden');
     }
 
     async function saveCar() {
-      try {
-        const editId = document.getElementById('edit-car-id').value;
-        const data = {
-          make: document.getElementById('car-make').value,
-          model: document.getElementById('car-model').value,
-          year: parseInt(document.getElementById('car-year').value),
-          price: parseInt(document.getElementById('car-price').value),
-          mileage: parseInt(document.getElementById('car-mileage').value) || 0,
-          city: document.getElementById('car-city').value,
-          transmission: document.getElementById('car-transmission').value,
-          fuelType: document.getElementById('car-fuel').value,
-          description: document.getElementById('car-description').value,
-          userPhone: document.getElementById('car-user-phone-input').value
-        };
-        console.log('Sending car data:', data);
 
+      const editId = document.getElementById('edit-car-id').value;
+
+      const data = {
+        make: document.getElementById('car-make').value,
+        model: document.getElementById('car-model').value,
+        year: parseInt(document.getElementById('car-year').value),
+        price: parseInt(document.getElementById('car-price').value),
+        mileage: parseInt(document.getElementById('car-mileage').value) || 0,
+        city: document.getElementById('car-city').value,
+        category: document.getElementById('car-category').value,
+        condition: document.getElementById('car-condition').value,
+        transmission: document.getElementById('car-transmission').value,
+        gearType: document.getElementById('car-transmission').value, // Sync
+        fuelType: document.getElementById('car-fuel').value,
+        advertiserType: document.getElementById('car-advertiser-type').value,
+        insuranceType: document.getElementById('car-insurance-type').value,
+        engineSize: document.getElementById('car-engine-size').value,
+        exteriorColor: document.getElementById('car-exterior-color').value,
+        interiorColor: document.getElementById('car-interior-color').value,
+        seatType: document.getElementById('car-seat-type').value,
+        cylinders: document.getElementById('car-cylinders').value,
+        wheels: document.getElementById('car-wheels').value,
+        doors: document.getElementById('car-doors').value,
+        seats: document.getElementById('car-seats').value,
+        description: document.getElementById('car-description').value,
+        userPhone: document.getElementById('car-user-phone-input').value,
+        images: currentCarImages
+      };
+
+      try {
         if (editId) {
           await api(`/api/admin/cars/${editId}`, { method: 'PUT', body: JSON.stringify(data) });
         } else {
@@ -919,7 +1121,25 @@
         loadCars();
         loadStats();
       } catch (err) {
-        alert(err.message);
+        // Handle user not found confirmation
+        if (err.message === 'User with this phone not found' || err.message.includes('USER_NOT_FOUND_CONFIRM')) {
+          if (confirm('المستخدم غير موجود. هل تريد إنشاء حساب جديد لهذا الرقم تلقائياً؟ (كلمة المرور: 12345678)')) {
+            try {
+              await api('/api/admin/cars', {
+                method: 'POST',
+                body: JSON.stringify({ ...data, forceCreateUser: true })
+              });
+              hideAddCar();
+              loadCars();
+              loadStats();
+              return;
+            } catch (retryErr) {
+              alert(retryErr.message);
+            }
+          }
+        } else {
+          alert(err.message);
+        }
       }
     }
 

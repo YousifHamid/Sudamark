@@ -1,35 +1,34 @@
-import React, { useState, useCallback } from "react";
+import { Feather } from "@expo/vector-icons";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import * as Haptics from "expo-haptics";
+import React, { useCallback, useState } from "react";
 import {
-  View,
-  StyleSheet,
-  ScrollView,
-  Pressable,
-  Dimensions,
   Alert,
-  Modal,
-  TextInput,
-  Share,
-  Linking,
+  Dimensions,
   Image,
+  Linking,
+  Modal,
+  Pressable,
   RefreshControl,
+  ScrollView,
+  Share,
+  StyleSheet,
+  TextInput,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Feather } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
 
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import { Button } from "@/components/Button";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
-import { useTheme } from "@/hooks/useTheme";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { BorderRadius, Spacing } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
-import { Spacing, BorderRadius } from "@/constants/theme";
-import { RootStackParamList } from "@/navigation/RootStackNavigator";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useCars } from "@/hooks/useCars";
-import { apiRequest } from "@/lib/query-client";
+import { useTheme } from "@/hooks/useTheme";
+import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -43,7 +42,7 @@ export default function CarDetailScreen() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<CarDetailRouteProp>();
   const { cars, toggleFavorite, isFavorite, refreshCars } = useCars();
-  const { token, user } = useAuth();
+  const { token, user, isGuest, logout } = useAuth();
 
   const car = cars.find((c) => c.id === route.params.carId);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -79,6 +78,17 @@ export default function CarDetailScreen() {
   const isOwnCar = user?.id === car.sellerId;
 
   const handleFavorite = () => {
+    if (isGuest) {
+      Alert.alert(
+        t("loginRequired"),
+        t("mustLoginToFavorite"),
+        [
+          { text: t("cancel"), style: "cancel" },
+          { text: t("login"), onPress: () => logout() }
+        ]
+      );
+      return;
+    }
     toggleFavorite(car.id);
     setIsLiked(!isLiked);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -99,6 +109,18 @@ export default function CarDetailScreen() {
   };
 
   const handleMakeOffer = () => {
+    if (isGuest) {
+      Alert.alert(
+        t("loginRequired"),
+        t("mustLoginToOffer"),
+        [
+          { text: t("cancel"), style: "cancel" },
+          { text: t("login"), onPress: () => logout() }
+        ]
+      );
+      return;
+    }
+
     if (isOwnCar) {
       Alert.alert(
         isRTL ? "خطأ" : "Error",
@@ -290,13 +312,25 @@ export default function CarDetailScreen() {
           >
             <Pressable
               style={styles.headerActionButton}
-              onPress={() =>
+              onPress={() => {
+                if (isGuest) {
+                  Alert.alert(
+                    t("loginRequired"),
+                    t("mustLoginToReport"),
+                    [
+                      { text: t("cancel"), style: "cancel" },
+                      { text: t("login"), onPress: () => logout() }
+                    ]
+                  );
+                  return;
+                }
                 navigation.navigate("Report", {
                   userId: car.sellerId,
                   targetId: car.id,
                   targetType: "car",
                   targetName: car.title
-                })
+                });
+              }
               }
             >
               <Feather name="flag" size={20} color="#EF4444" />
@@ -374,43 +408,51 @@ export default function CarDetailScreen() {
             ))}
           </View>
 
-          <View style={styles.section}>
-            <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>
-              {isRTL ? "تفاصيل إضافية" : "Additional Details"}
-            </ThemedText>
-            <View style={[styles.specsGrid, { backgroundColor: theme.backgroundDefault, marginTop: Spacing.sm }]}>
-              {[
-                { label: t("doors"), value: car.doors || "-" },
-                { label: t("seats"), value: car.seats || "-" },
-                { label: t("seatType"), value: car.seatType ? t(car.seatType) : "-" },
-                { label: t("exteriorColor"), value: (car.exteriorColor || car.color) ? t(car.exteriorColor || car.color || "") : "-" },
-                { label: t("interiorColor"), value: car.interiorColor ? t(car.interiorColor) : "-" },
-                { label: t("fuelType"), value: car.fuelType ? t(car.fuelType) : "-" },
-                { label: t("gearType"), value: car.gearType ? t(car.gearType) : (car.transmission ? t(car.transmission) : "-") },
-                { label: t("engineSize"), value: car.engineSize || "-" },
-                { label: t("cylinders"), value: car.cylinders || "-" },
-                { label: t("wheels"), value: car.wheels ? t(`rims${car.wheels}`) : "-" },
-              ].map((spec, index) => (
-                <View key={index} style={styles.specItem}>
-                  <ThemedText
-                    type="small"
-                    style={[
-                      { color: theme.textSecondary },
-                      isRTL && styles.rtlText,
-                    ]}
-                  >
-                    {spec.label}
-                  </ThemedText>
-                  <ThemedText
-                    type="body"
-                    style={[{ fontWeight: "600", marginTop: 4 }, isRTL && styles.rtlText]}
-                  >
-                    {spec.value}
-                  </ThemedText>
-                </View>
-              ))}
+          {car.category !== 'motor_raksha' && (
+            <View style={styles.section}>
+              <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>
+                {isRTL ? "تفاصيل إضافية" : "Additional Details"}
+              </ThemedText>
+              <View style={[styles.specsGrid, { backgroundColor: theme.backgroundDefault, marginTop: Spacing.sm }]}>
+                {[
+                  { label: t("doors"), value: car.doors || "-", key: "doors" },
+                  { label: t("seats"), value: car.seats || "-", key: "seats" },
+                  { label: t("seatType"), value: car.seatType ? t(car.seatType) : "-", key: "seatType" },
+                  { label: t("exteriorColor"), value: (car.exteriorColor || car.color) ? t(car.exteriorColor || car.color || "") : "-", key: "exteriorColor" },
+                  { label: t("interiorColor"), value: car.interiorColor ? t(car.interiorColor) : "-", key: "interiorColor" },
+                  { label: t("fuelType"), value: car.fuelType ? t(car.fuelType) : "-", key: "fuelType" },
+                  { label: t("gearType"), value: car.gearType ? t(car.gearType) : (car.transmission ? t(car.transmission) : "-"), key: "gearType" },
+                  { label: t("engineSize"), value: car.engineSize || "-", key: "engineSize" },
+                  { label: t("cylinders"), value: car.cylinders || "-", key: "cylinders" },
+                  { label: t("wheels"), value: car.wheels ? t(`rims${car.wheels}`) : "-", key: "wheels" },
+                ].filter(spec => {
+                  if (car.category === 'motor_raksha') {
+                    const hiddenKeys = ['doors', 'seats', 'seatType', 'exteriorColor', 'interiorColor', 'fuelType', 'gearType', 'engineSize', 'cylinders', 'wheels'];
+                    return !hiddenKeys.includes(spec.key);
+                  }
+                  return true;
+                }).map((spec, index) => (
+                  <View key={index} style={styles.specItem}>
+                    <ThemedText
+                      type="small"
+                      style={[
+                        { color: theme.textSecondary },
+                        isRTL && styles.rtlText,
+                      ]}
+                    >
+                      {spec.label}
+                    </ThemedText>
+                    <ThemedText
+                      type="body"
+                      style={[{ fontWeight: "600", marginTop: 4 }, isRTL && styles.rtlText]}
+                    >
+                      {spec.value}
+                    </ThemedText>
+                  </View>
+                ))}
+              </View>
             </View>
-          </View>
+          )}
 
           {car.description ? (
             <View style={styles.section}>

@@ -1,14 +1,14 @@
+import { useLanguage } from "@/contexts/LanguageContext";
+import { authEvents, getApiUrl } from "@/lib/query-client";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   createContext,
-  useContext,
-  useState,
-  useEffect,
   ReactNode,
+  useContext,
+  useEffect,
+  useState,
 } from "react";
 import { Alert } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getApiUrl, authEvents } from "@/lib/query-client";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 export type UserRole =
   | "admin"
@@ -37,6 +37,7 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isGuest: boolean;
   hasSeenOnboarding: boolean;
   login: (
     phone?: string,
@@ -60,6 +61,7 @@ interface AuthContextType {
   pendingPhoneNumber: string | null;
   pendingCountryCode: string;
   refreshUser: () => Promise<void>;
+  loginAsGuest: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -71,6 +73,7 @@ const ONBOARDING_STORAGE_KEY = "@sudamark_onboarding";
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [isGuest, setIsGuest] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
   const [pendingPhoneNumber, setPendingPhoneNumber] = useState<string | null>(
@@ -108,6 +111,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error("Error refreshing user:", error);
     }
   };
+
+  const loginAsGuest = async () => {
+    setIsGuest(true);
+  };
+
 
   const loadUser = async () => {
     try {
@@ -262,6 +270,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await AsyncStorage.multiRemove([AUTH_STORAGE_KEY, TOKEN_STORAGE_KEY]);
     setUser(null);
     setToken(null);
+    setIsGuest(false);
   };
 
   const updateProfile = async (updates: Partial<User>) => {
@@ -340,6 +349,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         token,
         isLoading,
         isAuthenticated: !!user,
+        isGuest,
         hasSeenOnboarding,
         login,
         setUserRoles,
@@ -349,6 +359,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         pendingPhoneNumber,
         pendingCountryCode,
         refreshUser,
+        loginAsGuest,
       }}
     >
       {children}

@@ -1,33 +1,46 @@
-import React, { useState, useEffect } from "react";
+import { Feather } from "@expo/vector-icons";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import * as Haptics from "expo-haptics";
+import * as ImagePicker from "expo-image-picker";
+import React, { useEffect, useState } from "react";
 import {
-  View,
+  Alert,
+  FlatList,
+  Image,
+  Modal,
+  Pressable,
   StyleSheet,
   TextInput,
-  Pressable,
-  ScrollView,
-  Alert,
-  Modal,
-  FlatList,
-  Platform,
-  Image,
+  View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import { Feather } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
-import * as Haptics from "expo-haptics";
 
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import { Button } from "@/components/Button";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
-import { useTheme } from "@/hooks/useTheme";
-import { useLanguage, translations } from "@/contexts/LanguageContext";
-import { Spacing, BorderRadius } from "@/constants/theme";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { BorderRadius, Spacing } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useCars } from "@/hooks/useCars";
-import { getApiUrl, apiRequest } from "@/lib/query-client";
+import { useTheme } from "@/hooks/useTheme";
+import { apiRequest, getApiUrl } from "@/lib/query-client";
+import {
+  ADVERTISER_TYPES,
+  CITIES,
+  COLORS,
+  CONDITIONS,
+  CYLINDER_COUNTS,
+  DOOR_COUNTS,
+  ENGINE_SIZES,
+  FORM_CATEGORIES,
+  FUEL_TYPES,
+  GEAR_TYPES,
+  INSURANCE_TYPES,
+  SEAT_COUNTS,
+  SEAT_TYPES,
+  WHEEL_SIZES
+} from "../../shared/constants";
 
 type ScreenStep = "form" | "payment" | "coupon" | "waiting";
 type PaymentMethod = "coupon" | "direct" | null;
@@ -120,68 +133,21 @@ export default function PostCarScreen() {
 
 
 
-  const categories = [
-    { id: "small_salon", labelKey: "smallSalon" },
-    { id: "4x4", labelKey: "fourByFour" },
-    { id: "bus", labelKey: "bus" },
-    { id: "truck", labelKey: "truck" },
-    { id: "motor_raksha", labelKey: "motor_raksha" },
-  ];
 
-  const conditions = [
-    { id: "new", labelKey: "newCar" },
-    { id: "used", labelKey: "usedCar" },
-  ];
+  const categories = FORM_CATEGORIES;
+  const conditions = CONDITIONS;
+  const advertiserTypes = ADVERTISER_TYPES;
+  const insuranceTypes = INSURANCE_TYPES;
+  const fuelTypes = FUEL_TYPES;
+  const gearTypes = GEAR_TYPES;
+  const seatTypes = SEAT_TYPES;
+  const colors = COLORS;
 
-  const advertiserTypes = [
-    { id: "owner", labelKey: "owner" },
-    { id: "broker", labelKey: "broker" },
-    { id: "office", labelKey: "office" },
-  ];
-
-  const insuranceTypes = [
-    { id: "comprehensive", labelKey: "comprehensive" },
-    { id: "mandatory", labelKey: "mandatory" },
-    { id: "none", labelKey: "none" },
-  ];
-
-  const fuelTypes = [
-    { id: "petrol", labelKey: "petrol" },
-    { id: "diesel", labelKey: "diesel" },
-    { id: "hybrid", labelKey: "hybrid" },
-    { id: "electric", labelKey: "electric" },
-  ];
-
-  const gearTypes = [
-    { id: "automatic", labelKey: "automatic" },
-    { id: "manual", labelKey: "manual" },
-    { id: "tiptronic", labelKey: "tiptronic" },
-  ];
-
-  const seatTypes = [
-    { id: "leather", labelKey: "leather" },
-    { id: "fabric", labelKey: "fabric" },
-    { id: "velvet", labelKey: "velvet" },
-  ];
-
-  const colors = [
-    { id: "white", labelKey: "white" },
-    { id: "black", labelKey: "black" },
-    { id: "silver", labelKey: "silver" },
-    { id: "grey", labelKey: "grey" },
-    { id: "red", labelKey: "red" },
-    { id: "blue", labelKey: "blue" },
-    { id: "brown", labelKey: "brown" },
-    { id: "gold", labelKey: "gold" },
-    { id: "green", labelKey: "green" },
-    { id: "beige", labelKey: "beige" },
-  ];
-
-  const wheelSizes = ["15", "16", "17", "18", "19", "20"].map(s => ({ id: s, labelKey: `rims${s}` }));
-  const cylinderCounts = ["3", "4", "6", "8", "12"].map(s => ({ id: s, label: s }));
-  const doorCounts = ["2", "3", "4", "5"].map(s => ({ id: s, label: s }));
-  const seatCounts = ["2", "4", "5", "7", "8"].map(s => ({ id: s, label: s }));
-  const engineSizes = ["1.0L", "1.2L", "1.4L", "1.6L", "1.8L", "2.0L", "2.4L", "3.0L", "3.5L", "4.0L", "5.0L"].map(s => ({ id: s, label: s }));
+  const wheelSizes = WHEEL_SIZES;
+  const cylinderCounts = CYLINDER_COUNTS;
+  const doorCounts = DOOR_COUNTS;
+  const seatCounts = SEAT_COUNTS;
+  const engineSizes = ENGINE_SIZES;
 
 
   const route = useRoute<any>();
@@ -245,23 +211,7 @@ export default function PostCarScreen() {
   const [couponMessage, setCouponMessage] = useState("");
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
 
-  const cities = [
-    { id: "Omdurman", labelKey: "omdurman" },
-    { id: "Bahri", labelKey: "bahri" },
-    { id: "Khartoum", labelKey: "khartoum" },
-    { id: "Port Sudan", labelKey: "portSudan" },
-    { id: "Kassala", labelKey: "kassala" },
-    { id: "Gezira", labelKey: "gezira" },
-    { id: "Kordofan", labelKey: "kordofan" },
-    { id: "Darfur", labelKey: "darfur" },
-    { id: "River Nile", labelKey: "riverNile" },
-    { id: "White Nile", labelKey: "whiteNile" },
-    { id: "Blue Nile", labelKey: "blueNile" },
-    { id: "Northern", labelKey: "northern" },
-    { id: "Red Sea", labelKey: "redSea" },
-    { id: "Gedaref", labelKey: "gedaref" },
-    { id: "Sennar", labelKey: "sennar" },
-  ];
+  const cities = CITIES;
 
   useEffect(() => {
     fetchListingStatus();
@@ -343,17 +293,17 @@ export default function PostCarScreen() {
       insuranceType,
       advertiserType,
 
-      engineSize,
-      color: exteriorColor, // Mapping back to legacy field if needed, or just use exteriorColor
-      exteriorColor,
-      interiorColor,
-      fuelType,
-      gearType,
-      seatType,
-      cylinders,
-      wheels,
-      doors,
-      seats,
+      engineSize: category === 'motor_raksha' ? null : engineSize,
+      color: category === 'motor_raksha' ? null : exteriorColor, // Mapping back to legacy field if needed, or just use exteriorColor
+      exteriorColor: category === 'motor_raksha' ? null : exteriorColor,
+      interiorColor: category === 'motor_raksha' ? null : interiorColor,
+      fuelType: category === 'motor_raksha' ? null : fuelType,
+      gearType: category === 'motor_raksha' ? null : gearType,
+      seatType: category === 'motor_raksha' ? null : seatType,
+      cylinders: category === 'motor_raksha' ? null : cylinders,
+      wheels: category === 'motor_raksha' ? null : wheels,
+      doors: category === 'motor_raksha' ? null : doors,
+      seats: category === 'motor_raksha' ? null : seats,
       createdAt: isEditing ? carData.createdAt : new Date().toISOString(),
     };
 
@@ -1417,16 +1367,18 @@ export default function PostCarScreen() {
           <Feather name="chevron-down" size={20} color={theme.textSecondary} />
         </Pressable>
 
-        <ThemedText
-          type="h4"
-          style={{
-            marginTop: Spacing.xl,
-            marginBottom: Spacing.md,
-            textAlign: isRTL ? 'right' : 'left'
-          }}
-        >
-          {isRTL ? "تفاصيل إضافية عن السيارة" : "Additional Car Details"}
-        </ThemedText>
+        {category !== 'motor_raksha' && (
+          <ThemedText
+            type="h4"
+            style={{
+              marginTop: Spacing.xl,
+              marginBottom: Spacing.md,
+              textAlign: isRTL ? 'right' : 'left'
+            }}
+          >
+            {isRTL ? "تفاصيل إضافية عن السيارة" : "Additional Car Details"}
+          </ThemedText>
+        )}
 
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md, direction: isRTL ? 'rtl' : 'ltr' }}>
           {[
@@ -1494,7 +1446,12 @@ export default function PostCarScreen() {
                 return c ? t(c.labelKey) : wheels;
               })()
             },
-          ].map((item: any, index) => (
+          ].filter(item => {
+            if (category === 'motor_raksha') {
+              return !['seats', 'doors', 'exteriorColor', 'seatType', 'fuel', 'interiorColor', 'engine', 'gear', 'cylinders', 'wheels'].includes(item.key);
+            }
+            return true;
+          }).map((item: any, index) => (
             <View key={index} style={{ width: '47%' }}>
               <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginBottom: Spacing.xs, gap: 6 }}>
                 <Feather name={item.icon || 'circle'} size={14} color={theme.primary} />

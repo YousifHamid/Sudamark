@@ -1,18 +1,18 @@
-import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import MainTabNavigator from "@/navigation/MainTabNavigator";
-import LoginScreen from "@/screens/LoginScreen";
-import OnboardingScreen from "@/screens/OnboardingScreen";
-import CarDetailScreen from "@/screens/CarDetailScreen";
-import RequestInspectionScreen from "@/screens/RequestInspectionScreen";
-import PostCarScreen from "@/screens/PostCarScreen";
-import SearchScreen from "@/screens/SearchScreen";
-import ServiceProviderDetailScreen from "@/screens/ServiceProviderDetailScreen";
-import NotificationsScreen from "@/screens/NotificationsScreen";
-import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAppReview } from "@/hooks/useAppReview";
+import { useScreenOptions } from "@/hooks/useScreenOptions";
+import MainTabNavigator from "@/navigation/MainTabNavigator";
+import CarDetailScreen from "@/screens/CarDetailScreen";
+import LoginScreen from "@/screens/LoginScreen";
+import NotificationsScreen from "@/screens/NotificationsScreen";
+import OnboardingScreen from "@/screens/OnboardingScreen";
+import PostCarScreen from "@/screens/PostCarScreen";
+import RequestInspectionScreen from "@/screens/RequestInspectionScreen";
+import SearchScreen from "@/screens/SearchScreen";
+import ServiceProviderDetailScreen from "@/screens/ServiceProviderDetailScreen";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React from "react";
 
 export type RootStackParamList = {
   Onboarding: undefined;
@@ -41,7 +41,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootStackNavigator() {
   const screenOptions = useScreenOptions({ transparent: false });
-  const { isAuthenticated, isLoading, hasSeenOnboarding, completeOnboarding } =
+  const { isAuthenticated, isGuest, isLoading, hasSeenOnboarding, completeOnboarding } =
     useAuth();
   const { t } = useLanguage();
   useAppReview();
@@ -52,7 +52,7 @@ export default function RootStackNavigator() {
 
   return (
     <Stack.Navigator screenOptions={screenOptions}>
-      {!isAuthenticated ? (
+      {!isAuthenticated && !isGuest ? (
         !hasSeenOnboarding ? (
           <Stack.Screen name="Onboarding" options={{ headerShown: false }}>
             {() => <OnboardingScreen onComplete={completeOnboarding} />}

@@ -1,12 +1,12 @@
 import { sql } from "drizzle-orm";
 import {
+  boolean,
+  integer,
+  jsonb,
   pgTable,
   text,
-  varchar,
-  integer,
   timestamp,
-  boolean,
-  jsonb,
+  varchar,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -100,6 +100,7 @@ export const cars = pgTable("cars", {
     .$type<string[]>()
     .default(sql`'[]'::jsonb`),
   category: text("category").default("sedan"),
+  condition: text("condition").default("used"),
   seats: text("seats"),
   doors: text("doors"),
   exteriorColor: text("exterior_color"),
