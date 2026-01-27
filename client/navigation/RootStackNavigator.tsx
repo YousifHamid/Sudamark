@@ -4,6 +4,7 @@ import { useAppReview } from "@/hooks/useAppReview";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import MainTabNavigator from "@/navigation/MainTabNavigator";
 import CarDetailScreen from "@/screens/CarDetailScreen";
+import CustomSplashScreen from "@/screens/CustomSplashScreen";
 import LoginScreen from "@/screens/LoginScreen";
 import NotificationsScreen from "@/screens/NotificationsScreen";
 import OnboardingScreen from "@/screens/OnboardingScreen";
@@ -46,8 +47,14 @@ export default function RootStackNavigator() {
   const { t } = useLanguage();
   useAppReview();
 
+  const [showSplash, setShowSplash] = React.useState(true);
+
   if (isLoading) {
     return null;
+  }
+
+  if (showSplash) {
+    return <CustomSplashScreen onFinish={() => setShowSplash(false)} />;
   }
 
   return (

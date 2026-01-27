@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "splash": {
-      "image": "./assets/images/splash.jpeg",
+      "image": "./assets/images/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#111827"
     },
@@ -44,7 +44,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash.jpeg",
+          "image": "./assets/images/icon.png",
           "resizeMode": "contain",
           "backgroundColor": "#111827",
           "dark": {
@@ -67,7 +67,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "a72ceeb5-4da9-4d16-8d62-48704991a62e"
+        "projectId": "39eb8bbb-a601-4439-a4d0-2aad0fd646a3"
       }
     }
   }

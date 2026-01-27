@@ -7,14 +7,9 @@
         "development": {
             "developmentClient": true,
             "distribution": "internal",
+            "extends": "development",
             "env": {
                 "EXPO_PUBLIC_DOMAIN": "https://sudamark.up.railway.app"
-            }
-        },
-        "development-apk": {
-            "extends": "development",
-            "android": {
-                "buildType": "apk"
             }
         },
         "development-ios-simulator": {
