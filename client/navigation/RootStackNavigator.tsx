@@ -4,7 +4,6 @@ import { useAppReview } from "@/hooks/useAppReview";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import MainTabNavigator from "@/navigation/MainTabNavigator";
 import CarDetailScreen from "@/screens/CarDetailScreen";
-import CustomSplashScreen from "@/screens/CustomSplashScreen";
 import LoginScreen from "@/screens/LoginScreen";
 import NotificationsScreen from "@/screens/NotificationsScreen";
 import OnboardingScreen from "@/screens/OnboardingScreen";
@@ -13,6 +12,7 @@ import RequestInspectionScreen from "@/screens/RequestInspectionScreen";
 import SearchScreen from "@/screens/SearchScreen";
 import ServiceProviderDetailScreen from "@/screens/ServiceProviderDetailScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import * as SplashScreen from "expo-splash-screen";
 import React from "react";
 
 export type RootStackParamList = {
@@ -48,14 +48,14 @@ export default function RootStackNavigator() {
   const { t } = useLanguage();
   useAppReview();
 
-  const [showSplash, setShowSplash] = React.useState(true);
+  React.useEffect(() => {
+    if (!isLoading) {
+      SplashScreen.hideAsync();
+    }
+  }, [isLoading]);
 
   if (isLoading) {
     return null;
-  }
-
-  if (showSplash) {
-    return <CustomSplashScreen onFinish={() => setShowSplash(false)} />;
   }
 
   return (
