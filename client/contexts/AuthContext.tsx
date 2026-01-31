@@ -17,7 +17,8 @@ export type UserRole =
   | "mechanic"
   | "electrician"
   | "lawyer"
-  | "inspection_center";
+  | "inspection_center"
+  | "spare_parts";
 
 export interface User {
   id: string;

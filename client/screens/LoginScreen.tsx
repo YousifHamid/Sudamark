@@ -45,6 +45,7 @@ export default function LoginScreen() {
       | "electrician"
       | "lawyer"
       | "inspection_center"
+      | "spare_parts"
     )[]
   >([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -64,6 +65,7 @@ export default function LoginScreen() {
       labelKey: "inspectionCenter",
       icon: "clipboard" as const,
     },
+    { id: "spare_parts", labelKey: "spareParts", icon: "package" as const },
   ];
 
   /*

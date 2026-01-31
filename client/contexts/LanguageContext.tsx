@@ -159,7 +159,7 @@ export const translations: Translations = {
   electrician: { ar: "كهربائي", en: "Electrician" },
   lawyer: { ar: "محامي", en: "Lawyer" },
   inspectionCenter: { ar: "مركز فحص", en: "Inspection Center" },
-  spareParts: { ar: "محل اسبيرات", en: "Spare Parts Store" },
+  spareParts: { ar: "اسبيرات وقطع غيار", en: "Spare Parts" },
 
   // New Car Form Fields
   advertiserType: { ar: "نوع المعلن", en: "Advertiser Type" },
