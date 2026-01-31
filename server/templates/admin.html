@@ -159,6 +159,7 @@
           <table class="w-full">
             <thead class="bg-gray-800">
               <tr>
+                <th class="p-4 text-right">الصورة</th>
                 <th class="p-4 text-right">السيارة</th>
                 <th class="p-4 text-right">السعر</th>
                 <th class="p-4 text-right">المدينة</th>
@@ -292,16 +293,21 @@
           class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
 
         <select id="car-city" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
-          <option value="الخرطوم">الخرطوم</option>
-          <option value="أم درمان">أم درمان</option>
-          <option value="بحري">بحري</option>
-          <option value="بورتسودان">بورتسودان</option>
-          <option value="كسلا">كسلا</option>
-          <option value="الأبيض">الأبيض</option>
-          <option value="القضارف">القضارف</option>
-          <option value="عطبرة">عطبرة</option>
-          <option value="نيالا">نيالا</option>
-          <option value="الفاشر">الفاشر</option>
+          <option value="omdurman">أم درمان</option>
+          <option value="bahri">بحري</option>
+          <option value="khartoum">الخرطوم</option>
+          <option value="portsudan">بورتسودان</option>
+          <option value="kassala">كسلا</option>
+          <option value="gezira">الجزيرة</option>
+          <option value="kordofan">كردفان</option>
+          <option value="darfur">دارفور</option>
+          <option value="river_nile">نهر النيل</option>
+          <option value="white_nile">النيل الأبيض</option>
+          <option value="blue_nile">النيل الأزرق</option>
+          <option value="northern">الشمالية</option>
+          <option value="red_sea">البحر الأحمر</option>
+          <option value="gedaref">القضارف</option>
+          <option value="sennar">سنار</option>
         </select>
 
         <select id="car-category" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
@@ -412,11 +418,21 @@
         class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
       <select id="provider-city" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3"
         aria-label="المدينة">
-        <option value="الخرطوم">الخرطوم</option>
-        <option value="أم درمان">أم درمان</option>
-        <option value="بحري">بحري</option>
-        <option value="بورتسودان">بورتسودان</option>
-        <option value="كسلا">كسلا</option>
+        <option value="omdurman">أم درمان</option>
+        <option value="bahri">بحري</option>
+        <option value="khartoum">الخرطوم</option>
+        <option value="portsudan">بورتسودان</option>
+        <option value="kassala">كسلا</option>
+        <option value="gezira">الجزيرة</option>
+        <option value="kordofan">كردفان</option>
+        <option value="darfur">دارفور</option>
+        <option value="river_nile">نهر النيل</option>
+        <option value="white_nile">النيل الأبيض</option>
+        <option value="blue_nile">النيل الأزرق</option>
+        <option value="northern">الشمالية</option>
+        <option value="red_sea">البحر الأحمر</option>
+        <option value="gedaref">القضارف</option>
+        <option value="sennar">سنار</option>
       </select>
       <input type="text" id="provider-address" placeholder="العنوان"
         class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
@@ -490,16 +506,21 @@
         <select id="edit-user-city" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3"
           aria-label="المدينة">
           <option value="">اختر المدينة</option>
-          <option value="الخرطوم">الخرطوم</option>
-          <option value="أم درمان">أم درمان</option>
-          <option value="بحري">بحري</option>
-          <option value="بورتسودان">بورتسودان</option>
-          <option value="كسلا">كسلا</option>
-          <option value="الأبيض">الأبيض</option>
-          <option value="القضارف">القضارف</option>
-          <option value="عطبرة">عطبرة</option>
-          <option value="نيالا">نيالا</option>
-          <option value="الفاشر">الفاشر</option>
+          <option value="omdurman">أم درمان</option>
+          <option value="bahri">بحري</option>
+          <option value="khartoum">الخرطوم</option>
+          <option value="portsudan">بورتسودان</option>
+          <option value="kassala">كسلا</option>
+          <option value="gezira">الجزيرة</option>
+          <option value="kordofan">كردفان</option>
+          <option value="darfur">دارفور</option>
+          <option value="river_nile">نهر النيل</option>
+          <option value="white_nile">النيل الأبيض</option>
+          <option value="blue_nile">النيل الأزرق</option>
+          <option value="northern">الشمالية</option>
+          <option value="red_sea">البحر الأحمر</option>
+          <option value="gedaref">القضارف</option>
+          <option value="sennar">سنار</option>
         </select>
       </div>
 
@@ -583,6 +604,21 @@
         <button onclick="hideChangePassword()"
           class="flex-1 bg-gray-600 hover:bg-gray-700 py-3 rounded-lg">إلغاء</button>
       </div>
+    </div>
+  </div>
+
+  <div id="image-gallery-modal"
+    class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+    <button onclick="closeGallery()"
+      class="absolute top-4 right-4 text-white hover:text-gray-300 text-4xl">&times;</button>
+    <button onclick="prevImage()"
+      class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 text-6xl">&#8250;</button>
+    <button onclick="nextImage()"
+      class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 text-6xl">&#8249;</button>
+
+    <div class="max-w-4xl max-h-[90vh] flex flex-col items-center">
+      <img id="gallery-image" src="" class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl">
+      <div id="gallery-counter" class="text-white mt-4 text-lg font-mono"></div>
     </div>
   </div>
 
@@ -813,6 +849,56 @@
       } catch (err) {
         alert(err.message);
       }
+    }
+
+    // Gallery Logic
+    let currentGalleryImages = [];
+    let currentImageIndex = 0;
+
+    function openGallery(carId, index) {
+      const car = window.carsData.find(c => c.car.id === carId);
+      if (!car || !car.car.images || car.car.images.length === 0) return;
+
+      currentGalleryImages = car.car.images;
+      currentImageIndex = index;
+      updateGalleryImage();
+      document.getElementById('image-gallery-modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden'; // Prevent scrolling
+
+      // Add keyboard support
+      document.addEventListener('keydown', handleGalleryKeydown);
+    }
+
+    function closeGallery() {
+      document.getElementById('image-gallery-modal').classList.add('hidden');
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleGalleryKeydown);
+    }
+
+    function updateGalleryImage() {
+      const img = document.getElementById('gallery-image');
+      const counter = document.getElementById('gallery-counter');
+
+      img.src = currentGalleryImages[currentImageIndex];
+      counter.textContent = `${currentImageIndex + 1} / ${currentGalleryImages.length}`;
+    }
+
+    function nextImage() {
+      if (currentGalleryImages.length === 0) return;
+      currentImageIndex = (currentImageIndex + 1) % currentGalleryImages.length;
+      updateGalleryImage();
+    }
+
+    function prevImage() {
+      if (currentGalleryImages.length === 0) return;
+      currentImageIndex = (currentImageIndex - 1 + currentGalleryImages.length) % currentGalleryImages.length;
+      updateGalleryImage();
+    }
+
+    function handleGalleryKeydown(e) {
+      if (e.key === 'Escape') closeGallery();
+      if (e.key === 'ArrowRight') nextImage(); // RTL: Right arrow is usually next in logic, but visually might vary. Keeping standard.
+      if (e.key === 'ArrowLeft') prevImage();
     }
 
     async function api(endpoint, options = {}) {
@@ -1275,6 +1361,14 @@
         tbody.innerHTML = cars.map(c => `
           <tr class="border-t border-gray-700 hover:bg-white/5 transition-colors">
             <td class="p-4">
+              <div class="flex gap-1 flex-wrap w-40">
+                ${c.car.images && c.car.images.length > 0
+            ? c.car.images.map((img, idx) => `<img src="${img}" class="w-12 h-12 object-cover rounded border border-gray-600 cursor-pointer hover:border-orange-500" onclick="openGallery('${c.car.id}', ${idx})">`).join('')
+            : '<span class="text-xs text-gray-500">لا توجد صور</span>'
+          }
+              </div >
+            </td >
+            <td class="p-4">
                 <div class="font-medium">${c.car.make} ${c.car.model}</div>
                 <div class="text-gray-400 text-sm">${c.car.year}</div>
             </td>
@@ -1300,8 +1394,8 @@
               </button>
               <button onclick="deleteCar('${c.car.id}')" class="text-red-400 hover:text-red-300 transition-colors bg-red-400/10 px-3 py-1 rounded hover:bg-red-400/20">حذف</button>
             </td>
-          </tr>
-        `).join('');
+          </tr >
+          `).join('');
       } catch (err) {
         console.error('Failed to load cars:', err);
       }
@@ -1319,7 +1413,7 @@
 
     async function toggleFeatured(id, isFeatured) {
       try {
-        await api(`/api/admin/cars/${id}`, { method: 'PUT', body: JSON.stringify({ isFeatured }) });
+        await api(`/ api / admin / cars / ${id}`, { method: 'PUT', body: JSON.stringify({ isFeatured }) });
         loadCars();
       } catch (err) {
         alert(err.message);
@@ -1346,7 +1440,7 @@
         const typeLabels = { mechanic: 'ميكانيكي', electrician: 'كهربائي', lawyer: 'محامي', inspection: 'مركز فحص' };
         const tbody = document.getElementById('providers-table');
         tbody.innerHTML = providers.map(p => `
-          <tr class="border-t border-gray-700">
+        <tr class="border-t border-gray-700">
             <td class="p-4">${p.name}</td>
             <td class="p-4"><span class="bg-purple-500 px-2 py-1 rounded text-xs">${typeLabels[p.type] || p.type}</span></td>
             <td class="p-4 text-gray-400">${p.phone}</td>
@@ -1355,8 +1449,8 @@
               <button onclick="editProvider('${p.id}')" class="text-yellow-400 hover:underline">تعديل</button>
               <button onclick="deleteProvider('${p.id}')" class="text-red-400 hover:underline">حذف</button>
             </td>
-          </tr>
-        `).join('');
+          </tr >
+          `).join('');
       } catch (err) {
         console.error('Failed to load providers:', err);
       }
@@ -1447,7 +1541,7 @@
         }
 
         tbody.innerHTML = payments.map(p => `
-          <tr class="border-t border-gray-700 hover:bg-white/5 transition-colors">
+        <tr class="border-t border-gray-700 hover:bg-white/5 transition-colors">
             <td class="p-4"><input type="checkbox" aria-label="تحديد الدفع لـ ${p.user?.name || 'غير معروف'}" name="payment-check" value='${JSON.stringify({
           id: p.payment.id,
           trxNo: p.payment.trxNo,
@@ -1474,8 +1568,8 @@
                 <button onclick="rejectPayment('${p.payment.id}')" class="text-red-400 hover:text-red-300 transition-colors bg-red-400/10 px-3 py-1 rounded hover:bg-red-400/20">رفض</button>
               ` : '<span class="text-gray-600 text-sm">-</span>'}
             </td>
-          </tr>
-        `).join('');
+          </tr >
+          `).join('');
       } catch (err) {
         console.error('Failed to load payments:', err);
       }
@@ -1495,7 +1589,7 @@
 
       const printWindow = window.open('', '', 'width=800,height=600');
       printWindow.document.write(`
-        <html dir="rtl">
+          < html dir = "rtl" >
         <head>
           <title>تقرير المدفوعات</title>
           <style>
@@ -1536,8 +1630,8 @@
           </div>
           <script>window.print();<\/script>
         </body>
-        </html>
-      `);
+        </html >
+          `);
       printWindow.document.close();
     }
 
@@ -1589,7 +1683,7 @@
         window.employeesData = employees;
         const tbody = document.getElementById('employees-table');
         tbody.innerHTML = employees.map(e => `
-                <tr class="border-t border-gray-700 hover:bg-white/5 transition-colors">
+        <tr class="border-t border-gray-700 hover:bg-white/5 transition-colors">
                     <td class="p-4">
                        <div class="flex items-center gap-3">
                            <div class="relative">
@@ -1615,8 +1709,8 @@
                         <button onclick="deleteEmployee('${e.id}', '${e.name}')" class="text-red-400 hover:text-red-300 transition-colors bg-red-400/10 px-3 py-1 rounded hover:bg-red-400/20">حذف</button>
                         ` : ''}
                     </td>
-                </tr>
-            `).join('');
+                </tr >
+          `).join('');
       } catch (err) {
         console.error('Failed to load employees:', err);
       }
