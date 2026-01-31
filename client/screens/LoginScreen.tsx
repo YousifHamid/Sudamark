@@ -44,7 +44,7 @@ export default function LoginScreen() {
       | "mechanic"
       | "electrician"
       | "lawyer"
-      | "inspection_center"
+      | "inspection"
       | "spare_parts"
     )[]
   >([]);
@@ -61,7 +61,7 @@ export default function LoginScreen() {
     { id: "mechanic", labelKey: "mechanic", icon: "tool" as const },
     { id: "electrician", labelKey: "electrician", icon: "zap" as const },
     {
-      id: "inspection_center",
+      id: "inspection",
       labelKey: "inspectionCenter",
       icon: "clipboard" as const,
     },

@@ -24,6 +24,7 @@ export type RootStackParamList = {
   PostCar: { carData?: any } | undefined;
   Search: { category?: string };
   ServiceProviderDetail: { provider: any };
+  AddServiceRequest: undefined;
   MyListings: undefined;
   MyFavorites: undefined;
   EditProfile: undefined;
@@ -115,6 +116,15 @@ export default function RootStackNavigator() {
             options={{
               presentation: "modal",
               headerTitle: "",
+            }}
+          />
+          <Stack.Screen
+            name="AddServiceRequest"
+            // @ts-ignore
+            component={require("@/screens/AddServiceRequestScreen").default}
+            options={{
+              presentation: "modal",
+              headerTitle: t("addServiceRequest"),
             }}
           />
           <Stack.Screen

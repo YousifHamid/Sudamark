@@ -1,18 +1,18 @@
-import React, { useState, useCallback } from "react";
-import { View, StyleSheet, FlatList, Pressable, RefreshControl } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Feather } from "@expo/vector-icons";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Feather } from "@expo/vector-icons";
+import React, { useCallback, useState } from "react";
+import { FlatList, Pressable, RefreshControl, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ThemedText } from "@/components/ThemedText";
-import { useTheme } from "@/hooks/useTheme";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { Spacing, BorderRadius } from "@/constants/theme";
 import { ServiceProviderCard } from "@/components/ServiceProviderCard";
-import { RootStackParamList } from "@/navigation/RootStackNavigator";
+import { ThemedText } from "@/components/ThemedText";
+import { BorderRadius, Spacing } from "@/constants/theme";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useServiceProviders } from "@/hooks/useServiceProviders";
+import { useTheme } from "@/hooks/useTheme";
+import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 export default function ServicesScreen() {
   const insets = useSafeAreaInsets();
@@ -41,7 +41,7 @@ export default function ServicesScreen() {
     { id: "mechanic", labelKey: "mechanics", icon: "tool" as const },
     { id: "electrician", labelKey: "electricians", icon: "zap" as const },
     {
-      id: "inspection_center",
+      id: "inspection",
       labelKey: "inspectionCenter",
       icon: "clipboard" as const,
     },
@@ -92,6 +92,25 @@ export default function ServicesScreen() {
           )}
         />
       </View>
+
+      {/* Add Service Request Button */}
+      <Pressable
+        onPress={() => navigation.navigate("AddServiceRequest")}
+        style={[
+          styles.addServiceButton,
+          { backgroundColor: theme.primary },
+        ]}
+      >
+        <Feather name="plus" size={18} color="#FFFFFF" />
+        <ThemedText
+          style={[
+            styles.addServiceButtonText,
+            isRTL && styles.rtlText,
+          ]}
+        >
+          {t("addServiceRequest")}
+        </ThemedText>
+      </Pressable>
 
       <FlatList
         data={filteredProviders}
@@ -173,5 +192,20 @@ const styles = StyleSheet.create({
   },
   rtlText: {
     writingDirection: "rtl",
+  },
+  addServiceButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.full,
+    gap: Spacing.xs,
+  },
+  addServiceButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
   },
 });

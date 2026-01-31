@@ -136,6 +136,7 @@ export const serviceProviders = pgTable("service_providers", {
   rating: integer("rating").default(0),
   reviewCount: integer("review_count").default(0),
   isVerified: boolean("is_verified").default(false),
+  isActive: boolean("is_active").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

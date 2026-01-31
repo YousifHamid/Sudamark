@@ -212,8 +212,8 @@ export default function ProfileScreen() {
           >
             <ThemedText type="small" style={{ color: theme.primary }}>
               {t(
-                user?.roles?.[0] === "inspection_center"
-                  ? "inspectionCenter"
+                user?.roles?.[0] === "inspection"
+                  ? "inspection"
                   : user?.roles?.[0] || "buyer",
               )}
             </ThemedText>

@@ -1,6 +1,6 @@
-import React from "react";
-import { View, StyleSheet, Pressable, Linking, Alert } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import React from "react";
+import { Alert, Linking, Pressable, StyleSheet, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -9,8 +9,10 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
+import { BorderRadius, Spacing } from "@/constants/theme";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/hooks/useTheme";
-import { Spacing, BorderRadius, isRTL } from "@/constants/theme";
+import { CITIES } from "@shared/constants";
 
 export interface ServiceProvider {
   id: string;
@@ -19,13 +21,14 @@ export interface ServiceProvider {
   | "mechanic"
   | "electrician"
   | "lawyer"
-  | "inspection_center"
+  | "inspection"
   | "spare_parts";
   city: string;
   rating: number;
   reviewCount: number;
   phone?: string;
   description?: string;
+  isActive?: boolean;
 }
 
 interface ServiceProviderCardProps {
@@ -37,7 +40,7 @@ const ROLE_ICONS: Record<string, string> = {
   mechanic: "tool",
   electrician: "zap",
   lawyer: "briefcase",
-  inspection_center: "clipboard",
+  inspection: "clipboard",
   spare_parts: "package",
 };
 
@@ -45,7 +48,7 @@ const ROLE_LABELS: Record<string, string> = {
   mechanic: "Mechanic",
   electrician: "Electrician",
   lawyer: "Lawyer",
-  inspection_center: "Inspection Center",
+  inspection: "Inspection Center",
   spare_parts: "Spare Parts",
 };
 
@@ -63,6 +66,7 @@ export function ServiceProviderCard({
   onPress,
 }: ServiceProviderCardProps) {
   const { theme } = useTheme();
+  const { t, isRTL } = useLanguage();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -109,13 +113,22 @@ export function ServiceProviderCard({
             {ROLE_LABELS[provider.role]}
           </ThemedText>
         </View>
+        {provider.isActive === false && (
+          <View
+            style={[styles.pendingBadge, { backgroundColor: "#F59E0B" + "20" }]}
+          >
+            <ThemedText type="small" style={{ color: "#F59E0B" }}>
+              {isRTL ? "قيد المراجعة" : "Pending"}
+            </ThemedText>
+          </View>
+        )}
         <View style={styles.locationContainer}>
           <Feather name="map-pin" size={12} color={theme.textSecondary} />
           <ThemedText
             type="small"
             style={{ color: theme.textSecondary, marginLeft: 4 }}
           >
-            {provider.city}
+            {t(CITIES.find((c) => c.id === provider.city)?.labelKey || provider.city)}
           </ThemedText>
         </View>
       </View>
@@ -165,6 +178,13 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   roleBadge: {
+    alignSelf: "flex-start",
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.xs,
+    marginBottom: Spacing.xs,
+  },
+  pendingBadge: {
     alignSelf: "flex-start",
     paddingHorizontal: Spacing.sm,
     paddingVertical: 2,

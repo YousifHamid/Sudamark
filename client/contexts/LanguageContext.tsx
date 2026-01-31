@@ -217,7 +217,6 @@ export const translations: Translations = {
   mechanics: { ar: "ميكانيكي", en: "Mechanic" },
   electricians: { ar: "كهربائي", en: "Electrician" },
   lawyers: { ar: "محامي", en: "Lawyer" },
-  inspection: { ar: "مركز فحص", en: "Inspection Center" },
   noProvidersFound: {
     ar: "لم يتم العثور على مزودي خدمات",
     en: "No providers found",
@@ -275,6 +274,7 @@ export const translations: Translations = {
   priceSdg: { ar: "السعر (جنيه)", en: "Price (SDG)" },
   city: { ar: "المدينة", en: "City" },
   description: { ar: "الوصف", en: "Description" },
+  enterDescription: { ar: "أدخل وصفاً للخدمة...", en: "Enter a description..." },
   describeYourCar: { ar: "وصف سيارتك...", en: "Describe your car..." },
   photos: { ar: "الصور", en: "Photos" },
   photosUpTo6: { ar: "الصور (حتى 6)", en: "Photos (up to 6)" },
@@ -568,6 +568,26 @@ export const translations: Translations = {
   rims18: { ar: "18 بوصة", en: "18 inch" },
   rims19: { ar: "19 بوصة", en: "19 inch" },
   rims20: { ar: "20 بوصة", en: "20 inch" },
+
+  // Service Request
+  addServiceRequest: { ar: "طلب اضافة خدمة", en: "Request to Add Service" },
+  requestType: { ar: "نوع الطلب", en: "Request Type" },
+  selectRequestType: { ar: "اختر نوع الطلب", en: "Select Request Type" },
+  storeOrTechnicianName: { ar: "اسم المحل / اسم الفني", en: "Store/Technician Name" },
+  enterStoreOrTechnicianName: { ar: "ادخل اسم الفني", en: "Enter technician name" },
+  customAddress: { ar: "العنوان المخصص (اختياري)", en: "Custom Address (Optional)" },
+  enterCustomAddress: { ar: "العنوان المخصص", en: "Enter custom address" },
+  notesOptional: { ar: "ملاحظات (اختياري)", en: "Notes (Optional)" },
+  enterNotes: { ar: "ملاحظات اختياري", en: "Optional notes" },
+  storeImage: { ar: "صورة واجهة المحل / الأسبيرات", en: "Store/Spare Parts Image" },
+  attachImage: { ar: "إرفاق صورة", en: "Attach Image" },
+  sendRequest: { ar: "إرسال الطلب", en: "Send Request" },
+  requestSent: { ar: "تم إرسال الطلب", en: "Request Sent" },
+  requestSentMessage: { ar: "تم إرسال طلبك بنجاح.\nسيتم مراجعته والتواصل معك قريباً.", en: "Your request has been sent successfully.\nIt will be reviewed and we'll contact you soon." },
+  missingRequiredFields: { ar: "يرجى ملء جميع الحقول المطلوبة", en: "Please fill all required fields" },
+  imageRequired: { ar: "يرجى إرفاق صورة", en: "Please attach an image" },
+  failedToSendRequest: { ar: "فشل في إرسال الطلب", en: "Failed to send request" },
+  regionCity: { ar: "المنطقة / المدينة", en: "Region / City" },
 };
 
 interface LanguageContextType {

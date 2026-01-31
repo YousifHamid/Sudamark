@@ -917,9 +917,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   );
 
-  app.get("/api/service-providers", optionalAuthMiddleware, async (req: Request, res: Response) => {
+  app.get("/api/service-providers", optionalAuthMiddleware, async (req: AuthRequest, res: Response) => {
     try {
       const { type, city } = req.query;
+      const userId = req.user?.id;
+
+      // Build base conditions
       let conditions: any[] = [];
 
       if (type && typeof type === "string") {
@@ -929,20 +932,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
         conditions.push(eq(serviceProviders.city, city));
       }
 
-      let query =
-        conditions.length > 0
-          ? db
-            .select()
-            .from(serviceProviders)
-            .where(and(...conditions))
-          : db.select().from(serviceProviders);
+      // Visibility logic: show active providers OR user's own inactive providers
+      if (userId) {
+        // Authenticated: active OR (inactive AND owned by user)
+        conditions.push(
+          or(
+            eq(serviceProviders.isActive, true),
+            eq(serviceProviders.userId, userId)
+          )
+        );
+      } else {
+        // Not authenticated: only active providers
+        conditions.push(eq(serviceProviders.isActive, true));
+      }
 
-      const providers = await query.orderBy(desc(serviceProviders.rating));
+      const providers = await db
+        .select()
+        .from(serviceProviders)
+        .where(and(...conditions))
+        .orderBy(desc(serviceProviders.rating));
+
       res.json(providers);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch service providers" });
     }
   });
+
+  // User-facing endpoint to create service provider (pending approval)
+  app.post(
+    "/api/service-providers",
+    authMiddleware,
+    async (req: AuthRequest, res: Response) => {
+      try {
+        const { name, type, phone, city, address, description } = req.body;
+
+        // Validate required fields
+        if (!name || !type || !phone || !city) {
+          return res.status(400).json({
+            error: "Missing required fields: name, type, phone, and city are required"
+          });
+        }
+
+        const [newProvider] = await db
+          .insert(serviceProviders)
+          .values({
+            userId: req.user!.id,
+            name,
+            type,
+            phone,
+            city,
+            address: address || null,
+            description: description || null,
+            isActive: false, // User-created = pending approval
+          })
+          .returning();
+
+        res.status(201).json(newProvider);
+      } catch (error) {
+        console.error("Create service provider error:", error);
+        res.status(500).json({ error: "Failed to create service provider" });
+      }
+    }
+  );
 
   app.get("/api/service-providers/:id", async (req: Request, res: Response) => {
     try {
@@ -1746,7 +1797,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         const [newProvider] = await db
           .insert(serviceProviders)
-          .values(req.body)
+          .values({
+            ...req.body,
+            isActive: true, // Admin-created providers are active by default
+          })
           .returning();
         res.json(newProvider);
       } catch (error) {

@@ -1,14 +1,14 @@
-import React, {
-  createContext,
-  useContext,
-  ReactNode,
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
 import { ServiceProvider } from "@/components/ServiceProviderCard";
 import { getApiUrl, throwIfResNotOk } from "@/lib/query-client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 const TOKEN_STORAGE_KEY = "@sudamark_token";
 
@@ -55,6 +55,7 @@ export function ServiceProvidersProvider({
             phone: p.phone,
             address: p.address,
             isVerified: p.isVerified,
+            isActive: p.isActive,
           }));
           setProviders(formattedProviders);
         }

@@ -40,7 +40,7 @@ export default function RequestInspectionScreen() {
 
   const car = cars.find((c) => c.id === route.params.carId);
   const inspectionCenters = providers.filter(
-    (p) => p.role === "inspection_center",
+    (p) => p.role === "inspection",
   );
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);

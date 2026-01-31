@@ -17,7 +17,7 @@ export type UserRole =
   | "mechanic"
   | "electrician"
   | "lawyer"
-  | "inspection_center"
+  | "inspection"
   | "spare_parts";
 
 export interface User {
