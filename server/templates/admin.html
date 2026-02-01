@@ -859,7 +859,7 @@
 
     function openGallery(carId, index) {
       const car = window.carsData.find(c => c.car.id === carId);
-      if (!car || !car.car.images || car.car.images.length === 0) return;
+      if (!car || car.car.isActive || !car.car.images || car.car.images.length === 0) return;
 
       currentGalleryImages = car.car.images;
       currentImageIndex = index;
@@ -1364,9 +1364,12 @@
           <tr class="border-t border-gray-700 hover:bg-white/5 transition-colors">
             <td class="p-4">
               <div class="flex gap-1 flex-wrap w-40">
-                ${c.car.images && c.car.images.length > 0
-            ? c.car.images.map((img, idx) => `<img src="${img}" class="w-12 h-12 object-cover rounded border border-gray-600 cursor-pointer hover:border-orange-500" onclick="openGallery('${c.car.id}', ${idx})">`).join('')
-            : '<span class="text-xs text-gray-500">لا توجد صور</span>'
+                ${c.car.isActive
+            ? '<span class="inline-flex items-center justify-center w-24 h-12 rounded bg-green-500/20 text-green-300 border border-green-500/30 text-xs font-semibold">نشط</span>'
+            : (c.car.images && c.car.images.length > 0
+              ? c.car.images.map((img, idx) => `<img src="${img}" class="w-12 h-12 object-cover rounded border border-gray-600 cursor-pointer hover:border-orange-500" onclick="openGallery('${c.car.id}', ${idx})">`).join('')
+              : '<span class="text-xs text-gray-500">لا توجد صور</span>'
+            )
           }
               </div >
             </td >
