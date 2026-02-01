@@ -145,7 +145,7 @@ export const buyerOffers = pgTable("buyer_offers", {
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   carId: varchar("car_id")
-    .references(() => cars.id)
+    .references(() => cars.id, { onDelete: "cascade" })
     .notNull(),
   buyerId: varchar("buyer_id")
     .references(() => users.id)
@@ -161,7 +161,7 @@ export const inspectionRequests = pgTable("inspection_requests", {
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   carId: varchar("car_id")
-    .references(() => cars.id)
+    .references(() => cars.id, { onDelete: "cascade" })
     .notNull(),
   buyerId: varchar("buyer_id")
     .references(() => users.id)
@@ -201,7 +201,7 @@ export const favorites = pgTable("favorites", {
     .references(() => users.id)
     .notNull(),
   carId: varchar("car_id")
-    .references(() => cars.id)
+    .references(() => cars.id, { onDelete: "cascade" })
     .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -225,7 +225,9 @@ export const payments = pgTable("payments", {
   userId: varchar("user_id")
     .references(() => users.id)
     .notNull(),
-  carId: varchar("car_id").references(() => cars.id),
+  carId: varchar("car_id").references(() => cars.id, {
+    onDelete: "cascade",
+  }),
   trxNo: text("trx_no").notNull(),
   amount: integer("amount").notNull(),
   paidAt: text("paid_at").notNull(),
@@ -267,7 +269,9 @@ export const couponUsages = pgTable("coupon_usages", {
   userId: varchar("user_id")
     .references(() => users.id)
     .notNull(),
-  carId: varchar("car_id").references(() => cars.id),
+  carId: varchar("car_id").references(() => cars.id, {
+    onDelete: "cascade",
+  }),
   usedAt: timestamp("used_at").defaultNow().notNull(),
 });
 
