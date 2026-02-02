@@ -31,7 +31,9 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const headerHeight = useHeaderHeight();
+  const rawHeaderHeight = useHeaderHeight();
+  // Fallback if headerHeight returns 0 - use safe area + estimated header height
+  const headerHeight = rawHeaderHeight > 0 ? rawHeaderHeight : insets.top + 56;
   const tabBarHeight = useBottomTabBarHeight();
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
@@ -140,7 +142,7 @@ export default function HomeScreen() {
     <ScrollView
       style={[styles.container, { backgroundColor: theme.backgroundRoot }]}
       contentContainerStyle={{
-        paddingTop: 150, // Fixed large padding to ensure SearchBar is visible below Header
+        paddingTop: Spacing.md,
         paddingBottom: tabBarHeight + Spacing.xl + 80,
       }}
       scrollIndicatorInsets={{ bottom: insets.bottom }}
@@ -150,10 +152,11 @@ export default function HomeScreen() {
           refreshing={refreshing}
           onRefresh={onRefresh}
           tintColor={theme.primary}
-          progressViewOffset={150}
+          progressViewOffset={headerHeight}
         />
       }
     >
+
       <View
         style={[styles.searchBarContainer, { paddingHorizontal: Spacing.lg }]}
       >

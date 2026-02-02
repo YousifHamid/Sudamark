@@ -1,16 +1,14 @@
+import { useTheme } from '@/hooks/useTheme';
 import React, { useEffect } from 'react';
-import { View, Image, Dimensions, StyleSheet } from 'react-native';
+import { Dimensions, Image, StyleSheet, View } from 'react-native';
 import Animated, {
-    useSharedValue,
+    Easing,
+    cancelAnimation,
     useAnimatedStyle,
+    useSharedValue,
     withRepeat,
     withTiming,
-    Easing,
-    LinearTransition,
-    cancelAnimation,
-    withDelay
 } from 'react-native-reanimated';
-import { useTheme } from '@/hooks/useTheme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CAR_WIDTH = 120; // Approx width of the car image to ensure it goes fully off screen
@@ -68,11 +66,11 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0, // Base position, animated via transform
         width: 120, // Should match CAR_WIDTH logic or be dynamic
-        height: 60, // Adjust height as needed
+        height: 80, // Adjust height as needed
     },
     carImage: {
         width: '100%',
         height: '100%',
-        opacity: 0.15, // Make it subtle
+        opacity: 0.3, // Make it subtle
     },
 });

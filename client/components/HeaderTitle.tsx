@@ -1,26 +1,22 @@
-import React from "react";
-import {
-  View,
-  StyleSheet,
-  Pressable,
-  Text,
-  Alert,
-  Image,
-  Platform,
-} from "react-native";
-import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import * as Haptics from "expo-haptics";
+import React from "react";
+import {
+  Image,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { SUPPORTED_COUNTRIES } from "@/constants/countries";
+import { Spacing } from "@/constants/theme";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/hooks/useTheme";
-import { useAuth } from "@/contexts/AuthContext";
-import { ThemedText } from "./ThemedText";
-import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
-import { SUPPORTED_COUNTRIES } from "@/constants/countries";
+import { AnimatedHeaderBackground } from "./AnimatedHeaderBackground";
+import { ThemedText } from "./ThemedText";
 
 export function HeaderTitle() {
   const { t, isRTL } = useLanguage();
@@ -29,27 +25,6 @@ export function HeaderTitle() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-
-  const handleSellPress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    if (!isAuthenticated) {
-      Alert.alert(
-        isRTL ? "تسجيل الدخول مطلوب" : "Login Required",
-        isRTL
-          ? "يجب تسجيل الدخول لإضافة إعلان"
-          : "Please login to post a listing",
-        [
-          { text: isRTL ? "إلغاء" : "Cancel", style: "cancel" },
-          {
-            text: isRTL ? "تسجيل الدخول" : "Login",
-            onPress: () => navigation.navigate("Login" as any),
-          },
-        ],
-      );
-      return;
-    }
-    navigation.navigate("PostCar");
-  };
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -81,49 +56,62 @@ export function HeaderTitle() {
   };
 
   return (
-    <View style={styles.outerContainer}>
-      <View style={styles.logoSection}>
-        <Image
-          source={require("../../assets/images/sudamark_logo.png")}
-          style={styles.logo}
-          resizeMode="contain"
-          width={40}
-          height={40}
-        />
-        <Text style={[styles.slogan, { color: theme.textSecondary }]}>
-          {isRTL ? "يجمعنا كلنا والخير يعمنا" : "Bringing us together"}
-        </Text>
+    <View style={[styles.stackContainer, { paddingTop: insets.top }]}>
+      {/* Animated background - positioned in back */}
+      <View style={styles.backgroundLayer}>
+        <AnimatedHeaderBackground />
       </View>
 
-      <View style={styles.leftSection}>
-        <View style={styles.greetingContainer}>
-          <ThemedText
-            style={{ fontSize: 12, fontWeight: "700", color: theme.primary }}
-          >
-            {getGreeting()}
-          </ThemedText>
-          <ThemedText
-            style={{ fontSize: 12, color: theme.textSecondary, marginTop: .5 }}
-          >
-            {getUserCountry()}
-          </ThemedText>
+      {/* Foreground content */}
+      <View style={styles.outerContainer}>
+        <View style={styles.logoSection}>
+          <Image
+            source={require("../../assets/images/sudamark_logo.png")}
+            style={styles.logo}
+            resizeMode="contain"
+            width={40}
+            height={40}
+          />
+          <Text style={[styles.slogan, { color: theme.textSecondary }]}>
+            {isRTL ? "يجمعنا كلنا والخير يعمنا" : "Bringing us together"}
+          </Text>
         </View>
 
-
+        <View style={styles.leftSection}>
+          <View style={styles.greetingContainer}>
+            <ThemedText
+              style={{ fontSize: 12, fontWeight: "700", color: theme.primary }}
+            >
+              {getGreeting()}
+            </ThemedText>
+            <ThemedText
+              style={{ fontSize: 12, color: theme.textSecondary, marginTop: .5 }}
+            >
+              {getUserCountry()}
+            </ThemedText>
+          </View>
+        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  stackContainer: {
+    width: "100%",
+  },
+  backgroundLayer: {
+    ...StyleSheet.absoluteFillObject,
+  },
   outerContainer: {
-    flex: 1,
     flexDirection: "row", // Start -> End
     justifyContent: "space-between", // Center everything together
     alignItems: "center",
     width: "100%",
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xl,
+    paddingTop: Spacing.sm,
+    zIndex: 1,
   },
   logoSection: {
     alignItems: "center",
@@ -138,16 +126,13 @@ const styles = StyleSheet.create({
     alignItems: "flex-end", // Align text to the end
     justifyContent: "center",
   },
-
   slogan: {
     fontSize: 9,
     fontWeight: "500",
-    textAlign: "center",
-    marginTop: -4,
   },
   logo: {
-    width: 220,
-    height: 75,
+    width: 800,
+    height: 80,
   },
   separator: {
     display: "none",
