@@ -1,33 +1,33 @@
-import React, { useState, useCallback } from "react";
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  Pressable,
-  Alert,
-  Modal,
-  TextInput,
-  Linking,
-  RefreshControl,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useHeaderHeight } from "@react-navigation/elements";
+import { Feather } from "@expo/vector-icons";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { useHeaderHeight } from "@react-navigation/elements";
 import {
-  useNavigation,
   CompositeNavigationProp,
+  useNavigation,
 } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import React, { useCallback, useState } from "react";
+import {
+  Alert,
+  Linking,
+  Modal,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/ThemedText";
-import { useTheme } from "@/hooks/useTheme";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { Spacing, BorderRadius } from "@/constants/theme";
+import { BorderRadius, Spacing } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
-import { RootStackParamList } from "@/navigation/RootStackNavigator";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/hooks/useTheme";
 import { ProfileStackParamList } from "@/navigation/ProfileStackNavigator";
+import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -167,216 +167,218 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: theme.backgroundRoot }]}
-      contentContainerStyle={{
-        paddingTop: headerHeight + Spacing.xl,
-        paddingBottom: tabBarHeight + Spacing.xl,
-        paddingHorizontal: Spacing.lg,
-      }}
-      scrollIndicatorInsets={{ bottom: insets.bottom }}
-      alwaysBounceVertical={true}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={theme.primary}
-          colors={[theme.primary]}
-          progressViewOffset={headerHeight + Spacing.xl}
-        />
-      }
-    >
-      <View
-        style={[
-          styles.profileCard,
-          { backgroundColor: theme.backgroundDefault },
-        ]}
+    <>
+      <ScrollView
+        style={[styles.container, { backgroundColor: theme.backgroundRoot }]}
+        contentContainerStyle={{
+          paddingTop: (headerHeight || insets.top + 64) + Spacing.xl,
+          paddingBottom: tabBarHeight + Spacing.xl,
+          paddingHorizontal: Spacing.lg,
+        }}
+        scrollIndicatorInsets={{ bottom: insets.bottom }}
+        alwaysBounceVertical={true}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.primary}
+            colors={[theme.primary]}
+            progressViewOffset={headerHeight + Spacing.xl}
+          />
+        }
       >
-        <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
-          <ThemedText type="h2" style={{ color: "#FFFFFF" }}>
-            {user?.name?.charAt(0).toUpperCase() || "U"}
-          </ThemedText>
+        <View
+          style={[
+            styles.profileCard,
+            { backgroundColor: theme.backgroundDefault },
+          ]}
+        >
+          <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
+            <ThemedText type="h2" style={{ color: "#FFFFFF" }}>
+              {user?.name?.charAt(0).toUpperCase() || "U"}
+            </ThemedText>
+          </View>
+          <View style={styles.profileInfo}>
+            <ThemedText type="h3">
+              {user?.name || (isRTL ? "مستخدم" : "User")}
+            </ThemedText>
+            <ThemedText type="small" style={{ color: theme.textSecondary }}>
+              {user?.phoneNumber || "+249 9XX XXX XXXX"}
+            </ThemedText>
+            <View
+              style={[
+                styles.roleBadge,
+                { backgroundColor: theme.primary + "20" },
+              ]}
+            >
+              <ThemedText type="small" style={{ color: theme.primary }}>
+                {t(
+                  user?.roles?.[0] === "inspection"
+                    ? "inspection"
+                    : user?.roles?.[0] || "buyer",
+                )}
+              </ThemedText>
+            </View>
+          </View>
+          <Pressable
+            style={[
+              styles.editButton,
+              { backgroundColor: theme.backgroundSecondary },
+            ]}
+            onPress={() => {
+              Haptics.selectionAsync();
+              // @ts-ignore
+              navigation.navigate("EditProfile");
+            }}
+          >
+            <Feather name="edit-2" size={18} color={theme.text} />
+          </Pressable>
         </View>
-        <View style={styles.profileInfo}>
-          <ThemedText type="h3">
-            {user?.name || (isRTL ? "مستخدم" : "User")}
-          </ThemedText>
-          <ThemedText type="small" style={{ color: theme.textSecondary }}>
-            {user?.phoneNumber || "+249 9XX XXX XXXX"}
+
+        <View style={styles.section}>
+          <ThemedText
+            type="small"
+            style={[
+              styles.sectionTitle,
+              { color: theme.textSecondary },
+              isRTL && styles.rtlText,
+            ]}
+          >
+            {isRTL ? "النشاط" : "Activity"}
           </ThemedText>
           <View
             style={[
-              styles.roleBadge,
-              { backgroundColor: theme.primary + "20" },
+              styles.menuCard,
+              { backgroundColor: theme.backgroundDefault },
             ]}
           >
-            <ThemedText type="small" style={{ color: theme.primary }}>
-              {t(
-                user?.roles?.[0] === "inspection"
-                  ? "inspection"
-                  : user?.roles?.[0] || "buyer",
-              )}
-            </ThemedText>
+            {menuItems.map((item, index) => (
+              <Pressable
+                key={item.id}
+                style={[
+                  styles.menuItem,
+                  index < menuItems.length - 1 && {
+                    borderBottomWidth: 1,
+                    borderBottomColor: theme.border,
+                  },
+                ]}
+                onPress={() => handleMenuPress(item.id)}
+              >
+                <View
+                  style={styles.menuItemLeft}
+                >
+                  <View
+                    style={[
+                      styles.iconContainer,
+                      { backgroundColor: theme.backgroundSecondary },
+                    ]}
+                  >
+                    <Feather name={item.icon} size={18} color={theme.primary} />
+                  </View>
+                  <ThemedText style={isRTL ? styles.rtlText : undefined}>
+                    {t(item.labelKey)}
+                  </ThemedText>
+                </View>
+                <View
+                  style={styles.menuItemRight}
+                >
+                  {item.badge ? (
+                    <View
+                      style={[styles.badge, { backgroundColor: theme.primary }]}
+                    >
+                      <ThemedText type="small" style={{ color: "#FFFFFF" }}>
+                        {item.badge}
+                      </ThemedText>
+                    </View>
+                  ) : null}
+                  <Feather
+                    name={isRTL ? "chevron-left" : "chevron-right"}
+                    size={20}
+                    color={theme.textSecondary}
+                  />
+                </View>
+              </Pressable>
+            ))}
           </View>
         </View>
-        <Pressable
-          style={[
-            styles.editButton,
-            { backgroundColor: theme.backgroundSecondary },
-          ]}
-          onPress={() => {
-            Haptics.selectionAsync();
-            // @ts-ignore
-            navigation.navigate("EditProfile");
-          }}
-        >
-          <Feather name="edit-2" size={18} color={theme.text} />
-        </Pressable>
-      </View>
 
-      <View style={styles.section}>
-        <ThemedText
-          type="small"
-          style={[
-            styles.sectionTitle,
-            { color: theme.textSecondary },
-            isRTL && styles.rtlText,
-          ]}
-        >
-          {isRTL ? "النشاط" : "Activity"}
-        </ThemedText>
-        <View
-          style={[
-            styles.menuCard,
-            { backgroundColor: theme.backgroundDefault },
-          ]}
-        >
-          {menuItems.map((item, index) => (
-            <Pressable
-              key={item.id}
-              style={[
-                styles.menuItem,
-                index < menuItems.length - 1 && {
-                  borderBottomWidth: 1,
-                  borderBottomColor: theme.border,
-                },
-              ]}
-              onPress={() => handleMenuPress(item.id)}
-            >
-              <View
-                style={styles.menuItemLeft}
+        <View style={styles.section}>
+          <ThemedText
+            type="small"
+            style={[
+              styles.sectionTitle,
+              { color: theme.textSecondary },
+              isRTL && styles.rtlText,
+            ]}
+          >
+            {t("settings")}
+          </ThemedText>
+          <View
+            style={[
+              styles.menuCard,
+              { backgroundColor: theme.backgroundDefault },
+            ]}
+          >
+            {settingsItems.map((item, index) => (
+              <Pressable
+                key={item.id}
+                style={[
+                  styles.menuItem,
+                  index < settingsItems.length - 1 && {
+                    borderBottomWidth: 1,
+                    borderBottomColor: theme.border,
+                  },
+                ]}
+                onPress={item.onPress || (() => Haptics.selectionAsync())}
               >
                 <View
-                  style={[
-                    styles.iconContainer,
-                    { backgroundColor: theme.backgroundSecondary },
-                  ]}
+                  style={styles.menuItemLeft}
                 >
-                  <Feather name={item.icon} size={18} color={theme.primary} />
-                </View>
-                <ThemedText style={isRTL ? styles.rtlText : undefined}>
-                  {t(item.labelKey)}
-                </ThemedText>
-              </View>
-              <View
-                style={styles.menuItemRight}
-              >
-                {item.badge ? (
                   <View
-                    style={[styles.badge, { backgroundColor: theme.primary }]}
+                    style={[
+                      styles.iconContainer,
+                      { backgroundColor: theme.backgroundSecondary },
+                    ]}
                   >
-                    <ThemedText type="small" style={{ color: "#FFFFFF" }}>
-                      {item.badge}
-                    </ThemedText>
+                    <Feather name={item.icon} size={18} color={theme.primary} />
                   </View>
-                ) : null}
-                <Feather
-                  name={isRTL ? "chevron-left" : "chevron-right"}
-                  size={20}
-                  color={theme.textSecondary}
-                />
-              </View>
-            </Pressable>
-          ))}
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <ThemedText
-          type="small"
-          style={[
-            styles.sectionTitle,
-            { color: theme.textSecondary },
-            isRTL && styles.rtlText,
-          ]}
-        >
-          {t("settings")}
-        </ThemedText>
-        <View
-          style={[
-            styles.menuCard,
-            { backgroundColor: theme.backgroundDefault },
-          ]}
-        >
-          {settingsItems.map((item, index) => (
-            <Pressable
-              key={item.id}
-              style={[
-                styles.menuItem,
-                index < settingsItems.length - 1 && {
-                  borderBottomWidth: 1,
-                  borderBottomColor: theme.border,
-                },
-              ]}
-              onPress={item.onPress || (() => Haptics.selectionAsync())}
-            >
-              <View
-                style={styles.menuItemLeft}
-              >
-                <View
-                  style={[
-                    styles.iconContainer,
-                    { backgroundColor: theme.backgroundSecondary },
-                  ]}
-                >
-                  <Feather name={item.icon} size={18} color={theme.primary} />
-                </View>
-                <ThemedText style={isRTL ? styles.rtlText : undefined}>
-                  {"label" in item ? item.label : t(item.labelKey)}
-                </ThemedText>
-              </View>
-              <View
-                style={styles.menuItemRight}
-              >
-                {"value" in item && item.value ? (
-                  <ThemedText
-                    type="small"
-                    style={{ color: theme.textSecondary }}
-                  >
-                    {item.value}
+                  <ThemedText style={isRTL ? styles.rtlText : undefined}>
+                    {"label" in item ? item.label : t(item.labelKey)}
                   </ThemedText>
-                ) : null}
-                <Feather
-                  name={isRTL ? "chevron-left" : "chevron-right"}
-                  size={20}
-                  color={theme.textSecondary}
-                />
-              </View>
-            </Pressable>
-          ))}
+                </View>
+                <View
+                  style={styles.menuItemRight}
+                >
+                  {"value" in item && item.value ? (
+                    <ThemedText
+                      type="small"
+                      style={{ color: theme.textSecondary }}
+                    >
+                      {item.value}
+                    </ThemedText>
+                  ) : null}
+                  <Feather
+                    name={isRTL ? "chevron-left" : "chevron-right"}
+                    size={20}
+                    color={theme.textSecondary}
+                  />
+                </View>
+              </Pressable>
+            ))}
+          </View>
         </View>
-      </View>
 
-      <Pressable
-        style={[styles.logoutButton, { backgroundColor: theme.error + "15"}]}
-        onPress={handleLogout}
-      >
-        <Feather name="log-out" size={20} color={theme.error} />
-        <ThemedText style={{ color: theme.error, marginLeft: Spacing.sm }}>
-          {t("logout")}
-        </ThemedText>
-      </Pressable>
+        <Pressable
+          style={[styles.logoutButton, { backgroundColor: theme.error + "15" }]}
+          onPress={handleLogout}
+        >
+          <Feather name="log-out" size={20} color={theme.error} />
+          <ThemedText style={{ color: theme.error, marginLeft: Spacing.sm }}>
+            {t("logout")}
+          </ThemedText>
+        </Pressable>
 
+      </ScrollView >
       <Modal
         visible={showAdModal}
         transparent
@@ -526,7 +528,7 @@ export default function ProfileScreen() {
           </Pressable>
         </Pressable>
       </Modal>
-    </ScrollView >
+    </>
   );
 }
 

@@ -209,7 +209,6 @@ export default function SearchScreen() {
           styles.searchContainer,
           {
             backgroundColor: theme.backgroundDefault,
-            paddingTop: insets.top + Spacing.sm,
           },
         ]}
       >
