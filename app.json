@@ -4,7 +4,7 @@
     "slug": "sudamark",
     "version": "1.0.6",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/app-icon.png",
     "splash": {
       "image": "./assets/images/icon.png",
       "resizeMode": "contain",
