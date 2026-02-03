@@ -2,7 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FlatList, Pressable, RefreshControl, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -13,6 +13,15 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useServiceProviders } from "@/hooks/useServiceProviders";
 import { useTheme } from "@/hooks/useTheme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
+import { getApiUrl } from "@/lib/query-client";
+
+interface ServiceCategory {
+  id: string;
+  key: string;
+  nameAr: string;
+  nameEn: string;
+  icon: string;
+}
 
 export default function ServicesScreen() {
   const insets = useSafeAreaInsets();
@@ -24,11 +33,29 @@ export default function ServicesScreen() {
   const { providers, refreshProviders } = useServiceProviders();
   const [activeTab, setActiveTab] = useState("all");
   const [refreshing, setRefreshing] = useState(false);
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${getApiUrl()}api/service-categories`);
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data);
+      }
+    } catch (e) {
+      console.error("Failed to fetch categories", e);
+    }
+  };
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       await refreshProviders();
+      await fetchCategories();
     } catch (e) {
       console.error(e);
     } finally {
@@ -36,16 +63,13 @@ export default function ServicesScreen() {
     }
   }, [refreshProviders]);
 
-  const TABS = [
-    { id: "all", labelKey: "all", icon: "grid" as const },
-    { id: "mechanic", labelKey: "mechanics", icon: "tool" as const },
-    { id: "electrician", labelKey: "electricians", icon: "zap" as const },
-    {
-      id: "inspection",
-      labelKey: "inspectionCenter",
-      icon: "clipboard" as const,
-    },
-    { id: "spare_parts", labelKey: "spareParts", icon: "package" as const },
+  const tabs = [
+    { id: "all", label: t("all"), icon: "grid" as const },
+    ...categories.map(c => ({
+      id: c.key,
+      label: isRTL ? c.nameAr : c.nameEn,
+      icon: (c.icon || "tool") as any
+    }))
   ];
 
   const filteredProviders =
@@ -61,7 +85,7 @@ export default function ServicesScreen() {
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
-          data={TABS}
+          data={tabs}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.tabsContent}
           inverted={isRTL}
@@ -86,7 +110,7 @@ export default function ServicesScreen() {
                   isRTL && styles.rtlText,
                 ]}
               >
-                {t(item.labelKey)}
+                {item.label}
               </ThemedText>
             </Pressable>
           )}
@@ -122,14 +146,19 @@ export default function ServicesScreen() {
         }}
         scrollIndicatorInsets={{ bottom: insets.bottom }}
         ItemSeparatorComponent={() => <View style={{ height: Spacing.md }} />}
-        renderItem={({ item }) => (
-          <ServiceProviderCard
-            provider={item}
-            onPress={() =>
-              navigation.navigate("ServiceProviderDetail", { provider: item })
-            }
-          />
-        )}
+        renderItem={({ item }) => {
+          const cat = categories.find(c => c.key === item.role);
+          return (
+            <ServiceProviderCard
+              provider={item}
+              categoryLabel={cat ? (isRTL ? cat.nameAr : cat.nameEn) : item.role}
+              categoryIcon={cat?.icon}
+              onPress={() =>
+                navigation.navigate("ServiceProviderDetail", { provider: item })
+              }
+            />
+          );
+        }}
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Feather name="users" size={48} color={theme.textSecondary} />

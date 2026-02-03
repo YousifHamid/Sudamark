@@ -139,7 +139,7 @@ export function CarCard({ car, onPress, horizontal = false }: CarCardProps) {
         </ThemedText>
         <ThemedText
           type="h4"
-          style={{ color: theme.primary }}
+          style={{ color: theme.text }} // Changed from theme.primary to theme.text as per user request
         >
           {car.price.toLocaleString()} {t("sdg")}
         </ThemedText>

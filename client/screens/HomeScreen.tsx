@@ -310,14 +310,21 @@ export default function HomeScreen() {
           <View
             style={[
               styles.sectionHeader,
-              { paddingHorizontal: Spacing.lg },
+              {
+                marginHorizontal: Spacing.lg,
+                paddingHorizontal: Spacing.md,
+                paddingVertical: Spacing.sm,
+                backgroundColor: theme.primary,
+                borderRadius: BorderRadius.md,
+                alignItems: "center", // Center vertically
+              },
             ]}
           >
-            <ThemedText type="h4" style={isRTL ? styles.rtlText : undefined}>
+            <ThemedText type="h4" style={[{ color: "#FFFFFF" }, isRTL ? styles.rtlText : undefined]}>
               {t("featuredCars")}
             </ThemedText>
-            <Pressable onPress={() => navigation.navigate("Search", {})}>
-              <ThemedText type="link" style={{ fontSize: 14 }}>
+            <Pressable onPress={() => navigation.navigate("Search", { featured: true })}>
+              <ThemedText type="link" style={{ fontSize: 14, color: "#FFFFFF" }}>
                 {t("seeAll")}
               </ThemedText>
             </Pressable>
@@ -348,14 +355,21 @@ export default function HomeScreen() {
         <View
           style={[
             styles.sectionHeader,
-            { paddingHorizontal: Spacing.lg },
+            {
+              marginHorizontal: Spacing.lg,
+              paddingHorizontal: Spacing.md,
+              paddingVertical: Spacing.sm,
+              backgroundColor: theme.primary,
+              borderRadius: BorderRadius.md,
+              alignItems: "center", // Center vertically
+            },
           ]}
         >
-          <ThemedText type="h4" style={isRTL ? styles.rtlText : undefined}>
+          <ThemedText type="h4" style={[{ color: "#FFFFFF" }, isRTL ? styles.rtlText : undefined]}>
             {t("recentListings")}
           </ThemedText>
           <Pressable onPress={() => navigation.navigate("Search", {})}>
-            <ThemedText type="link" style={{ fontSize: 14 }}>
+            <ThemedText type="link" style={{ fontSize: 14, color: "#FFFFFF" }}>
               {t("seeAll")}
             </ThemedText>
           </Pressable>

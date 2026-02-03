@@ -16,7 +16,6 @@ import HomeStackNavigator from "@/navigation/HomeStackNavigator";
 import ProfileStackNavigator from "@/navigation/ProfileStackNavigator";
 import SearchScreen from "@/screens/SearchScreen";
 import ServicesScreen from "@/screens/ServicesScreen";
-import { LinearGradient } from "expo-linear-gradient";
 
 export type MainTabParamList = {
   HomeTab: undefined;
@@ -52,11 +51,14 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
         { bottom: insets.bottom + Spacing.md },
       ]}
     >
-      <LinearGradient
-        colors={[theme.primary, theme.secondary]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[styles.navButtonsRow, { borderColor: theme.border }]}
+      <View
+        style={[
+          styles.navButtonsRow,
+          {
+            backgroundColor: theme.primary,
+            borderColor: theme.border
+          }
+        ]}
       >
         {tabs.map((tab) => {
           const currentRouteName = state.routes[state.index]?.name;
@@ -86,7 +88,9 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             if (tab.name === "PostTab") {
               navigation.navigate("PostCar"); // Directly navigate to PostCar
             } else {
-              navigation.navigate(tab.name);
+              navigation.navigate(tab.name, {
+                screen: tab.name,
+              });
             }
           };
 
@@ -104,9 +108,9 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
               >
                 <Feather
                   name={tab.icon}
-                  size={28}
+                  size={24}
                   color="#FFFFFF"
-                  style={{ opacity: isActive ? 1 : 0.9 }}
+                  style={{ opacity: isActive ? 1 : 0.8 }}
                 />
               </View>
               <Text
@@ -114,9 +118,9 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                   styles.navLabel,
                   {
                     color: "#FFFFFF",
-                    fontWeight: "700",
-                    opacity: isActive ? 1 : 0.9,
-                    fontSize: 12,
+                    fontWeight: "600",
+                    opacity: isActive ? 1 : 0.8,
+                    fontSize: 10,
                   },
                 ]}
               >
@@ -125,7 +129,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             </Pressable>
           );
         })}
-      </LinearGradient>
+      </View>
     </View>
   );
 }

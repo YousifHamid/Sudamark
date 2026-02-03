@@ -17,12 +17,7 @@ import { CITIES } from "@shared/constants";
 export interface ServiceProvider {
   id: string;
   name: string;
-  role:
-  | "mechanic"
-  | "electrician"
-  | "lawyer"
-  | "inspection"
-  | "spare_parts";
+  role: string;
   city: string;
   rating: number;
   reviewCount: number;
@@ -34,23 +29,9 @@ export interface ServiceProvider {
 interface ServiceProviderCardProps {
   provider: ServiceProvider;
   onPress: () => void;
+  categoryLabel?: string;
+  categoryIcon?: string;
 }
-
-const ROLE_ICONS: Record<string, string> = {
-  mechanic: "tool",
-  electrician: "zap",
-  lawyer: "briefcase",
-  inspection: "clipboard",
-  spare_parts: "package",
-};
-
-const ROLE_LABELS: Record<string, string> = {
-  mechanic: "Mechanic",
-  electrician: "Electrician",
-  lawyer: "Lawyer",
-  inspection: "Inspection Center",
-  spare_parts: "Spare Parts",
-};
 
 const springConfig: WithSpringConfig = {
   damping: 15,
@@ -64,6 +45,8 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 export function ServiceProviderCard({
   provider,
   onPress,
+  categoryLabel,
+  categoryIcon,
 }: ServiceProviderCardProps) {
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
@@ -81,7 +64,7 @@ export function ServiceProviderCard({
     scale.value = withSpring(1, springConfig);
   };
 
-  const iconName = ROLE_ICONS[provider.role] || "user";
+  const iconName = categoryIcon || "user";
 
   return (
     <AnimatedPressable
@@ -107,10 +90,10 @@ export function ServiceProviderCard({
           {provider.name}
         </ThemedText>
         <View
-          style={[styles.roleBadge, { backgroundColor: theme.primary + "15" }]}
+          style={[styles.roleBadge, { backgroundColor: theme.backgroundTertiary }]}
         >
           <ThemedText type="small" style={{ color: theme.primary }}>
-            {ROLE_LABELS[provider.role]}
+            {categoryLabel || provider.role}
           </ThemedText>
         </View>
         {provider.isActive === false && (
@@ -147,9 +130,9 @@ export function ServiceProviderCard({
             );
           }
         }}
-        style={[styles.contactButton, { backgroundColor: theme.primary }]}
+        style={[styles.contactButton, { backgroundColor: theme.backgroundTertiary }]}
       >
-        <Feather name="phone" size={18} color="#FFFFFF" />
+        <Feather name="phone" size={18} color={theme.primary} />
       </Pressable>
     </AnimatedPressable>
   );

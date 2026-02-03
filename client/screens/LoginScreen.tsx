@@ -58,14 +58,7 @@ export default function LoginScreen() {
   const roles = [
     { id: "buyer", labelKey: "buyer", icon: "shopping-cart" as const },
     { id: "seller", labelKey: "seller", icon: "tag" as const },
-    { id: "mechanic", labelKey: "mechanic", icon: "tool" as const },
-    { id: "electrician", labelKey: "electrician", icon: "zap" as const },
-    {
-      id: "inspection",
-      labelKey: "inspectionCenter",
-      icon: "clipboard" as const,
-    },
-    { id: "spare_parts", labelKey: "spareParts", icon: "package" as const },
+    { id: "mediator", labelKey: "mediator", icon: "briefcase" as const },
   ];
 
   /*

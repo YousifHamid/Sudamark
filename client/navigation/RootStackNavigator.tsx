@@ -22,7 +22,7 @@ export type RootStackParamList = {
   CarDetail: { carId: string };
   RequestInspection: { carId: string };
   PostCar: { carData?: any } | undefined;
-  Search: { category?: string };
+  Search: { category?: string; featured?: boolean };
   ServiceProviderDetail: { provider: any };
   AddServiceRequest: undefined;
   MyListings: undefined;

@@ -78,6 +78,8 @@ export default function SearchScreen() {
       baseCars = cars.filter((car) => car.sellerId === user?.id);
     } else if (specialMode === "favorites") {
       baseCars = cars.filter((car) => favorites.includes(car.id));
+    } else if (route.params?.featured) {
+      baseCars = cars.filter((car) => car.isFeatured);
     }
 
     return baseCars.filter((car) => {
@@ -112,6 +114,7 @@ export default function SearchScreen() {
     favorites,
     user?.id,
     specialMode,
+    route.params?.featured,
   ]);
 
   const activeFiltersCount = [
@@ -185,6 +188,8 @@ export default function SearchScreen() {
       return t("myListings");
     } else if (specialMode === "favorites") {
       return t("favorites");
+    } else if (route.params?.featured) {
+      return isRTL ? "السيارات المميزة" : "Featured Cars";
     }
     return t("searchCars");
   };

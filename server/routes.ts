@@ -9,6 +9,7 @@ import {
   inspectionRequests,
   payments,
   reports,
+  serviceCategories,
   serviceProviders,
   sliderImages,
   users
@@ -795,6 +796,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     },
   );
+
+
+  // --- Service Category Routes (Admin) ---
+
+  app.get("/api/service-categories", async (_req: Request, res: Response) => {
+    try {
+      const categories = await db.select().from(serviceCategories).orderBy(serviceCategories.createdAt);
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch service categories" });
+    }
+  });
+
+  app.post("/api/service-categories", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { key, nameAr, nameEn, icon } = req.body;
+      const [newCategory] = await db
+        .insert(serviceCategories)
+        .values({ key, nameAr, nameEn, icon })
+        .returning();
+      res.json(newCategory);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create service category" });
+    }
+  });
+
+  app.put("/api/service-categories/:id", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { key, nameAr, nameEn, icon } = req.body;
+      const [updatedCategory] = await db
+        .update(serviceCategories)
+        .set({ key, nameAr, nameEn, icon })
+        .where(eq(serviceCategories.id, id))
+        .returning();
+      res.json(updatedCategory);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update service category" });
+    }
+  });
+
+  app.delete("/api/service-categories/:id", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      await db.delete(serviceCategories).where(eq(serviceCategories.id, id));
+      res.json({ message: "Category deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete service category" });
+    }
+  });
 
   app.delete(
     "/api/cars/:id",
@@ -2790,6 +2841,67 @@ For privacy inquiries: privacy@arabaty.app
         `,
       },
     });
+  });
+
+  // --- Report Routes ---
+
+  app.post("/api/reports", authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { targetId, targetType, reason, details } = req.body;
+      // Basic validation
+      if (!targetId || !targetType || !reason) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const [newReport] = await db
+        .insert(reports)
+        .values({
+          userId: req.user!.id,
+          targetId,
+          targetType,
+          reason,
+          details,
+        })
+        .returning();
+      res.json(newReport);
+    } catch (error) {
+      console.error("Report error:", error);
+      res.status(500).json({ error: "Failed to submit report" });
+    }
+  });
+
+  app.get("/api/reports", adminAuthMiddleware, async (_req: Request, res: Response) => {
+    try {
+      // Join with users to get reporter details
+      const result = await db
+        .select({
+          id: reports.id,
+          targetId: reports.targetId,
+          targetType: reports.targetType,
+          reason: reports.reason,
+          details: reports.details,
+          status: reports.status,
+          createdAt: reports.createdAt,
+          reporterName: users.name,
+          reporterPhone: users.phone,
+        })
+        .from(reports)
+        .leftJoin(users, eq(reports.userId, users.id))
+        .orderBy(desc(reports.createdAt));
+      res.json(result);
+    } catch (error) {
+      console.error("Fetch reports error:", error);
+      res.status(500).json({ error: "Failed to fetch reports" });
+    }
+  });
+
+  app.delete("/api/reports/:id", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      await db.delete(reports).where(eq(reports.id, req.params.id));
+      res.json({ message: "Report deleted" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete report" });
+    }
   });
 
   return httpServer;

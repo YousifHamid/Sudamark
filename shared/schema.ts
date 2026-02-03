@@ -429,6 +429,7 @@ export const insertConversationSchema = createInsertSchema(conversations).omit({
   createdAt: true,
 });
 
+
 export const insertMessageSchema = createInsertSchema(messages).omit({
   id: true,
   createdAt: true,
@@ -439,3 +440,22 @@ export type Conversation = typeof conversations.$inferSelect;
 
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
+
+export const serviceCategories = pgTable("service_categories", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  key: text("key").notNull().unique(), // Internal key, e.g., 'mechanic'
+  nameAr: text("name_ar").notNull(),
+  nameEn: text("name_en").notNull(),
+  icon: text("icon").default("tool"), // Feather icon name
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertServiceCategorySchema = createInsertSchema(serviceCategories).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertServiceCategory = z.infer<typeof insertServiceCategorySchema>;
+export type ServiceCategory = typeof serviceCategories.$inferSelect;

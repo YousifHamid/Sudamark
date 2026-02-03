@@ -100,6 +100,10 @@
             البانر</button>
           <button onclick="showTab('employees')" id="btn-employees"
             class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 hidden">الموظفين</button>
+          <button onclick="showTab('service-categories')" id="btn-service-categories"
+            class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">فئات الخدمات</button>
+          <button onclick="showTab('reports')" id="btn-reports"
+            class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-red-400">البلاغات</button>
         </div>
 
         <div id="users-tab" class="tab-content hidden">
@@ -252,6 +256,45 @@
               </tr>
             </thead>
             <tbody id="employees-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="service-categories-tab" class="tab-content hidden">
+        <div class="flex justify-end mb-4">
+          <button onclick="showAddServiceCategory()" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg">إضافة
+            فئة</button>
+        </div>
+        <div class="glass rounded-xl border border-gray-700 overflow-hidden overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-800">
+              <tr>
+                <th class="p-4 text-right">المفتاح (Key)</th>
+                <th class="p-4 text-right">الاسم (عربي)</th>
+                <th class="p-4 text-right">الاسم (English)</th>
+                <th class="p-4 text-right">الأيقونة</th>
+                <th class="p-4 text-right">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="service-categories-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="reports-tab" class="tab-content hidden">
+        <div class="glass rounded-xl border border-gray-700 overflow-hidden overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-800">
+              <tr>
+                <th class="p-4 text-right">المبلغ (Reporter)</th>
+                <th class="p-4 text-right">النوع</th>
+                <th class="p-4 text-right">السبب</th>
+                <th class="p-4 text-right">التفاصيل</th>
+                <th class="p-4 text-right">التاريخ</th>
+                <th class="p-4 text-right">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="reports-table"></tbody>
           </table>
         </div>
       </div>
@@ -412,6 +455,8 @@
         aria-label="نوع المزود">
         <option value="mechanic">ميكانيكي</option>
         <option value="electrician">كهربائي</option>
+        <option value="ac_technician">فني تكييف</option>
+        <option value="car_ac">Car AC Conditioner</option>
         <option value="lawyer">محامي</option>
         <option value="inspection">مركز فحص</option>
         <option value="spare_parts">اسبيرات وقطع غيار</option>
@@ -590,6 +635,28 @@
     </div>
   </div>
 
+  <div id="add-service-category-modal"
+    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="glass rounded-2xl p-6 w-full max-w-md border border-gray-700">
+      <h2 class="text-xl font-bold mb-4" id="service-category-modal-title">إضافة فئة خدمة</h2>
+      <input type="hidden" id="edit-category-id">
+      <input type="text" id="cat-key" placeholder="المفتاح (مثال: mechanic)"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
+      <input type="text" id="cat-name-ar" placeholder="الاسم (عربي)"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
+      <input type="text" id="cat-name-en" placeholder="الاسم (English)"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-3">
+      <input type="text" id="cat-icon" placeholder="الأيقونة (Feather Icon Name)"
+        class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 mb-4">
+      <div class="flex gap-3">
+        <button onclick="addServiceCategory()"
+          class="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-lg">حفظ</button>
+        <button onclick="hideAddServiceCategory()"
+          class="flex-1 bg-gray-600 hover:bg-gray-700 py-3 rounded-lg">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
   <div id="change-password-modal"
     class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="glass rounded-2xl p-6 w-full max-w-md border border-gray-700">
@@ -646,7 +713,9 @@
         'providers': loadProviders,
         'payments': loadPayments,
         'slider': loadSlider,
-        'employees': loadEmployees
+        'employees': loadEmployees,
+        'service-categories': loadServiceCategories,
+        'reports': loadReports
       };
 
       if (loadActions[currentActiveTab]) {
@@ -669,12 +738,62 @@
         'providers': loadProviders,
         'payments': loadPayments,
         'slider': loadSlider,
-        'employees': loadEmployees
+        'employees': loadEmployees,
+        'service-categories': loadServiceCategories,
+        'reports': loadReports
       };
 
       if (loadActions[tab]) {
         loadActions[tab]();
         startRefreshTimer();
+      }
+    }
+
+    // ... (existing functions)
+
+    async function loadReports() {
+      try {
+        const reports = await api('/api/reports');
+        const tbody = document.getElementById('reports-table');
+        if (reports.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-400">لا توجد بلاغات حالياً</td></tr>';
+          return;
+        }
+        tbody.innerHTML = reports.map(r => {
+          let targetLink = '#';
+          // We could add logic to link to user or car if we had a view
+          const waLink = r.reporterPhone ? `https://wa.me/${r.reporterPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('مرحباً، بخصوص البلاغ الذي قدمته في تطبيق سودامارك: ' + r.reason)}` : '#';
+
+          return `
+          <tr class="border-t border-gray-700 hover:bg-white/5 transition-colors">
+            <td class="p-4">
+              <div class="font-medium">${r.reporterName || 'Unknown'}</div>
+              <div class="text-xs text-gray-400 font-mono dir-ltr text-right">${r.reporterPhone || '-'}</div>
+            </td>
+            <td class="p-4 badge"><span class="bg-gray-700 px-2 py-1 rounded text-xs">${r.targetType}</span></td>
+            <td class="p-4 font-medium text-red-400">${r.reason}</td>
+            <td class="p-4 text-sm text-gray-300 max-w-xs truncate" title="${r.details}">${r.details}</td>
+            <td class="p-4 text-gray-400 text-sm">${new Date(r.createdAt).toLocaleDateString('ar-EG')}</td>
+            <td class="p-4 flex gap-2">
+               ${r.reporterPhone ? `<a href="${waLink}" target="_blank" class="text-green-400 hover:text-green-300 transition-colors bg-green-400/10 px-3 py-1 rounded hover:bg-green-400/20 flex items-center gap-1"><i class="fab fa-whatsapp"></i> رد</a>` : ''}
+               <button onclick="deleteReport('${r.id}')" class="text-red-400 hover:text-red-300 transition-colors bg-red-400/10 px-3 py-1 rounded hover:bg-red-400/20">حذف</button>
+            </td>
+          </tr>
+        `;
+        }).join('');
+      } catch (err) {
+        console.error('Failed to load reports:', err);
+      }
+    }
+
+    async function deleteReport(id) {
+      if (!confirm('هل أنت متأكد من حذف هذا البلاغ؟')) return;
+      try {
+        await api(`/api/reports/${id}`, { method: 'DELETE' });
+        loadReports();
+      } catch (err) {
+        alert('فشل حذف البلاغ');
+        console.error(err);
       }
     }
 
@@ -796,50 +915,160 @@
         statusEl.classList.remove('hidden');
         statusEl.textContent = 'جاري ضغط ومعالجة الصورة...';
 
+        // Simulating upload for now or call backend upload
+        // For base64 we can use FileReader
         const reader = new FileReader();
         reader.onload = function (e) {
-          const img = new Image();
-          img.src = e.target.result;
-          img.onload = function () {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-
-            // Resize logic
-            const MAX_WIDTH = 1024;
-            const MAX_HEIGHT = 1024;
-            let width = img.width;
-            let height = img.height;
-
-            if (width > height) {
-              if (width > MAX_WIDTH) {
-                height *= MAX_WIDTH / width;
-                width = MAX_WIDTH;
-              }
-            } else {
-              if (height > MAX_HEIGHT) {
-                width *= MAX_HEIGHT / height;
-                height = MAX_HEIGHT;
-              }
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-            ctx.drawImage(img, 0, 0, width, height);
-
-            // Compress to JPEG with 0.7 quality
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-
-            document.getElementById('slider-image-base64').value = dataUrl;
-
+          document.getElementById('slider-image-base64').value = e.target.result; // This might be large, better to upload file to /api/upload
+          // Actually let's use the upload endpoint
+          uploadFile(file).then(url => {
+            document.getElementById('slider-image-base64').value = url; // Put URL here
             const preview = document.getElementById('image-preview');
             preview.classList.remove('hidden');
-            preview.querySelector('img').src = dataUrl;
-
-            statusEl.textContent = 'تمت معالجة الصورة بنجاح';
-            setTimeout(() => statusEl.classList.add('hidden'), 2000);
-          };
+            preview.querySelector('img').src = url;
+            statusEl.classList.add('hidden');
+          }).catch(err => {
+            alert('فشل رفع الصورة');
+            statusEl.classList.add('hidden');
+          });
         };
-        reader.readAsDataURL(file);
+        // reader.readAsDataURL(file); // If simple base64
+      }
+    }
+
+    // --- Service Categories Logic ---
+    async function loadServiceCategories() {
+      try {
+        const categories = await api('/api/service-categories');
+        window.categoriesData = categories;
+        const tbody = document.getElementById('service-categories-table');
+        if (categories.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-400">لا توجد فئات.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = categories.map(c => `
+          <tr class="border-t border-gray-700 hover:bg-white/5 transition-colors">
+            <td class="p-4 text-gray-300">${c.key}</td>
+            <td class="p-4 font-bold text-white">${c.nameAr}</td>
+             <td class="p-4 text-gray-300">${c.nameEn}</td>
+             <td class="p-4 text-gray-400">${c.icon || '-'}</td>
+             <td class="p-4 flex gap-2">
+               <button onclick="editServiceCategory('${c.id}')" class="text-yellow-400 hover:text-yellow-300 transition-colors bg-yellow-400/10 px-3 py-1 rounded hover:bg-yellow-400/20">تعديل</button>
+               <button onclick="deleteServiceCategory('${c.id}')" class="text-red-400 hover:text-red-300 transition-colors bg-red-400/10 px-3 py-1 rounded hover:bg-red-400/20">حذف</button>
+             </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load categories:', err);
+      }
+    }
+
+    function showAddServiceCategory() {
+      document.getElementById('service-category-modal-title').textContent = 'إضافة فئة خدمة';
+      document.getElementById('edit-category-id').value = '';
+      document.getElementById('cat-key').value = '';
+      document.getElementById('cat-name-ar').value = '';
+      document.getElementById('cat-name-en').value = '';
+      document.getElementById('cat-icon').value = '';
+      document.getElementById('add-service-category-modal').classList.remove('hidden');
+    }
+
+    function hideAddServiceCategory() {
+      document.getElementById('add-service-category-modal').classList.add('hidden');
+    }
+
+    function editServiceCategory(id) {
+      const cat = window.categoriesData?.find(c => c.id === id);
+      if (!cat) return;
+
+      document.getElementById('service-category-modal-title').textContent = 'تعديل الفئة';
+      document.getElementById('edit-category-id').value = id;
+      document.getElementById('cat-key').value = cat.key;
+      document.getElementById('cat-name-ar').value = cat.nameAr;
+      document.getElementById('cat-name-en').value = cat.nameEn;
+      document.getElementById('cat-icon').value = cat.icon || '';
+      document.getElementById('add-service-category-modal').classList.remove('hidden');
+    }
+
+    async function addServiceCategory() {
+      try {
+        const id = document.getElementById('edit-category-id').value;
+        const data = {
+          key: document.getElementById('cat-key').value,
+          nameAr: document.getElementById('cat-name-ar').value,
+          nameEn: document.getElementById('cat-name-en').value,
+          icon: document.getElementById('cat-icon').value
+        };
+
+        if (!data.key || !data.nameAr || !data.nameEn) return alert('جميع الحقول مطلوبة');
+
+        if (id) {
+          await api(`/api/service-categories/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+        } else {
+          await api('/api/service-categories', { method: 'POST', body: JSON.stringify(data) });
+        }
+
+        hideAddServiceCategory();
+        loadServiceCategories();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function deleteServiceCategory(id) {
+      if (!confirm('هل أنت متأكد من الحذف؟')) return;
+      try {
+        await api(`/api/service-categories/${id}`, { method: 'DELETE' });
+        loadServiceCategories();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const img = new Image();
+      img.src = e.target.result;
+      img.onload = function () {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Resize logic
+        const MAX_WIDTH = 1024;
+        const MAX_HEIGHT = 1024;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Compress to JPEG with 0.7 quality
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+        document.getElementById('slider-image-base64').value = dataUrl;
+
+        const preview = document.getElementById('image-preview');
+        preview.classList.remove('hidden');
+        preview.querySelector('img').src = dataUrl;
+
+        statusEl.textContent = 'تمت معالجة الصورة بنجاح';
+        setTimeout(() => statusEl.classList.add('hidden'), 2000);
+      };
+    };
+    reader.readAsDataURL(file);
       }
     }
 

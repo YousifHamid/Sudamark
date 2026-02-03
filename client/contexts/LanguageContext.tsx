@@ -160,6 +160,7 @@ export const translations: Translations = {
   lawyer: { ar: "محامي", en: "Lawyer" },
   inspectionCenter: { ar: "مركز فحص", en: "Inspection Center" },
   spareParts: { ar: "اسبيرات وقطع غيار", en: "Spare Parts" },
+  mediator: { ar: "وسيط", en: "Mediator" },
 
   // New Car Form Fields
   advertiserType: { ar: "نوع المعلن", en: "Advertiser Type" },
@@ -216,6 +217,8 @@ export const translations: Translations = {
   all: { ar: "الكل", en: "All" },
   mechanics: { ar: "ميكانيكي", en: "Mechanic" },
   electricians: { ar: "كهربائي", en: "Electrician" },
+  acTechnician: { ar: "فني تكييف", en: "A/C Technician" },
+  carAc: { ar: "تكييف سيارات", en: "Car AC Conditioner" },
   lawyers: { ar: "محامي", en: "Lawyer" },
   noProvidersFound: {
     ar: "لم يتم العثور على مزودي خدمات",
