@@ -1,6 +1,6 @@
-import React from "react";
-import { View, StyleSheet, Pressable, Dimensions, Image } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import React from "react";
+import { Dimensions, Image, Pressable, StyleSheet, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -9,9 +9,9 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
-import { useTheme } from "@/hooks/useTheme";
+import { BorderRadius, Spacing } from "@/constants/theme";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Spacing, BorderRadius } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
 
 export interface Car {
   id: string;
@@ -98,7 +98,7 @@ export function CarCard({ car, onPress, horizontal = false }: CarCardProps) {
       style={[
         styles.card,
         {
-          // backgroundColor: horizontal ? "#d2a760" : theme.cardBackground,
+          backgroundColor: horizontal ? "#d8d8d8" : theme.cardBackground,
           width: cardWidth,
         },
         animatedStyle,
