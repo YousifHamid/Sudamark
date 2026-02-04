@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+console.log("[SERVER] DATABASE_URL host:", process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).hostname : "MISSING");
 import type { Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import * as fs from "fs";
@@ -43,36 +44,35 @@ function setupSecurity(app: express.Application) {
 
 function setupCors(app: express.Application) {
   app.use((req, res, next) => {
-    const origins = new Set<string>();
-
-    if (process.env.REPLIT_DEV_DOMAIN) {
-      origins.add(`https://${process.env.REPLIT_DEV_DOMAIN}`);
-    }
-
-    if (process.env.REPLIT_DOMAINS) {
-      process.env.REPLIT_DOMAINS.split(",").forEach((d) => {
-        origins.add(`https://${d.trim()}`);
-      });
-    }
-
     const origin = req.header("origin");
 
-    if (origin && origins.has(origin)) {
-      res.header("Access-Control-Allow-Origin", origin);
-      res.header(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PUT, DELETE, OPTIONS",
-      );
-      res.header("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Added Authorization
-      res.header("Access-Control-Allow-Credentials", "true");
+    // In development, allow all origins
+    if (process.env.NODE_ENV === "development" || !process.env.NODE_ENV) {
+      if (origin) {
+        res.header("Access-Control-Allow-Origin", origin);
+      } else {
+        res.header("Access-Control-Allow-Origin", "*");
+      }
+    } else {
+      const origins = new Set<string>();
+      if (process.env.REPLIT_DEV_DOMAIN) {
+        origins.add(`https://${process.env.REPLIT_DEV_DOMAIN}`);
+      }
+      if (process.env.REPLIT_DOMAINS) {
+        process.env.REPLIT_DOMAINS.split(",").forEach((d) => {
+          origins.add(`https://${d.trim()}`);
+        });
+      }
+      if (origin && origins.has(origin)) {
+        res.header("Access-Control-Allow-Origin", origin);
+      }
     }
 
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Device-Id");
+    res.header("Access-Control-Allow-Credentials", "true");
+
     if (req.method === "OPTIONS") {
-      res.header(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PUT, DELETE, OPTIONS",
-      );
-      res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
       return res.sendStatus(200);
     }
 
@@ -236,6 +236,7 @@ function configureExpoAndLanding(app: express.Application) {
   });
 
   app.use("/assets", express.static(path.resolve(process.cwd(), "assets")));
+  app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
   app.use(express.static(path.resolve(process.cwd(), "static-build")));
 
   log("Expo routing: Checking expo-platform header on / and /manifest");

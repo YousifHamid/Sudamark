@@ -29,6 +29,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCars } from "@/hooks/useCars";
 import { useTheme } from "@/hooks/useTheme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
+import { formatImageUri } from "@/lib/image-utils";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -276,9 +277,7 @@ export default function CarDetailScreen() {
               <Image
                 key={index}
                 source={{
-                  uri: uri?.startsWith("http")
-                    ? uri
-                    : `${require("@/lib/query-client").getApiUrl().replace(/\/$/, "")}${uri}`
+                  uri: formatImageUri(uri) || ""
                 }}
                 style={styles.image}
                 resizeMode="cover"

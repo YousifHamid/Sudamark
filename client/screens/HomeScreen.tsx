@@ -23,6 +23,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCars } from "@/hooks/useCars";
 import { useTheme } from "@/hooks/useTheme";
 import { getApiUrl } from "@/lib/query-client";
+import { formatImageUri } from "@/lib/image-utils";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { SEARCH_CATEGORIES } from "@shared/constants";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -234,7 +235,9 @@ export default function HomeScreen() {
               >
                 {slide.imageUrl ? (
                   <Image
-                    source={{ uri: slide.imageUrl }}
+                    source={{
+                      uri: formatImageUri(slide.imageUrl) || ""
+                    }}
                     style={styles.slideImage}
                     resizeMode="cover"
                   />

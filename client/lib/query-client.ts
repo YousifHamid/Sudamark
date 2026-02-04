@@ -1,20 +1,29 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
 
 const TOKEN_STORAGE_KEY = "@sudamark_token";
 
 export function getApiUrl(): string {
   // return "https://sudamark.up.railway.app/"; // Safe fallback
+  if (__DEV__) {
+    // Dynamically get the IP of the machine running Metro
+    const debuggerHost = Constants.expoConfig?.hostUri;
+    const ip = debuggerHost?.split(":")[0];
+
+    if (ip) {
+      // console.log(`[getApiUrl] Detected Dev IP: ${ip}`);
+      return `http://${ip}:5000/`;
+    }
+
+    // Fallback if hostUri is unavailable
+    const fallbackIp = "10.84.86.105";
+    return `http://${fallbackIp}:5000/`;
+  }
+
   let host = process.env.EXPO_PUBLIC_DOMAIN;
 
   if (!host) {
-    // Fallback for development if not set
-    if (__DEV__) {
-      // NOTE: Update this IP address to your machine's local IP (check with 'ipconfig' or 'ifconfig')
-      return "https://sudamark.up.railway.app/"; // Safe fallback
-      const ip = "192.168.1.57";
-      return `http://${ip}:5000/`; // Safe fallback
-    }
     console.warn("EXPO_PUBLIC_DOMAIN is not set");
     return "https://sudamark.up.railway.app/"; // Safe fallback
   }
@@ -61,6 +70,7 @@ async function getAuthToken(): Promise<string | null> {
 export async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
+    console.error(`[API ERROR] ${res.status} ${res.url}: ${text}`);
 
     // Check for specific auth errors
     if (res.status === 403 && text.includes("ACCOUNT_BLOCKED")) {
@@ -87,7 +97,7 @@ export async function apiRequest(
   data?: unknown | undefined,
 ): Promise<Response> {
   const baseUrl = getApiUrl();
-  const url = new URL(route, baseUrl);
+  const url = new URL(route, baseUrl).toString();
   const token = await getAuthToken();
 
   const headers: Record<string, string> = {};
@@ -98,15 +108,20 @@ export async function apiRequest(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+  try {
+    const res = await fetch(url, {
+      method,
+      headers,
+      body: data ? JSON.stringify(data) : undefined,
+      credentials: "include",
+    });
 
-  await throwIfResNotOk(res);
-  return res;
+    await throwIfResNotOk(res);
+    return res;
+  } catch (error: any) {
+    console.error(`[API FETCH FAILED] ${method} ${url}: ${error.message}`);
+    throw error;
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

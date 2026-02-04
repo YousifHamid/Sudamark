@@ -25,6 +25,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCars } from "@/hooks/useCars";
 import { useTheme } from "@/hooks/useTheme";
 import { apiRequest, getApiUrl } from "@/lib/query-client";
+import { formatImageUri } from "@/lib/image-utils";
 import {
   ADVERTISER_TYPES,
   CITIES,
@@ -971,7 +972,7 @@ export default function PostCarScreen() {
               {carImages[slot.id] ? (
                 <>
                   <Image
-                    source={{ uri: carImages[slot.id] || "" }}
+                    source={{ uri: formatImageUri(carImages[slot.id]) || "" }}
                     style={styles.imagePreviewSlot}
                     resizeMode="cover"
                   />
