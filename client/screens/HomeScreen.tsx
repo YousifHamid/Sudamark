@@ -314,7 +314,7 @@ export default function HomeScreen() {
                 marginHorizontal: Spacing.lg,
                 paddingHorizontal: Spacing.md,
                 paddingVertical: Spacing.sm,
-                backgroundColor: theme.primary,
+                backgroundColor: '#adadad',
                 borderRadius: BorderRadius.md,
                 alignItems: "center", // Center vertically
               },
@@ -359,7 +359,7 @@ export default function HomeScreen() {
               marginHorizontal: Spacing.lg,
               paddingHorizontal: Spacing.md,
               paddingVertical: Spacing.sm,
-              backgroundColor: theme.primary,
+              backgroundColor: '#adadad',
               borderRadius: BorderRadius.md,
               alignItems: "center", // Center vertically
             },

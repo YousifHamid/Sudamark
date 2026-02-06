@@ -98,7 +98,7 @@ export function CarCard({ car, onPress, horizontal = false }: CarCardProps) {
       style={[
         styles.card,
         {
-          backgroundColor: horizontal ? "#d8d8d8" : theme.cardBackground,
+          backgroundColor: theme.cardBackground,
           width: cardWidth,
         },
         animatedStyle,
