@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
   },
   title: {
-    fontWeight: "500",
+    fontWeight: "700",
     marginBottom: Spacing.xs,
   },
   details: {

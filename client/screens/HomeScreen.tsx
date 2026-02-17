@@ -320,7 +320,7 @@ export default function HomeScreen() {
               },
             ]}
           >
-            <ThemedText type="h4" style={[{ color: theme.primary }, isRTL ? styles.rtlText : undefined]}>
+            <ThemedText type="h4" style={[{ color: theme.text }, isRTL ? styles.rtlText : undefined]}>
               {t("featuredCars")}
             </ThemedText>
             <Pressable onPress={() => navigation.navigate("Search", { featured: true })}>
@@ -365,7 +365,7 @@ export default function HomeScreen() {
             },
           ]}
         >
-          <ThemedText type="h4" style={[{ color: theme.primary }, isRTL ? styles.rtlText : undefined]}>
+          <ThemedText type="h4" style={[{ color: theme.text }, isRTL ? styles.rtlText : undefined]}>
             {t("recentListings")}
           </ThemedText>
           <Pressable onPress={() => navigation.navigate("Search", {})}>
