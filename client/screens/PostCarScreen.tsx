@@ -932,7 +932,7 @@ export default function PostCarScreen() {
           type="small"
           style={[
             styles.label,
-            { color: theme.textSecondary },
+            { color: theme.text },
             isRTL && styles.rtlText,
           ]}
         >
@@ -942,7 +942,7 @@ export default function PostCarScreen() {
           type="small"
           style={[
             styles.label,
-            { color: theme.textSecondary },
+            { color: theme.text },
             isRTL && styles.rtlText,
           ]}
         >
@@ -1016,7 +1016,7 @@ export default function PostCarScreen() {
           type="small"
           style={[
             styles.label,
-            { color: theme.textSecondary },
+            { color: theme.text },
             isRTL && styles.rtlText,
           ]}
         >
@@ -1051,7 +1051,7 @@ export default function PostCarScreen() {
           type="small"
           style={[
             styles.label,
-            { color: theme.textSecondary },
+            { color: theme.text },
             isRTL && styles.rtlText,
           ]}
         >
@@ -1084,7 +1084,7 @@ export default function PostCarScreen() {
           type="small"
           style={[
             styles.label,
-            { color: theme.textSecondary },
+            { color: theme.text },
             isRTL && styles.rtlText,
           ]}
         >
@@ -1113,7 +1113,7 @@ export default function PostCarScreen() {
               type="small"
               style={[
                 styles.label,
-                { color: theme.textSecondary },
+                { color: theme.text },
                 isRTL && styles.rtlText,
               ]}
             >
@@ -1141,7 +1141,7 @@ export default function PostCarScreen() {
               type="small"
               style={[
                 styles.label,
-                { color: theme.textSecondary },
+                { color: theme.text },
                 isRTL && styles.rtlText,
               ]}
             >
@@ -1172,7 +1172,7 @@ export default function PostCarScreen() {
               type="small"
               style={[
                 styles.label,
-                { color: theme.textSecondary },
+                { color: theme.text },
                 isRTL && styles.rtlText,
               ]}
             >
@@ -1201,7 +1201,7 @@ export default function PostCarScreen() {
               type="small"
               style={[
                 styles.label,
-                { color: theme.textSecondary },
+                { color: theme.text },
                 isRTL && styles.rtlText,
               ]}
             >
@@ -1231,7 +1231,7 @@ export default function PostCarScreen() {
           type="small"
           style={[
             styles.label,
-            { color: theme.textSecondary },
+            { color: theme.text },
             isRTL && styles.rtlText,
           ]}
         >
@@ -1259,7 +1259,7 @@ export default function PostCarScreen() {
           type="small"
           style={[
             styles.label,
-            { color: theme.textSecondary },
+            { color: theme.text },
             isRTL && styles.rtlText,
           ]}
         >
@@ -1305,7 +1305,7 @@ export default function PostCarScreen() {
           type="small"
           style={[
             styles.label,
-            { color: theme.textSecondary },
+            { color: theme.text },
             isRTL && styles.rtlText,
           ]}
         >
@@ -1338,7 +1338,7 @@ export default function PostCarScreen() {
           type="small"
           style={[
             styles.label,
-            { color: theme.textSecondary },
+            { color: theme.text },
             isRTL && styles.rtlText,
           ]}
         >
@@ -1484,7 +1484,7 @@ export default function PostCarScreen() {
           type="small"
           style={[
             styles.label,
-            { color: theme.textSecondary },
+            { color: theme.text },
             isRTL && styles.rtlText,
           ]}
         >
@@ -1761,6 +1761,7 @@ const styles = StyleSheet.create({
   label: {
     marginBottom: Spacing.xs,
     marginTop: Spacing.md,
+    fontWeight: "700",
   },
   imagesContainer: {
     marginVertical: Spacing.sm,
@@ -1867,6 +1868,8 @@ const styles = StyleSheet.create({
   rtlText: {
     writingDirection: "rtl",
     textAlign: "right",
+    alignSelf: "flex-end", // Align container to right
+    width: "100%", // Ensure width takes full space for alignment
   },
   feeNotice: {
     flexDirection: "row",
