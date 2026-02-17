@@ -314,17 +314,17 @@ export default function HomeScreen() {
                 marginHorizontal: Spacing.lg,
                 paddingHorizontal: Spacing.md,
                 paddingVertical: Spacing.sm,
-                backgroundColor: '#adadad',
+                backgroundColor: theme.backgroundSecondary,
                 borderRadius: BorderRadius.md,
                 alignItems: "center", // Center vertically
               },
             ]}
           >
-            <ThemedText type="h4" style={[{ color: "#FFFFFF" }, isRTL ? styles.rtlText : undefined]}>
+            <ThemedText type="h4" style={[{ color: theme.primary }, isRTL ? styles.rtlText : undefined]}>
               {t("featuredCars")}
             </ThemedText>
             <Pressable onPress={() => navigation.navigate("Search", { featured: true })}>
-              <ThemedText type="link" style={{ fontSize: 14, color: "#FFFFFF" }}>
+              <ThemedText type="link" style={{ fontSize: 14, color: theme.primary }}>
                 {t("seeAll")}
               </ThemedText>
             </Pressable>
@@ -359,17 +359,17 @@ export default function HomeScreen() {
               marginHorizontal: Spacing.lg,
               paddingHorizontal: Spacing.md,
               paddingVertical: Spacing.sm,
-              backgroundColor: '#adadad',
+              backgroundColor: theme.backgroundSecondary,
               borderRadius: BorderRadius.md,
               alignItems: "center", // Center vertically
             },
           ]}
         >
-          <ThemedText type="h4" style={[{ color: "#FFFFFF" }, isRTL ? styles.rtlText : undefined]}>
+          <ThemedText type="h4" style={[{ color: theme.primary }, isRTL ? styles.rtlText : undefined]}>
             {t("recentListings")}
           </ThemedText>
           <Pressable onPress={() => navigation.navigate("Search", {})}>
-            <ThemedText type="link" style={{ fontSize: 14, color: "#FFFFFF" }}>
+            <ThemedText type="link" style={{ fontSize: 14, color: theme.primary }}>
               {t("seeAll")}
             </ThemedText>
           </Pressable>

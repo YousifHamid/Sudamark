@@ -1,7 +1,8 @@
 import { Platform, I18nManager } from "react-native";
 
-const primaryColor = "#4A148C"; // Deep Purple
-const secondaryColor = "#E91E63"; // Pink/Red
+const primaryColor = "#1A1A6B"; // Deep Navy (Primary Solid)
+const brandSecondary = "#E8EAF6"; // The Light (Backgrounds, Borders, Search bars)
+const accentColor = "#E91E63"; // Accent Red (Prices, Sold tags, Favorites)
 const neutralWhite = "#FFFFFF";
 
 export const Colors = {
@@ -12,17 +13,17 @@ export const Colors = {
     tabIconDefault: "#9CA3AF",
     tabIconSelected: primaryColor,
     link: primaryColor,
-    backgroundRoot: "#F8F9FA",
+    backgroundRoot: brandSecondary,
     backgroundDefault: neutralWhite,
-    backgroundSecondary: "#F3F4F6",
+    backgroundSecondary: neutralWhite,
     backgroundTertiary: "#E5E7EB",
     primary: primaryColor,
-    secondary: secondaryColor,
+    secondary: accentColor,
     success: "#10B981",
-    warning: secondaryColor,
-    error: "#EF4444",
-    border: "#E5E7EB",
-    cardBackground: neutralWhite,
+    warning: accentColor,
+    error: accentColor, // Using accent for errors/warnings as requested
+    border: brandSecondary, // Listing card borders
+    cardBackground: neutralWhite, // White cards to pop against color
   },
   dark: {
     text: "#F3F4F6",
@@ -36,7 +37,7 @@ export const Colors = {
     backgroundSecondary: "#374151",
     backgroundTertiary: "#4B5563",
     primary: "#C084FC",
-    secondary: secondaryColor,
+    secondary: accentColor,
     success: "#34D399",
     warning: "#FBBF24",
     error: "#F87171",
