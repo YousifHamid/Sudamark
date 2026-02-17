@@ -140,7 +140,7 @@ export default function HomeScreen() {
 
   return (
     <ScrollView
-      style={[styles.container, { backgroundColor: theme.backgroundRoot }]}
+      style={[styles.container, { backgroundColor: theme.backgroundSecondary }]}
       contentContainerStyle={{
         paddingTop: Spacing.md,
         paddingBottom: tabBarHeight + Spacing.xl + 80,
