@@ -1868,8 +1868,7 @@ const styles = StyleSheet.create({
   rtlText: {
     writingDirection: "rtl",
     textAlign: "right",
-    alignSelf: "flex-end", // Align container to right
-    width: "100%", // Ensure width takes full space for alignment
+    alignSelf: "stretch",
   },
   feeNotice: {
     flexDirection: "row",
