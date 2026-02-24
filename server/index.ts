@@ -213,20 +213,6 @@ function configureExpoAndLanding(app: express.Application) {
     res.status(200).send(adminTemplate);
   });
 
-  app.get("/privacy-policy", (_req: Request, res: Response) => {
-    const ppTemplatePath = path.resolve(
-      process.cwd(),
-      "server",
-      "templates",
-      "privacy-policy.html"
-    );
-    if (fs.existsSync(ppTemplatePath)) {
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
-      return res.status(200).send(fs.readFileSync(ppTemplatePath, "utf-8"));
-    }
-    res.status(404).send("Privacy Policy not found");
-  });
-
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.path.startsWith("/api")) {
       return next();

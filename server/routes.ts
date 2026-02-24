@@ -286,6 +286,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.sendFile("terms.html", { root: "./server/templates" });
   });
 
+  app.get("/privacy-policy", (_req: Request, res: Response) => {
+    res.sendFile("privacy-policy.html", { root: "./server/templates" });
+  });
+
   // Serve uploaded files
   app.use("/uploads", (req, res, next) => {
     res.header("Cross-Origin-Resource-Policy", "cross-origin");
