@@ -5,94 +5,176 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy - Sudamark</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
 </head>
 
-<body>
-    <main
-        style="max-width: 900px; margin: 0 auto; padding: 24px; line-height: 1.6; font-family: sans-serif; color: #333;">
-        <h1>Privacy Policy</h1>
-        <p><strong>Last updated:</strong> February 25, 2026</p>
+<body class="bg-gray-900 text-gray-200 min-h-screen">
+    <nav class="bg-gray-800 border-b border-gray-700 py-4">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-orange-500">SUDAMARK</div>
+            <a href="/" class="text-sm text-gray-400 hover:text-white transition">Back to Home</a>
+        </div>
+    </nav>
 
-        <p>
-            Sudamark respects your privacy. This Privacy Policy explains how we collect, use, and protect your
-            information when you use our mobile application.
-        </p>
+    <main class="container mx-auto px-4 py-12 max-w-4xl">
+        <header class="text-center mb-12">
+            <h1 class="text-3xl md:text-4xl font-bold text-white mb-4">Privacy Policy</h1>
+            <p class="text-gray-400">Last updated: February 25, 2026</p>
+        </header>
 
-        <h2>Information We Collect</h2>
-        <h3>1. Account Information</h3>
-        <p>If you choose to create an account, we collect:</p>
-        <ul>
-            <li>Mobile phone number</li>
-        </ul>
-        <p>This information is required to create and secure your account and enable login functionality.</p>
-        <p>We do not collect or store your password in plain text. Passwords are securely processed and protected using
-            appropriate security measures.</p>
+        <div class="space-y-8">
+            <section class="glass rounded-xl p-6 md:p-8">
+                <h2 class="text-xl font-bold text-orange-400 mb-4">Introduction</h2>
+                <p class="leading-relaxed text-gray-300">
+                    Sudamark respects your privacy. This Privacy Policy explains how we collect, use, and protect your
+                    information when you use our mobile application.
+                </p>
+            </section>
 
-        <h3>2. Guest Access</h3>
-        <p>You may use certain features of the app without creating an account. When using the app as a guest, we do not
-            collect personal account information such as phone number.</p>
+            <section class="glass rounded-xl p-6 md:p-8">
+                <h2 class="text-xl font-bold text-orange-400 mb-4">Information We Collect</h2>
 
-        <h3>3. Device and Usage Information</h3>
-        <p>We may automatically collect limited technical information necessary to operate and improve the app, such as:
-        </p>
-        <ul>
-            <li>Device type</li>
-            <li>Operating system version</li>
-            <li>Basic app usage data</li>
-            <li>Error and crash logs</li>
-        </ul>
-        <p>This information is used only to maintain app performance, security, and reliability.</p>
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-white mb-2">1. Account Information</h3>
+                        <p class="text-gray-300 mb-2">If you choose to create an account, we collect:</p>
+                        <ul class="list-disc list-inside space-y-1 text-gray-300 ml-4">
+                            <li>Mobile phone number</li>
+                        </ul>
+                        <p class="text-gray-300 mt-2">This information is required to create and secure your account and
+                            enable login functionality.</p>
+                        <p class="text-gray-400 text-sm mt-1 italic">We do not collect or store your password in plain
+                            text. Passwords are securely processed and protected using appropriate security measures.
+                        </p>
+                    </div>
 
-        <h2>How We Use Information</h2>
-        <p>We use collected information to:</p>
-        <ul>
-            <li>Create and manage user accounts</li>
-            <li>Authenticate login credentials</li>
-            <li>Provide and maintain app functionality</li>
-            <li>Improve performance and fix technical issues</li>
-            <li>Protect against unauthorized access and fraud</li>
-        </ul>
+                    <div>
+                        <h3 class="text-lg font-semibold text-white mb-2">2. Guest Access</h3>
+                        <p class="text-gray-300 border-r-2 border-orange-500/30 pr-4">You may use certain features of
+                            the app without creating an account. When using the app as a guest, we do not collect
+                            personal account information such as phone number.</p>
+                    </div>
 
-        <h2>Sharing of Information</h2>
-        <p>We do not sell, rent, or trade your personal information.</p>
-        <p>We do not share your personal information with third parties, except when required by law or to protect the
-            security and integrity of the application.</p>
+                    <div>
+                        <h3 class="text-lg font-semibold text-white mb-2">3. Device and Usage Information</h3>
+                        <p class="text-gray-300 mb-2">We may automatically collect limited technical information
+                            necessary to operate and improve the app, such as:</p>
+                        <ul class="list-disc list-inside space-y-1 text-gray-300 ml-4">
+                            <li>Device type</li>
+                            <li>Operating system version</li>
+                            <li>Basic app usage data</li>
+                            <li>Error and crash logs</li>
+                        </ul>
+                        <p class="text-gray-400 mt-2 text-sm italic">This information is used only to maintain app
+                            performance, security, and reliability.</p>
+                    </div>
+                </div>
+            </section>
 
-        <h2>Data Retention</h2>
-        <p>We retain account information as long as your account remains active.</p>
-        <p>Users may request to:</p>
-        <ul>
-            <li>Delete their account</li>
-            <li>Update their account information</li>
-            <li>Suspend their account</li>
-        </ul>
-        <p>Upon verified request, account data will be deleted or updated within a reasonable timeframe unless retention
-            is required by law.</p>
+            <section class="glass rounded-xl p-6 md:p-8">
+                <h2 class="text-xl font-bold text-orange-400 mb-4">How We Use Information</h2>
+                <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
+                    <li class="flex items-center gap-2"><span class="text-orange-500">•</span> Create and manage user
+                        accounts</li>
+                    <li class="flex items-center gap-2"><span class="text-orange-500">•</span> Authenticate login
+                        credentials</li>
+                    <li class="flex items-center gap-2"><span class="text-orange-500">•</span> Provide and maintain app
+                        functionality</li>
+                    <li class="flex items-center gap-2"><span class="text-orange-500">•</span> Improve performance and
+                        fix technical issues</li>
+                    <li class="flex items-center gap-2"><span class="text-orange-500">•</span> Protect against
+                        unauthorized access and fraud</li>
+                </ul>
+            </section>
 
-        <h2>Data Security</h2>
-        <p>We implement reasonable technical and organizational measures to protect your information from unauthorized
-            access, misuse, alteration, or disclosure.</p>
-        <p>All data is transmitted using secure encryption (HTTPS).</p>
+            <section class="glass rounded-xl p-6 md:p-8">
+                <h2 class="text-xl font-bold text-orange-400 mb-4">Sharing of Information</h2>
+                <div class="space-y-4">
+                    <p class="leading-relaxed text-gray-300">We do not sell, rent, or trade your personal information.
+                    </p>
+                    <p class="leading-relaxed text-gray-300 border-r-2 border-red-500/30 pr-4">We do not share your
+                        personal information with third parties, except when required by law or to protect the security
+                        and integrity of the application.</p>
+                </div>
+            </section>
 
-        <h2>Your Rights</h2>
-        <p>You may:</p>
-        <ul>
-            <li>Request deletion of your account</li>
-            <li>Request updates to your personal information</li>
-            <li>Stop using the app at any time</li>
-        </ul>
-        <p>To submit any data-related request, please contact us at the email below.</p>
+            <section class="glass rounded-xl p-6 md:p-8">
+                <h2 class="text-xl font-bold text-orange-400 mb-4">Data Retention</h2>
+                <p class="leading-relaxed text-gray-300 mb-4">We retain account information as long as your account
+                    remains active.</p>
+                <div class="bg-white/5 rounded-lg p-4">
+                    <p class="text-white font-medium mb-2">Users may request to:</p>
+                    <ul class="list-disc list-inside space-y-1 text-gray-300 ml-2">
+                        <li>Delete their account</li>
+                        <li>Update their account information</li>
+                        <li>Suspend their account</li>
+                    </ul>
+                </div>
+                <p class="mt-4 text-gray-400 text-sm">Upon verified request, account data will be deleted or updated
+                    within a reasonable timeframe unless retention is required by law.</p>
+            </section>
 
-        <h2>Children’s Privacy</h2>
-        <p>Sudamark is not directed to children under the age of 13. We do not knowingly collect personal information
-            from children under 13.</p>
+            <section class="glass rounded-xl p-6 md:p-8">
+                <h2 class="text-xl font-bold text-orange-400 mb-4">Data Security</h2>
+                <p class="leading-relaxed text-gray-300 mb-4">We implement reasonable technical and organizational
+                    measures to protect your information from unauthorized access, misuse, alteration, or disclosure.
+                </p>
+                <div
+                    class="inline-flex items-center gap-2 bg-green-500/10 text-green-400 px-4 py-2 rounded-full text-sm font-medium">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M2.166 4.9L10 .155 17.834 4.9a2 2 0 011.166 1.81v3.57c0 5.061-3.326 9.539-8.334 10.975l-.666.192-.666-.192C4.326 19.82 1 15.342 1 10.28V6.71a2 2 0 011.166-1.81zM10 2.245L3 6.495v3.785c0 4.135 2.721 7.79 6.84 8.973L10 19.344l.16-.046c4.119-1.182 6.84-4.838 6.84-8.973V6.495l-7-4.25z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    All data is transmitted using secure encryption (HTTPS).
+                </div>
+            </section>
 
-        <h2>Contact Us</h2>
-        <p>
-            If you have any questions about this Privacy Policy or would like to request account deletion or data
-            updates, please contact us at:
-            <a href="mailto:yousif.hamid@gmail.com">yousif.hamid@gmail.com</a>
-        </p>
+            <section class="glass rounded-xl p-6 md:p-8">
+                <h2 class="text-xl font-bold text-orange-400 mb-4">Your Rights</h2>
+                <ul class="list-disc list-inside space-y-2 text-gray-300">
+                    <li>Request deletion of your account</li>
+                    <li>Request updates to your personal information</li>
+                    <li>Stop using the app at any time</li>
+                </ul>
+                <p class="mt-4 text-gray-300">To submit any data-related request, please contact us at the email below.
+                </p>
+            </section>
+
+            <section class="glass rounded-xl p-6 md:p-8">
+                <h2 class="text-xl font-bold text-orange-400 mb-4">Children’s Privacy</h2>
+                <p class="leading-relaxed text-gray-300">
+                    Sudamark is not directed to children under the age of 13. We do not knowingly collect personal
+                    information from children under 13.
+                </p>
+            </section>
+
+            <section class="glass rounded-xl p-6 md:p-8">
+                <h2 class="text-xl font-bold text-orange-400 mb-4">Contact Us</h2>
+                <p class="leading-relaxed text-gray-300">
+                    If you have any questions about this Privacy Policy or would like to request account deletion or
+                    data updates, please contact us at:
+                    <a href="mailto:yousif.hamid@gmail.com"
+                        class="text-orange-400 font-bold hover:underline ml-1">yousif.hamid@gmail.com</a>
+                </p>
+            </section>
+        </div>
+
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            &copy; 2026 Sudamark. All rights reserved.
+        </footer>
     </main>
 </body>
 
