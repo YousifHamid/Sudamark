@@ -266,14 +266,6 @@ async function ensureDefaultAdmin() {
   }
 }
 
-// Override checkAdminLoginAllowed to disable blocking during dev/debugging
-function checkAdminLoginAllowed(ip: string): {
-  allowed: boolean;
-  remainingTime?: number;
-} {
-  return { allowed: true };
-}
-
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   await ensureDefaultAdmin();
