@@ -232,6 +232,19 @@ function configureExpoAndLanding(app: express.Application) {
       return res.redirect("/admin");
     }
 
+    if (req.path === "/privacy-policy") {
+      const ppTemplatePath = path.resolve(
+        process.cwd(),
+        "server",
+        "templates",
+        "privacy-policy.html"
+      );
+      if (fs.existsSync(ppTemplatePath)) {
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        return res.status(200).send(fs.readFileSync(ppTemplatePath, "utf-8"));
+      }
+    }
+
     next();
   });
 
