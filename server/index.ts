@@ -218,7 +218,7 @@ function configureExpoAndLanding(app: express.Application) {
       return next();
     }
 
-    if (req.path !== "/" && req.path !== "/manifest") {
+    if (req.path !== "/" && req.path !== "/manifest" && req.path !== "/privacy-policy") {
       return next();
     }
 
