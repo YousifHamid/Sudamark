@@ -2,9 +2,10 @@ import { Feather } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Alert,
+  Animated,
   FlatList,
   Image,
   Modal,
@@ -85,7 +86,7 @@ const SelectionModal = ({
     onRequestClose={onClose}
   >
     <View style={styles.modalOverlay}>
-      <View style={[styles.modalContent, { backgroundColor: theme.backgroundDefault }]}>
+      <View style={[styles.modalContent, { backgroundColor: theme.backgroundSecondary, borderTopWidth: 1, borderColor: theme.border }]}>
         <View style={styles.modalHeader}>
           <ThemedText type="h4">{title}</ThemedText>
           <Pressable onPress={onClose}>
@@ -212,6 +213,16 @@ export default function PostCarScreen() {
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
 
   const cities = CITIES;
+
+  const slide = useRef(new Animated.Value(40)).current;
+  const fade = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fade, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.timing(slide, { toValue: 0, duration: 500, useNativeDriver: true }),
+    ]).start();
+  }, [fade, slide]);
 
   useEffect(() => {
     fetchListingStatus();
@@ -509,7 +520,7 @@ export default function PostCarScreen() {
 
   if (step === "waiting") {
     return (
-      <ThemedView style={styles.container}>
+      <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
         <View
           style={[
             styles.waitingContainer,
@@ -573,13 +584,13 @@ export default function PostCarScreen() {
             {t("done")}
           </Button>
         </View>
-      </ThemedView>
+      </View>
     );
   }
 
   if (step === "payment") {
     return (
-      <ThemedView style={styles.container}>
+      <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
         <KeyboardAwareScrollViewCompat
           contentContainerStyle={[
             styles.content,
@@ -890,12 +901,12 @@ export default function PostCarScreen() {
             </ThemedText>
           </Pressable>
         </KeyboardAwareScrollViewCompat>
-      </ThemedView>
+      </View>
     );
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
       <KeyboardAwareScrollViewCompat
         contentContainerStyle={[
           styles.content,
@@ -905,682 +916,684 @@ export default function PostCarScreen() {
           },
         ]}
       >
-        {listingStatus?.requiresPayment ? (
-          <View
+        <Animated.View style={{ opacity: fade, transform: [{ translateY: slide }] }}>
+          {listingStatus?.requiresPayment ? (
+            <View
+              style={[
+                styles.feeNotice,
+                {
+                  backgroundColor: theme.secondary + "15",
+                  borderColor: theme.secondary,
+                },
+              ]}
+            >
+              <Feather name="info" size={20} color={theme.secondary} />
+              <ThemedText
+                style={[
+                  styles.feeNoticeText,
+                  { color: theme.secondary },
+                  isRTL && styles.rtlText,
+                ]}
+              >
+                {t("listingFeeLabel")} {listingStatus.listingFee.toLocaleString()} {t("sdg")}
+              </ThemedText>
+            </View>
+          ) : null}
+
+          <ThemedText
+            type="small"
             style={[
-              styles.feeNotice,
-              {
-                backgroundColor: theme.secondary + "15",
-                borderColor: theme.secondary,
-              },
+              styles.label,
+              { color: theme.text },
+              isRTL && styles.rtlText,
             ]}
           >
-            <Feather name="info" size={20} color={theme.secondary} />
-            <ThemedText
-              style={[
-                styles.feeNoticeText,
-                { color: theme.secondary },
-                isRTL && styles.rtlText,
-              ]}
-            >
-              {t("listingFeeLabel")} {listingStatus.listingFee.toLocaleString()} {t("sdg")}
-            </ThemedText>
-          </View>
-        ) : null}
-
-        <ThemedText
-          type="small"
-          style={[
-            styles.label,
-            { color: theme.text },
-            isRTL && styles.rtlText,
-          ]}
-        >
-          {t("photosUpTo6")}
-        </ThemedText>
-        <ThemedText
-          type="small"
-          style={[
-            styles.label,
-            { color: theme.text },
-            isRTL && styles.rtlText,
-          ]}
-        >
-          {isRTL ? "صور السيارة (6 صور)" : "Car Photos (6 Photos)"}
-        </ThemedText>
-        <View style={styles.imageGrid}>
-          {[
-            { id: "front", labelKey: "viewFront" },
-            { id: "rear", labelKey: "viewRear" },
-            { id: "right", labelKey: "viewRight" },
-            { id: "left", labelKey: "viewLeft" },
-            { id: "interior", labelKey: "viewInterior" },
-            { id: "extra", labelKey: "viewExtra" },
-          ].map((slot) => (
-            <Pressable
-              key={slot.id}
-              style={[
-                styles.imageSlot,
-                {
-                  backgroundColor: theme.backgroundSecondary,
-                  borderColor: theme.border,
-                },
-              ]}
-              onPress={() => pickImage(slot.id)}
-            >
-              {carImages[slot.id] ? (
-                <>
-                  <Image
-                    source={{ uri: carImages[slot.id] || "" }}
-                    style={styles.imagePreviewSlot}
-                    resizeMode="cover"
-                  />
-                  <Pressable
-                    style={[
-                      styles.removeImageButton,
-                      { backgroundColor: theme.error },
-                    ]}
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      removeImage(slot.id);
-                    }}
-                  >
-                    <Feather name="x" size={14} color="#FFFFFF" />
-                  </Pressable>
-                </>
-              ) : (
-                <View style={styles.emptySlot}>
-                  <Feather
-                    name="camera"
-                    size={24}
-                    color={theme.textSecondary}
-                  />
-                  <ThemedText
-                    type="small"
-                    style={{
-                      color: theme.textSecondary,
-                      marginTop: 4,
-                      textAlign: "center",
-                      fontSize: 10,
-                    }}
-                  >
-                    {t(slot.labelKey)}
-                  </ThemedText>
-                </View>
-              )}
-            </Pressable>
-          ))}
-        </View>
-
-        <ThemedText
-          type="small"
-          style={[
-            styles.label,
-            { color: theme.text },
-            isRTL && styles.rtlText,
-          ]}
-        >
-          {t("category")}
-        </ThemedText>
-        <Pressable
-          onPress={() => setActiveModal('category')}
-          style={[
-            styles.input,
-            {
-              backgroundColor: theme.backgroundSecondary,
-              borderColor: theme.border,
-              flexDirection: isRTL ? 'row-reverse' : 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingHorizontal: 12,
-            }
-          ]}
-        >
-          <ThemedText style={{ color: theme.text }}>
-            {(() => {
-              const c = categories.find(c => c.id === category);
-              return c ? t(c.labelKey) : "";
-            })()}
+            {t("photosUpTo6")}
           </ThemedText>
-          <Feather name="chevron-down" size={20} color={theme.textSecondary} />
-        </Pressable>
-
-        <View style={{ height: Spacing.md }} />
-
-        <ThemedText
-          type="small"
-          style={[
-            styles.label,
-            { color: theme.text },
-            isRTL && styles.rtlText,
-          ]}
-        >
-          {isRTL ? "الحالة" : "Condition"}
-        </ThemedText>
-        <Pressable
-          onPress={() => setActiveModal('condition')}
-          style={[
-            styles.input,
-            {
-              backgroundColor: theme.backgroundSecondary,
-              borderColor: theme.border,
-              flexDirection: isRTL ? 'row-reverse' : 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingHorizontal: 12,
-            }
-          ]}
-        >
-          <ThemedText style={{ color: theme.text }}>
-            {(() => {
-              const c = conditions.find(c => c.id === condition);
-              return c ? t(c.labelKey) : "";
-            })()}
-          </ThemedText>
-          <Feather name="chevron-down" size={20} color={theme.textSecondary} />
-        </Pressable>
-
-        <ThemedText
-          type="small"
-          style={[
-            styles.label,
-            { color: theme.text },
-            isRTL && styles.rtlText,
-          ]}
-        >
-          {t("carTitle")} *
-        </ThemedText>
-        <TextInput
-          style={[
-            styles.input,
-            {
-              backgroundColor: theme.backgroundSecondary,
-              color: theme.text,
-              borderColor: theme.border,
-            },
-            isRTL && styles.rtlInput,
-          ]}
-          placeholder={t("titlePlaceholder")}
-          placeholderTextColor={theme.textSecondary}
-          value={title}
-          onChangeText={setTitle}
-          textAlign={isRTL ? "right" : "left"}
-        />
-
-        <View style={[styles.row, isRTL && styles.rowRTL]}>
-          <View style={styles.halfInput}>
-            <ThemedText
-              type="small"
-              style={[
-                styles.label,
-                { color: theme.text },
-                isRTL && styles.rtlText,
-              ]}
-            >
-              {t("make")} *
-            </ThemedText>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.backgroundSecondary,
-                  color: theme.text,
-                  borderColor: theme.border,
-                },
-                isRTL && styles.rtlInput,
-              ]}
-              placeholder={isRTL ? "تويوتا" : "Toyota"}
-              placeholderTextColor={theme.textSecondary}
-              value={make}
-              onChangeText={setMake}
-              textAlign={isRTL ? "right" : "left"}
-            />
-          </View>
-          <View style={styles.halfInput}>
-            <ThemedText
-              type="small"
-              style={[
-                styles.label,
-                { color: theme.text },
-                isRTL && styles.rtlText,
-              ]}
-            >
-              {t("model")} *
-            </ThemedText>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.backgroundSecondary,
-                  color: theme.text,
-                  borderColor: theme.border,
-                },
-                isRTL && styles.rtlInput,
-              ]}
-              placeholder={isRTL ? "كامري" : "Camry"}
-              placeholderTextColor={theme.textSecondary}
-              value={model}
-              onChangeText={setModel}
-              textAlign={isRTL ? "right" : "left"}
-            />
-          </View>
-        </View>
-
-        <View style={[styles.row, isRTL && styles.rowRTL]}>
-          <View style={styles.halfInput}>
-            <ThemedText
-              type="small"
-              style={[
-                styles.label,
-                { color: theme.text },
-                isRTL && styles.rtlText,
-              ]}
-            >
-              {t("year")} *
-            </ThemedText>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.backgroundSecondary,
-                  color: theme.text,
-                  borderColor: theme.border,
-                },
-                isRTL && styles.rtlInput,
-              ]}
-              placeholder="2022"
-              placeholderTextColor={theme.textSecondary}
-              value={year}
-              onChangeText={setYear}
-              keyboardType="number-pad"
-              textAlign={isRTL ? "right" : "left"}
-            />
-          </View>
-          <View style={styles.halfInput}>
-            <ThemedText
-              type="small"
-              style={[
-                styles.label,
-                { color: theme.text },
-                isRTL && styles.rtlText,
-              ]}
-            >
-              {t("priceSdg")} *
-            </ThemedText>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.backgroundSecondary,
-                  color: theme.text,
-                  borderColor: theme.border,
-                },
-                isRTL && styles.rtlInput,
-              ]}
-              placeholder="85000"
-              placeholderTextColor={theme.textSecondary}
-              value={price}
-              onChangeText={setPrice}
-              keyboardType="number-pad"
-              textAlign={isRTL ? "right" : "left"}
-            />
-          </View>
-        </View>
-
-        <ThemedText
-          type="small"
-          style={[
-            styles.label,
-            { color: theme.text },
-            isRTL && styles.rtlText,
-          ]}
-        >
-          {t("mileage")} ({t("km")})
-        </ThemedText>
-        <TextInput
-          style={[
-            styles.input,
-            {
-              backgroundColor: theme.backgroundSecondary,
-              color: theme.text,
-              borderColor: theme.border,
-            },
-            isRTL && styles.rtlInput,
-          ]}
-          placeholder="50000"
-          placeholderTextColor={theme.textSecondary}
-          value={mileage}
-          onChangeText={setMileage}
-          keyboardType="number-pad"
-          textAlign={isRTL ? "right" : "left"}
-        />
-
-        <ThemedText
-          type="small"
-          style={[
-            styles.label,
-            { color: theme.text },
-            isRTL && styles.rtlText,
-          ]}
-        >
-          {t("city")} *
-        </ThemedText>
-        <Pressable
-          onPress={() => setActiveModal('city')}
-          style={[
-            styles.input,
-            {
-              backgroundColor: theme.backgroundSecondary,
-              borderColor: theme.border,
-              flexDirection: isRTL ? 'row-reverse' : 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingHorizontal: 12,
-            }
-          ]}
-        >
-          <ThemedText style={{ color: theme.text }}>
-            {(() => {
-              const c = cities.find(c => c.id === city);
-              return c ? t(c.labelKey) : "";
-            })()}
-          </ThemedText>
-          <Feather name="chevron-down" size={20} color={theme.textSecondary} />
-        </Pressable>
-        <ThemedText
-          type="small"
-          style={{
-            fontSize: 10,
-            color: theme.textSecondary,
-            marginTop: 4,
-            ...(isRTL ? { textAlign: "right" } : { textAlign: "left" }),
-          }}
-        >
-          {isRTL
-            ? "اختر المدينة التي تتواجد بها السيارة"
-            : "Select the city where the car is located"}
-        </ThemedText>
-
-        <ThemedText
-          type="small"
-          style={[
-            styles.label,
-            { color: theme.text },
-            isRTL && styles.rtlText,
-          ]}
-        >
-          {isRTL ? "نوع المعلن" : "Advertiser Type"}
-        </ThemedText>
-        <Pressable
-          onPress={() => setActiveModal('advertiser')}
-          style={[
-            styles.input,
-            {
-              backgroundColor: theme.backgroundSecondary,
-              borderColor: theme.border,
-              flexDirection: isRTL ? 'row-reverse' : 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingHorizontal: 12,
-            }
-          ]}
-        >
-          <ThemedText style={{ color: theme.text }}>
-            {(() => {
-              const c = advertiserTypes.find(c => c.id === advertiserType);
-              return c ? t(c.labelKey) : "";
-            })()}
-          </ThemedText>
-          <Feather name="chevron-down" size={20} color={theme.textSecondary} />
-        </Pressable>
-
-        <ThemedText
-          type="small"
-          style={[
-            styles.label,
-            { color: theme.text },
-            isRTL && styles.rtlText,
-          ]}
-        >
-          {isRTL ? "التأمين" : "Insurance"}
-        </ThemedText>
-        <Pressable
-          onPress={() => setActiveModal('insurance')}
-          style={[
-            styles.input,
-            {
-              backgroundColor: theme.backgroundSecondary,
-              borderColor: theme.border,
-              flexDirection: isRTL ? 'row-reverse' : 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingHorizontal: 12,
-            }
-          ]}
-        >
-          <ThemedText style={{ color: theme.text }}>
-            {(() => {
-              const c = insuranceTypes.find(c => c.id === insuranceType);
-              return c ? t(c.labelKey) : "";
-            })()}
-          </ThemedText>
-          <Feather name="chevron-down" size={20} color={theme.textSecondary} />
-        </Pressable>
-
-        {category !== 'motor_raksha' && (
           <ThemedText
-            type="h4"
-            style={{
-              marginTop: Spacing.xl,
-              marginBottom: Spacing.md,
-              textAlign: isRTL ? 'right' : 'left'
-            }}
+            type="small"
+            style={[
+              styles.label,
+              { color: theme.text },
+              isRTL && styles.rtlText,
+            ]}
           >
-            {isRTL ? "تفاصيل إضافية عن السيارة" : "Additional Car Details"}
+            {isRTL ? "صور السيارة (6 صور)" : "Car Photos (6 Photos)"}
           </ThemedText>
-        )}
-
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md, direction: isRTL ? 'rtl' : 'ltr' }}>
-          {[
-            { key: 'seats', label: 'seats', icon: 'users', modal: 'seats', value: seats },
-            { key: 'doors', label: 'doors', icon: 'sidebar', modal: 'doors', value: doors },
-            {
-              key: 'exteriorColor',
-              label: 'exteriorColor',
-              icon: 'droplet',
-              modal: 'exteriorColor',
-              value: (() => {
-                const c = colors.find(i => i.id === exteriorColor);
-                return c ? t(c.labelKey) : exteriorColor;
-              })()
-            },
-            {
-              key: 'seatType',
-              label: 'seatType',
-              icon: 'layers',
-              modal: 'seatType',
-              value: (() => {
-                const c = seatTypes.find(i => i.id === seatType);
-                return c ? t(c.labelKey) : seatType;
-              })()
-            },
-            {
-              key: 'fuel',
-              label: 'fuelType',
-              icon: 'zap',
-              modal: 'fuel',
-              value: (() => {
-                const c = fuelTypes.find(i => i.id === fuelType);
-                return c ? t(c.labelKey) : fuelType;
-              })()
-            },
-            {
-              key: 'interiorColor',
-              label: 'interiorColor',
-              icon: 'circle',
-              modal: 'interiorColor',
-              value: (() => {
-                const c = colors.find(i => i.id === interiorColor);
-                return c ? t(c.labelKey) : interiorColor;
-              })()
-            },
-            { key: 'engine', label: 'engineSize', icon: 'cpu', modal: 'engineSize', value: engineSize },
-            {
-              key: 'gear',
-              label: 'gearType',
-              icon: 'settings',
-              modal: 'gear',
-              value: (() => {
-                const c = gearTypes.find(i => i.id === gearType);
-                return c ? t(c.labelKey) : gearType;
-              })()
-            },
-            { key: 'cylinders', label: 'cylinders', icon: 'grid', modal: 'cylinders', value: cylinders },
-            {
-              key: 'wheels',
-              label: 'wheels',
-              icon: 'disc',
-              modal: 'wheels',
-              value: (() => {
-                const c = wheelSizes.find(i => i.id === wheels);
-                return c ? t(c.labelKey) : wheels;
-              })()
-            },
-          ].filter(item => {
-            if (category === 'motor_raksha') {
-              return !['seats', 'doors', 'exteriorColor', 'seatType', 'fuel', 'interiorColor', 'engine', 'gear', 'cylinders', 'wheels'].includes(item.key);
-            }
-            return true;
-          }).map((item: any, index) => (
-            <View key={index} style={{ width: '47%' }}>
-              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginBottom: Spacing.xs, gap: 6 }}>
-                <Feather name={item.icon || 'circle'} size={14} color={theme.primary} />
-                <ThemedText type="small" style={{ color: theme.textSecondary }}>{t(item.label)}</ThemedText>
-              </View>
+          <View style={styles.imageGrid}>
+            {[
+              { id: "front", labelKey: "viewFront" },
+              { id: "rear", labelKey: "viewRear" },
+              { id: "right", labelKey: "viewRight" },
+              { id: "left", labelKey: "viewLeft" },
+              { id: "interior", labelKey: "viewInterior" },
+              { id: "extra", labelKey: "viewExtra" },
+            ].map((slot) => (
               <Pressable
-                onPress={() => setActiveModal(item.modal)}
+                key={slot.id}
+                style={[
+                  styles.imageSlot,
+                  {
+                    backgroundColor: theme.backgroundSecondary,
+                    borderColor: theme.border,
+                  },
+                ]}
+                onPress={() => pickImage(slot.id)}
+              >
+                {carImages[slot.id] ? (
+                  <>
+                    <Image
+                      source={{ uri: carImages[slot.id] || "" }}
+                      style={styles.imagePreviewSlot}
+                      resizeMode="cover"
+                    />
+                    <Pressable
+                      style={[
+                        styles.removeImageButton,
+                        { backgroundColor: theme.error },
+                      ]}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        removeImage(slot.id);
+                      }}
+                    >
+                      <Feather name="x" size={14} color="#FFFFFF" />
+                    </Pressable>
+                  </>
+                ) : (
+                  <View style={styles.emptySlot}>
+                    <Feather
+                      name="camera"
+                      size={24}
+                      color={theme.textSecondary}
+                    />
+                    <ThemedText
+                      type="small"
+                      style={{
+                        color: theme.textSecondary,
+                        marginTop: 4,
+                        textAlign: "center",
+                        fontSize: 10,
+                      }}
+                    >
+                      {t(slot.labelKey)}
+                    </ThemedText>
+                  </View>
+                )}
+              </Pressable>
+            ))}
+          </View>
+
+          <ThemedText
+            type="small"
+            style={[
+              styles.label,
+              { color: theme.text },
+              isRTL && styles.rtlText,
+            ]}
+          >
+            {t("category")}
+          </ThemedText>
+          <Pressable
+            onPress={() => setActiveModal('category')}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.backgroundSecondary,
+                borderColor: theme.border,
+                flexDirection: isRTL ? 'row-reverse' : 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingHorizontal: 12,
+              }
+            ]}
+          >
+            <ThemedText style={{ color: theme.text }}>
+              {(() => {
+                const c = categories.find(c => c.id === category);
+                return c ? t(c.labelKey) : "";
+              })()}
+            </ThemedText>
+            <Feather name="chevron-down" size={20} color={theme.textSecondary} />
+          </Pressable>
+
+          <View style={{ height: Spacing.md }} />
+
+          <ThemedText
+            type="small"
+            style={[
+              styles.label,
+              { color: theme.text },
+              isRTL && styles.rtlText,
+            ]}
+          >
+            {isRTL ? "الحالة" : "Condition"}
+          </ThemedText>
+          <Pressable
+            onPress={() => setActiveModal('condition')}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.backgroundSecondary,
+                borderColor: theme.border,
+                flexDirection: isRTL ? 'row-reverse' : 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingHorizontal: 12,
+              }
+            ]}
+          >
+            <ThemedText style={{ color: theme.text }}>
+              {(() => {
+                const c = conditions.find(c => c.id === condition);
+                return c ? t(c.labelKey) : "";
+              })()}
+            </ThemedText>
+            <Feather name="chevron-down" size={20} color={theme.textSecondary} />
+          </Pressable>
+
+          <ThemedText
+            type="small"
+            style={[
+              styles.label,
+              { color: theme.text },
+              isRTL && styles.rtlText,
+            ]}
+          >
+            {t("carTitle")} *
+          </ThemedText>
+          <TextInput
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.backgroundSecondary,
+                color: theme.text,
+                borderColor: theme.border,
+              },
+              isRTL && styles.rtlInput,
+            ]}
+            placeholder={t("titlePlaceholder")}
+            placeholderTextColor={theme.textSecondary}
+            value={title}
+            onChangeText={setTitle}
+            textAlign={isRTL ? "right" : "left"}
+          />
+
+          <View style={[styles.row, isRTL && styles.rowRTL]}>
+            <View style={styles.halfInput}>
+              <ThemedText
+                type="small"
+                style={[
+                  styles.label,
+                  { color: theme.text },
+                  isRTL && styles.rtlText,
+                ]}
+              >
+                {t("make")} *
+              </ThemedText>
+              <TextInput
                 style={[
                   styles.input,
                   {
                     backgroundColor: theme.backgroundSecondary,
+                    color: theme.text,
                     borderColor: theme.border,
-                    flexDirection: isRTL ? 'row-reverse' : 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    paddingHorizontal: 12
-                  }
+                  },
+                  isRTL && styles.rtlInput,
+                ]}
+                placeholder={isRTL ? "تويوتا" : "Toyota"}
+                placeholderTextColor={theme.textSecondary}
+                value={make}
+                onChangeText={setMake}
+                textAlign={isRTL ? "right" : "left"}
+              />
+            </View>
+            <View style={styles.halfInput}>
+              <ThemedText
+                type="small"
+                style={[
+                  styles.label,
+                  { color: theme.text },
+                  isRTL && styles.rtlText,
                 ]}
               >
-                <ThemedText style={{ color: theme.text, textAlign: isRTL ? 'right' : 'left' }}>
-                  {item.value}
-                </ThemedText>
-                <Feather name="chevron-down" size={20} color={theme.textSecondary} />
-              </Pressable>
+                {t("model")} *
+              </ThemedText>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: theme.backgroundSecondary,
+                    color: theme.text,
+                    borderColor: theme.border,
+                  },
+                  isRTL && styles.rtlInput,
+                ]}
+                placeholder={isRTL ? "كامري" : "Camry"}
+                placeholderTextColor={theme.textSecondary}
+                value={model}
+                onChangeText={setModel}
+                textAlign={isRTL ? "right" : "left"}
+              />
             </View>
-          ))}
-        </View>
+          </View>
 
-        <ThemedText
-          type="small"
-          style={[
-            styles.label,
-            { color: theme.text },
-            isRTL && styles.rtlText,
-          ]}
-        >
-          {t("description")}
-        </ThemedText>
-        <TextInput
-          style={[
-            styles.textArea,
-            {
-              backgroundColor: theme.backgroundSecondary,
-              color: theme.text,
-              borderColor: theme.border,
-            },
-            isRTL && styles.rtlInput,
-          ]}
-          placeholder={t("describeYourCar")}
-          placeholderTextColor={theme.textSecondary}
-          value={description}
-          onChangeText={setDescription}
-          multiline
-          numberOfLines={4}
-          textAlignVertical="top"
-          textAlign={isRTL ? "right" : "left"}
-        />
+          <View style={[styles.row, isRTL && styles.rowRTL]}>
+            <View style={styles.halfInput}>
+              <ThemedText
+                type="small"
+                style={[
+                  styles.label,
+                  { color: theme.text },
+                  isRTL && styles.rtlText,
+                ]}
+              >
+                {t("year")} *
+              </ThemedText>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: theme.backgroundSecondary,
+                    color: theme.text,
+                    borderColor: theme.border,
+                  },
+                  isRTL && styles.rtlInput,
+                ]}
+                placeholder="2022"
+                placeholderTextColor={theme.textSecondary}
+                value={year}
+                onChangeText={setYear}
+                keyboardType="number-pad"
+                textAlign={isRTL ? "right" : "left"}
+              />
+            </View>
+            <View style={styles.halfInput}>
+              <ThemedText
+                type="small"
+                style={[
+                  styles.label,
+                  { color: theme.text },
+                  isRTL && styles.rtlText,
+                ]}
+              >
+                {t("priceSdg")} *
+              </ThemedText>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: theme.backgroundSecondary,
+                    color: theme.text,
+                    borderColor: theme.border,
+                  },
+                  isRTL && styles.rtlInput,
+                ]}
+                placeholder="85000"
+                placeholderTextColor={theme.textSecondary}
+                value={price}
+                onChangeText={setPrice}
+                keyboardType="number-pad"
+                textAlign={isRTL ? "right" : "left"}
+              />
+            </View>
+          </View>
 
-        <View
-          style={[
-            styles.agreementContainer,
-            {
-              backgroundColor: theme.warning + "10",
-              borderColor: theme.warning,
-              marginTop: Spacing.lg,
-            },
-          ]}
-        >
+          <ThemedText
+            type="small"
+            style={[
+              styles.label,
+              { color: theme.text },
+              isRTL && styles.rtlText,
+            ]}
+          >
+            {t("mileage")} ({t("km")})
+          </ThemedText>
+          <TextInput
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.backgroundSecondary,
+                color: theme.text,
+                borderColor: theme.border,
+              },
+              isRTL && styles.rtlInput,
+            ]}
+            placeholder="50000"
+            placeholderTextColor={theme.textSecondary}
+            value={mileage}
+            onChangeText={setMileage}
+            keyboardType="number-pad"
+            textAlign={isRTL ? "right" : "left"}
+          />
+
+          <ThemedText
+            type="small"
+            style={[
+              styles.label,
+              { color: theme.text },
+              isRTL && styles.rtlText,
+            ]}
+          >
+            {t("city")} *
+          </ThemedText>
           <Pressable
-            style={styles.checkboxRow}
-            onPress={() => {
-              setIsFormAgreed(!isFormAgreed);
-              Haptics.selectionAsync();
+            onPress={() => setActiveModal('city')}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.backgroundSecondary,
+                borderColor: theme.border,
+                flexDirection: isRTL ? 'row-reverse' : 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingHorizontal: 12,
+              }
+            ]}
+          >
+            <ThemedText style={{ color: theme.text }}>
+              {(() => {
+                const c = cities.find(c => c.id === city);
+                return c ? t(c.labelKey) : "";
+              })()}
+            </ThemedText>
+            <Feather name="chevron-down" size={20} color={theme.textSecondary} />
+          </Pressable>
+          <ThemedText
+            type="small"
+            style={{
+              fontSize: 10,
+              color: theme.textSecondary,
+              marginTop: 4,
+              ...(isRTL ? { textAlign: "right" } : { textAlign: "left" }),
             }}
           >
-            <View
-              style={[
-                styles.checkbox,
-                isFormAgreed && {
-                  backgroundColor: theme.primary,
-                  borderColor: theme.primary,
-                },
-              ]}
-            >
-              {isFormAgreed && (
-                <Feather name="check" size={14} color="#FFFFFF" />
-              )}
-            </View>
-            <ThemedText
-              style={[
-                styles.agreementText,
-                { color: theme.textSecondary },
-                isRTL && styles.rtlText,
-              ]}
-            >
-              {isRTL
-                ? "أتعهد بأنني مالك السلعة أو مفوض ببيعها، وأن التطبيق مجرد وسيط للعرض ولا يتحمل أي مسؤولية قانونية عن التعاملات المالية أو جودة المعروضات. أنا المسؤول الأول والأخير عن صحة البيانات."
-                : "I agree that I am the owner or authorized seller, and the app is just a listing platform bearing no legal liability for transactions. I am fully responsible for the data accuracy."}
-            </ThemedText>
-          </Pressable>
-        </View>
+            {isRTL
+              ? "اختر المدينة التي تتواجد بها السيارة"
+              : "Select the city where the car is located"}
+          </ThemedText>
 
-        <Button
-          onPress={handleSubmit}
-          disabled={isLoading}
-          style={styles.submitButton}
-        >
-          {isLoading
-            ? t("posting")
-            : isEditing
-              ? isRTL ? "تحديث الإعلان" : "Update Ad"
-              : listingStatus?.requiresPayment
-                ? isRTL
-                  ? "متابعة للدفع"
-                  : "Continue to Payment"
-                : t("postListing")}
-        </Button>
-
-        {isEditing && (
-          <Button
-            variant="outline"
-            onPress={handleDelete}
-            disabled={isLoading}
-            style={[styles.submitButton, { marginTop: Spacing.md, borderColor: theme.error }]}
-            textStyle={{ color: theme.error }}
+          <ThemedText
+            type="small"
+            style={[
+              styles.label,
+              { color: theme.text },
+              isRTL && styles.rtlText,
+            ]}
           >
-            {isRTL ? "حذف الإعلان" : "Delete Ad"}
+            {isRTL ? "نوع المعلن" : "Advertiser Type"}
+          </ThemedText>
+          <Pressable
+            onPress={() => setActiveModal('advertiser')}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.backgroundSecondary,
+                borderColor: theme.border,
+                flexDirection: isRTL ? 'row-reverse' : 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingHorizontal: 12,
+              }
+            ]}
+          >
+            <ThemedText style={{ color: theme.text }}>
+              {(() => {
+                const c = advertiserTypes.find(c => c.id === advertiserType);
+                return c ? t(c.labelKey) : "";
+              })()}
+            </ThemedText>
+            <Feather name="chevron-down" size={20} color={theme.textSecondary} />
+          </Pressable>
+
+          <ThemedText
+            type="small"
+            style={[
+              styles.label,
+              { color: theme.text },
+              isRTL && styles.rtlText,
+            ]}
+          >
+            {isRTL ? "التأمين" : "Insurance"}
+          </ThemedText>
+          <Pressable
+            onPress={() => setActiveModal('insurance')}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.backgroundSecondary,
+                borderColor: theme.border,
+                flexDirection: isRTL ? 'row-reverse' : 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingHorizontal: 12,
+              }
+            ]}
+          >
+            <ThemedText style={{ color: theme.text }}>
+              {(() => {
+                const c = insuranceTypes.find(c => c.id === insuranceType);
+                return c ? t(c.labelKey) : "";
+              })()}
+            </ThemedText>
+            <Feather name="chevron-down" size={20} color={theme.textSecondary} />
+          </Pressable>
+
+          {category !== 'motor_raksha' && (
+            <ThemedText
+              type="h4"
+              style={{
+                marginTop: Spacing.xl,
+                marginBottom: Spacing.md,
+                textAlign: isRTL ? 'right' : 'left'
+              }}
+            >
+              {isRTL ? "تفاصيل إضافية عن السيارة" : "Additional Car Details"}
+            </ThemedText>
+          )}
+
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md, direction: isRTL ? 'rtl' : 'ltr' }}>
+            {[
+              { key: 'seats', label: 'seats', icon: 'users', modal: 'seats', value: seats },
+              { key: 'doors', label: 'doors', icon: 'sidebar', modal: 'doors', value: doors },
+              {
+                key: 'exteriorColor',
+                label: 'exteriorColor',
+                icon: 'droplet',
+                modal: 'exteriorColor',
+                value: (() => {
+                  const c = colors.find(i => i.id === exteriorColor);
+                  return c ? t(c.labelKey) : exteriorColor;
+                })()
+              },
+              {
+                key: 'seatType',
+                label: 'seatType',
+                icon: 'layers',
+                modal: 'seatType',
+                value: (() => {
+                  const c = seatTypes.find(i => i.id === seatType);
+                  return c ? t(c.labelKey) : seatType;
+                })()
+              },
+              {
+                key: 'fuel',
+                label: 'fuelType',
+                icon: 'zap',
+                modal: 'fuel',
+                value: (() => {
+                  const c = fuelTypes.find(i => i.id === fuelType);
+                  return c ? t(c.labelKey) : fuelType;
+                })()
+              },
+              {
+                key: 'interiorColor',
+                label: 'interiorColor',
+                icon: 'circle',
+                modal: 'interiorColor',
+                value: (() => {
+                  const c = colors.find(i => i.id === interiorColor);
+                  return c ? t(c.labelKey) : interiorColor;
+                })()
+              },
+              { key: 'engine', label: 'engineSize', icon: 'cpu', modal: 'engineSize', value: engineSize },
+              {
+                key: 'gear',
+                label: 'gearType',
+                icon: 'settings',
+                modal: 'gear',
+                value: (() => {
+                  const c = gearTypes.find(i => i.id === gearType);
+                  return c ? t(c.labelKey) : gearType;
+                })()
+              },
+              { key: 'cylinders', label: 'cylinders', icon: 'grid', modal: 'cylinders', value: cylinders },
+              {
+                key: 'wheels',
+                label: 'wheels',
+                icon: 'disc',
+                modal: 'wheels',
+                value: (() => {
+                  const c = wheelSizes.find(i => i.id === wheels);
+                  return c ? t(c.labelKey) : wheels;
+                })()
+              },
+            ].filter(item => {
+              if (category === 'motor_raksha') {
+                return !['seats', 'doors', 'exteriorColor', 'seatType', 'fuel', 'interiorColor', 'engine', 'gear', 'cylinders', 'wheels'].includes(item.key);
+              }
+              return true;
+            }).map((item: any, index) => (
+              <View key={index} style={{ width: '47%' }}>
+                <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginBottom: Spacing.xs, gap: 6 }}>
+                  <Feather name={item.icon || 'circle'} size={14} color={theme.primary} />
+                  <ThemedText type="small" style={{ color: theme.textSecondary }}>{t(item.label)}</ThemedText>
+                </View>
+                <Pressable
+                  onPress={() => setActiveModal(item.modal)}
+                  style={[
+                    styles.input,
+                    {
+                      backgroundColor: theme.backgroundSecondary,
+                      borderColor: theme.border,
+                      flexDirection: isRTL ? 'row-reverse' : 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      paddingHorizontal: 12
+                    }
+                  ]}
+                >
+                  <ThemedText style={{ color: theme.text, textAlign: isRTL ? 'right' : 'left' }}>
+                    {item.value}
+                  </ThemedText>
+                  <Feather name="chevron-down" size={20} color={theme.textSecondary} />
+                </Pressable>
+              </View>
+            ))}
+          </View>
+
+          <ThemedText
+            type="small"
+            style={[
+              styles.label,
+              { color: theme.text },
+              isRTL && styles.rtlText,
+            ]}
+          >
+            {t("description")}
+          </ThemedText>
+          <TextInput
+            style={[
+              styles.textArea,
+              {
+                backgroundColor: theme.backgroundSecondary,
+                color: theme.text,
+                borderColor: theme.border,
+              },
+              isRTL && styles.rtlInput,
+            ]}
+            placeholder={t("describeYourCar")}
+            placeholderTextColor={theme.textSecondary}
+            value={description}
+            onChangeText={setDescription}
+            multiline
+            numberOfLines={4}
+            textAlignVertical="top"
+            textAlign={isRTL ? "right" : "left"}
+          />
+
+          <View
+            style={[
+              styles.agreementContainer,
+              {
+                backgroundColor: theme.warning + "10",
+                borderColor: theme.warning,
+                marginTop: Spacing.lg,
+              },
+            ]}
+          >
+            <Pressable
+              style={styles.checkboxRow}
+              onPress={() => {
+                setIsFormAgreed(!isFormAgreed);
+                Haptics.selectionAsync();
+              }}
+            >
+              <View
+                style={[
+                  styles.checkbox,
+                  isFormAgreed && {
+                    backgroundColor: theme.primary,
+                    borderColor: theme.primary,
+                  },
+                ]}
+              >
+                {isFormAgreed && (
+                  <Feather name="check" size={14} color="#FFFFFF" />
+                )}
+              </View>
+              <ThemedText
+                style={[
+                  styles.agreementText,
+                  { color: theme.textSecondary },
+                  isRTL && styles.rtlText,
+                ]}
+              >
+                {isRTL
+                  ? "أتعهد بأنني مالك السلعة أو مفوض ببيعها، وأن التطبيق مجرد وسيط للعرض ولا يتحمل أي مسؤولية قانونية عن التعاملات المالية أو جودة المعروضات. أنا المسؤول الأول والأخير عن صحة البيانات."
+                  : "I agree that I am the owner or authorized seller, and the app is just a listing platform bearing no legal liability for transactions. I am fully responsible for the data accuracy."}
+              </ThemedText>
+            </Pressable>
+          </View>
+
+          <Button
+            onPress={handleSubmit}
+            disabled={isLoading}
+            style={[styles.submitButton, { borderRadius: 16, elevation: 8, shadowColor: theme.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 }]}
+          >
+            {isLoading
+              ? t("posting")
+              : isEditing
+                ? isRTL ? "تحديث الإعلان" : "Update Ad"
+                : listingStatus?.requiresPayment
+                  ? isRTL
+                    ? "متابعة للدفع"
+                    : "Continue to Payment"
+                  : t("postListing")}
           </Button>
-        )}
+
+          {isEditing && (
+            <Button
+              variant="outline"
+              onPress={handleDelete}
+              disabled={isLoading}
+              style={[styles.submitButton, { marginTop: Spacing.md, borderColor: theme.error, borderRadius: 16 }]}
+              textStyle={{ color: theme.error }}
+            >
+              {isRTL ? "حذف الإعلان" : "Delete Ad"}
+            </Button>
+          )}
+        </Animated.View>
       </KeyboardAwareScrollViewCompat>
       <SelectionModal
         visible={activeModal === 'category'}
@@ -1747,7 +1760,7 @@ export default function PostCarScreen() {
         isRTL={isRTL}
         t={t}
       />
-    </ThemedView>
+    </View>
   );
 }
 
@@ -1762,6 +1775,8 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
     marginTop: Spacing.md,
     fontWeight: "700",
+    width: "100%",
+    textAlign: "left",
   },
   imagesContainer: {
     marginVertical: Spacing.sm,
@@ -1778,7 +1793,7 @@ const styles = StyleSheet.create({
   imageSlot: {
     width: "31%",
     aspectRatio: 1,
-    borderRadius: BorderRadius.sm,
+    borderRadius: 16,
     borderWidth: 1,
     borderStyle: "dashed",
     alignItems: "center",
@@ -1799,7 +1814,7 @@ const styles = StyleSheet.create({
   imagePreview: {
     width: 100,
     height: 100,
-    borderRadius: BorderRadius.sm,
+    borderRadius: 16,
   },
   removeImageButton: {
     position: "absolute",
@@ -1814,17 +1829,17 @@ const styles = StyleSheet.create({
   addImageButton: {
     width: 100,
     height: 100,
-    borderRadius: BorderRadius.sm,
+    borderRadius: 16,
     borderWidth: 2,
     borderStyle: "dashed",
     alignItems: "center",
     justifyContent: "center",
   },
   input: {
-    height: Spacing.inputHeight,
-    borderRadius: BorderRadius.sm,
+    height: 52,
+    borderRadius: 16,
     borderWidth: 1,
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: 16,
     fontSize: 14,
   },
   rtlInput: {
@@ -1855,11 +1870,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   textArea: {
-    minHeight: 100,
-    borderRadius: BorderRadius.sm,
+    minHeight: 120,
+    borderRadius: 16,
     borderWidth: 1,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     fontSize: 16,
   },
   submitButton: {
@@ -1874,7 +1889,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: Spacing.md,
-    borderRadius: BorderRadius.sm,
+    borderRadius: 16,
     borderWidth: 1,
     gap: Spacing.sm,
     marginBottom: Spacing.md,
@@ -1905,8 +1920,8 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalContent: {
-    borderTopLeftRadius: BorderRadius.lg,
-    borderTopRightRadius: BorderRadius.lg,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     maxHeight: "70%",
     paddingBottom: 40,
   },
@@ -1932,7 +1947,7 @@ const styles = StyleSheet.create({
   qrContainer: {
     alignItems: "center",
     padding: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    borderRadius: 16,
     borderWidth: 1,
     marginVertical: Spacing.xl,
   },
@@ -1974,7 +1989,7 @@ const styles = StyleSheet.create({
   paymentSummary: {
     width: "100%",
     padding: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    borderRadius: 16,
     marginBottom: Spacing.xl,
   },
   summaryRow: {
@@ -1998,7 +2013,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    borderRadius: 16,
     borderWidth: 2,
     gap: Spacing.sm,
   },
@@ -2017,7 +2032,7 @@ const styles = StyleSheet.create({
   couponInput: {
     flex: 1,
     height: Spacing.inputHeight,
-    borderRadius: BorderRadius.sm,
+    borderRadius: 16,
     borderWidth: 1,
     paddingHorizontal: Spacing.md,
     fontSize: 16,
@@ -2026,7 +2041,7 @@ const styles = StyleSheet.create({
   validateButton: {
     height: Spacing.inputHeight,
     paddingHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.sm,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -2034,7 +2049,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: Spacing.md,
-    borderRadius: BorderRadius.sm,
+    borderRadius: 16,
     marginTop: Spacing.md,
   },
   directPaymentSection: {
@@ -2043,7 +2058,7 @@ const styles = StyleSheet.create({
   agreementContainer: {
     marginBottom: Spacing.xl,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: 16,
     borderWidth: 1,
   },
   checkboxRow: {

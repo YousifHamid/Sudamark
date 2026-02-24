@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sudamark",
     "slug": "sudamark",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "orientation": "portrait",
     "icon": "./assets/images/app-icon.png",
     "splash": {
@@ -23,18 +23,23 @@
         "LSApplicationQueriesSchemes": [
           "whatsapp",
           "tel",
+          "mailto",
+          "whatsapp",
+          "tel",
           "mailto"
         ]
       },
-      "buildNumber": "8"
+      "buildNumber": "9"
     },
     "android": {
       "package": "com.sudamark.app",
       "permissions": [
         "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE"
       ],
-      "versionCode": 8
+      "versionCode": 9
     },
     "web": {
       "output": "single",
@@ -70,6 +75,12 @@
         "projectId": "a72ceeb5-4da9-4d16-8d62-48704991a62e",
         "projectId//mine": "39eb8bbb-a601-4439-a4d0-2aad0fd646a3"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/a72ceeb5-4da9-4d16-8d62-48704991a62e"
     }
   }
 }

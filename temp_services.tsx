@@ -63,19 +63,9 @@ export default function ServicesScreen() {
     }
   }, [refreshProviders]);
 
-  const fallbackCategories = [
-    { key: "mechanic", nameAr: "ميكانيكي", nameEn: "Mechanic", icon: "tool" },
-    { key: "electrician", nameAr: "كهربائي", nameEn: "Electrician", icon: "zap" },
-    { key: "inspectionCenter", nameAr: "مركز فحص", nameEn: "Inspection", icon: "search" },
-    { key: "spare_parts", nameAr: "اسبيرات وقطع غيار", nameEn: "Spare Parts", icon: "settings" },
-    { key: "lawyer", nameAr: "محامي", nameEn: "Lawyer", icon: "briefcase" },
-  ];
-
-  const activeCategories = categories.length > 0 ? categories : fallbackCategories;
-
   const tabs = [
     { id: "all", label: t("all"), icon: "grid" as const },
-    ...activeCategories.map(c => ({
+    ...categories.map(c => ({
       id: c.key,
       label: isRTL ? c.nameAr : c.nameEn,
       icon: (c.icon || "tool") as any
@@ -89,26 +79,8 @@ export default function ServicesScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
-      <Pressable
-        onPress={() => navigation.navigate("AddServiceRequest")}
-        style={[
-          styles.addServiceButton,
-          { backgroundColor: theme.primary, marginTop: insets.top + Spacing.md },
-        ]}
-      >
-        <Feather name="plus" size={18} color="#FFFFFF" />
-        <ThemedText
-          style={[
-            styles.addServiceButtonText,
-            isRTL && styles.rtlText,
-          ]}
-        >
-          {t("addServiceRequest")}
-        </ThemedText>
-      </Pressable>
-
       <View
-        style={[styles.tabsContainer]}
+        style={[styles.tabsContainer, { paddingTop: insets.top + Spacing.sm }]}
       >
         <FlatList
           horizontal
@@ -145,6 +117,25 @@ export default function ServicesScreen() {
         />
       </View>
 
+      {/* Add Service Request Button */}
+      <Pressable
+        onPress={() => navigation.navigate("AddServiceRequest")}
+        style={[
+          styles.addServiceButton,
+          { backgroundColor: theme.primary },
+        ]}
+      >
+        <Feather name="plus" size={18} color="#FFFFFF" />
+        <ThemedText
+          style={[
+            styles.addServiceButtonText,
+            isRTL && styles.rtlText,
+          ]}
+        >
+          {t("addServiceRequest")}
+        </ThemedText>
+      </Pressable>
+
       <FlatList
         data={filteredProviders}
         keyExtractor={(item) => item.id}
@@ -156,11 +147,11 @@ export default function ServicesScreen() {
         scrollIndicatorInsets={{ bottom: insets.bottom }}
         ItemSeparatorComponent={() => <View style={{ height: Spacing.md }} />}
         renderItem={({ item }) => {
-          const cat = activeCategories.find(c => c.key === item.role);
+          const cat = categories.find(c => c.key === item.role);
           return (
             <ServiceProviderCard
               provider={item}
-              categoryLabel={cat ? (isRTL ? cat.nameAr : cat.nameEn) : t(item.role)}
+              categoryLabel={cat ? (isRTL ? cat.nameAr : cat.nameEn) : item.role}
               categoryIcon={cat?.icon}
               onPress={() =>
                 navigation.navigate("ServiceProviderDetail", { provider: item })

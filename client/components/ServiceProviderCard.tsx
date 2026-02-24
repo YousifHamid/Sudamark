@@ -93,7 +93,7 @@ export function ServiceProviderCard({
           style={[styles.roleBadge, { backgroundColor: theme.backgroundTertiary }]}
         >
           <ThemedText type="small" style={{ color: theme.primary }}>
-            {categoryLabel || provider.role}
+            {categoryLabel || t(provider.role)}
           </ThemedText>
         </View>
         {provider.isActive === false && (

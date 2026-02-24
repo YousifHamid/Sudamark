@@ -57,8 +57,7 @@ export function HeaderTitle() {
 
   return (
     <View style={[styles.stackContainer, { paddingTop: insets.top }]}>
-      {/* Animated background - positioned in back */}
-      <View style={styles.backgroundLayer}>
+      <View style={[styles.backgroundLayer, { backgroundColor: '#FFEEF2' }]}>
         <AnimatedHeaderBackground />
       </View>
 

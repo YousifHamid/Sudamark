@@ -204,7 +204,7 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <View style={styles.section}>
+      <View style={[styles.section, { paddingHorizontal: 0 }]}>
         <View style={styles.sliderContainer}>
           <ScrollView
             horizontal
@@ -521,12 +521,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0, // Full width, no padding // Full width
   },
   sliderScrollView: {
-    borderRadius: 0, // No border radius for full width // No border radius
     overflow: "hidden",
   },
   singleSlide: {
-    width: SCREEN_WIDTH, // Full Width
-    height: 180, // Slightly taller
+    width: SCREEN_WIDTH,
+    height: 120,
     borderRadius: 0,
     overflow: "hidden",
   },

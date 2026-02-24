@@ -86,7 +86,7 @@ export default function ServiceProviderDetailScreen() {
       case "lawyer":
         return t("lawyer");
       default:
-        return type;
+        return t(type);
     }
   };
 

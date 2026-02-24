@@ -29,6 +29,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCars } from "@/hooks/useCars";
 import { useTheme } from "@/hooks/useTheme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
+import { CITIES } from "@shared/constants";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -241,12 +242,12 @@ export default function CarDetailScreen() {
       value: `${car.mileage?.toLocaleString() || "N/A"} ${t("km")}`,
       icon: "activity" as const,
     },
-    { labelKey: "city", value: car.city, icon: "map-pin" as const },
+    { labelKey: "city", value: t(CITIES.find((c) => c.id === car.city)?.labelKey || car.city), icon: "map-pin" as const },
     { labelKey: "category", value: t(car.category), icon: "tag" as const },
   ];
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.backgroundSecondary }]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
@@ -352,38 +353,52 @@ export default function CarDetailScreen() {
           </View>
         </View>
 
-        <View style={styles.content}>
-          <View style={styles.priceRow}>
-            <ThemedText type="h2" style={{ color: theme.primary }}>
-              {car.price.toLocaleString()} {t("sdg")}
-            </ThemedText>
-          </View>
+        <View style={[styles.content, { backgroundColor: theme.backgroundRoot, marginTop: -30, borderTopLeftRadius: 30, borderTopRightRadius: 30, paddingTop: Spacing.xl }]}>
+          <View
+            style={{
+              backgroundColor: theme.backgroundSecondary,
+              padding: Spacing.lg,
+              borderRadius: BorderRadius.lg,
+              borderWidth: 1,
+              borderColor: theme.border,
+            }}
+          >
+            <View style={[styles.priceRow, { marginBottom: Spacing.xs }]}>
+              <ThemedText type="h2" style={{ color: theme.primary }}>
+                {car.price.toLocaleString()} {t("sdg")}
+              </ThemedText>
+            </View>
 
-          <ThemedText type="h3" style={[styles.title, isRTL && styles.rtlText]}>
-            {car.title}
-          </ThemedText>
-
-          <View style={styles.locationRow}>
-            <Feather name="map-pin" size={16} color={theme.textSecondary} />
-            <ThemedText
-              type="small"
-              style={[
-                {
-                  color: theme.textSecondary,
-                  marginLeft: isRTL ? Spacing.xs : 0,
-                  marginRight: isRTL ? Spacing.xs : 0,
-                },
-                isRTL && styles.rtlText,
-              ]}
-            >
-              {car.city}
+            <ThemedText type="h3" style={[styles.title, { marginTop: 0, marginBottom: Spacing.xs }, isRTL && styles.rtlText]}>
+              {car.title}
             </ThemedText>
+
+            <View style={[styles.locationRow, { marginTop: 0 }]}>
+              <Feather name="map-pin" size={16} color={theme.textSecondary} />
+              <ThemedText
+                type="small"
+                style={[
+                  {
+                    color: theme.textSecondary,
+                    marginLeft: isRTL ? Spacing.xs : 4,
+                    marginRight: isRTL ? Spacing.xs : 4,
+                  },
+                  isRTL && styles.rtlText,
+                ]}
+              >
+                {t(CITIES.find((c) => c.id === car.city)?.labelKey || car.city)}
+              </ThemedText>
+            </View>
           </View>
 
           <View
             style={[
               styles.specsGrid,
-              { backgroundColor: theme.backgroundDefault },
+              {
+                backgroundColor: theme.backgroundSecondary,
+                borderWidth: 1,
+                borderColor: theme.border,
+              }
             ]}
           >
             {specs.map((spec) => (
@@ -413,7 +428,7 @@ export default function CarDetailScreen() {
               <ThemedText type="h4" style={[styles.sectionTitle, isRTL && styles.rtlText]}>
                 {isRTL ? "تفاصيل إضافية" : "Additional Details"}
               </ThemedText>
-              <View style={[styles.specsGrid, { backgroundColor: theme.backgroundDefault, marginTop: Spacing.sm }]}>
+              <View style={[styles.additionalSpecsGrid]}>
                 {[
                   { label: t("doors"), value: car.doors || "-", key: "doors" },
                   { label: t("seats"), value: car.seats || "-", key: "seats" },
@@ -432,7 +447,7 @@ export default function CarDetailScreen() {
                   }
                   return true;
                 }).map((spec, index) => (
-                  <View key={index} style={styles.specItem}>
+                  <View key={index} style={[styles.additionalSpecItem, { backgroundColor: theme.backgroundSecondary, borderColor: theme.border, borderWidth: 1 }]}>
                     <ThemedText
                       type="small"
                       style={[
@@ -462,14 +477,24 @@ export default function CarDetailScreen() {
               >
                 {t("description")}
               </ThemedText>
-              <ThemedText
-                style={[
-                  { color: theme.textSecondary },
-                  isRTL && styles.rtlText,
-                ]}
+              <View
+                style={{
+                  backgroundColor: theme.backgroundSecondary,
+                  padding: Spacing.lg,
+                  borderRadius: BorderRadius.lg,
+                  borderWidth: 1,
+                  borderColor: theme.border,
+                }}
               >
-                {car.description}
-              </ThemedText>
+                <ThemedText
+                  style={[
+                    { color: theme.textSecondary },
+                    isRTL && styles.rtlText,
+                  ]}
+                >
+                  {car.description}
+                </ThemedText>
+              </View>
             </View>
           ) : null}
 
@@ -483,7 +508,11 @@ export default function CarDetailScreen() {
             <View
               style={[
                 styles.sellerCard,
-                { backgroundColor: theme.backgroundDefault },
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderWidth: 1,
+                  borderColor: theme.border,
+                },
               ]}
             >
               <View
@@ -666,7 +695,7 @@ export default function CarDetailScreen() {
           </Pressable>
         </Pressable>
       </Modal>
-    </ThemedView>
+    </View>
   );
 }
 
@@ -686,7 +715,7 @@ const styles = StyleSheet.create({
   },
   imageIndicators: {
     position: "absolute",
-    bottom: Spacing.lg,
+    bottom: Spacing.lg + 30, // Push up out of the overlapping sheet's way
     left: 0,
     right: 0,
     flexDirection: "row",
@@ -762,6 +791,18 @@ const styles = StyleSheet.create({
     width: "50%",
     paddingVertical: Spacing.sm,
     alignItems: "center",
+  },
+  additionalSpecsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+  },
+  additionalSpecItem: {
+    width: "48%",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
   },
   section: {
     marginTop: Spacing.xl,
