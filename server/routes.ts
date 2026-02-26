@@ -312,19 +312,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         if (fs.existsSync(watermarkPath)) {
           const imageMetadata = await sharp(imagePath).metadata();
-          // Resize watermark to be roughly 15% of the image width
-          const targetWidth = imageMetadata.width ? Math.floor(imageMetadata.width * 0.15) : 100;
+          // Resize watermark to be roughly 50% of the image width to be prominent in the center
+          const targetWidth = imageMetadata.width ? Math.floor(imageMetadata.width * 0.5) : 300;
 
-          const watermarkBuffer = await sharp(watermarkPath)
+          const watermarkImg = await sharp(watermarkPath)
             .resize(targetWidth)
+            .png()
             .toBuffer();
+
+          const watermarkMeta = await sharp(watermarkImg).metadata();
+
+          // Use an SVG to apply 30% opacity to the watermark
+          const svgOverlay = Buffer.from(
+            `<svg width="${watermarkMeta.width}" height="${watermarkMeta.height}"><image href="data:image/png;base64,${watermarkImg.toString('base64')}" width="100%" height="100%" opacity="0.3"/></svg>`
+          );
 
           const tempPath = imagePath + '_temp' + path.extname(imagePath);
           await sharp(imagePath)
             .composite([
               {
-                input: watermarkBuffer,
-                gravity: 'southeast',
+                input: svgOverlay,
+                gravity: 'center',
               }
             ])
             .toFile(tempPath);
