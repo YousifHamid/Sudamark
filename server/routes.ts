@@ -298,10 +298,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload endpoint
-  app.post("/api/upload", upload.single("image"), (req, res) => {
+  app.post("/api/upload", upload.single("image"), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No image file uploaded" });
+      }
+
+      // Add watermark
+      try {
+        const sharp = require('sharp');
+        const imagePath = req.file.path;
+        const watermarkPath = path.join(process.cwd(), "assets", "images", "sudamark_logo.png");
+
+        if (fs.existsSync(watermarkPath)) {
+          const imageMetadata = await sharp(imagePath).metadata();
+          // Resize watermark to be roughly 15% of the image width
+          const targetWidth = imageMetadata.width ? Math.floor(imageMetadata.width * 0.15) : 100;
+
+          const watermarkBuffer = await sharp(watermarkPath)
+            .resize(targetWidth)
+            .toBuffer();
+
+          const tempPath = imagePath + '_temp' + path.extname(imagePath);
+          await sharp(imagePath)
+            .composite([
+              {
+                input: watermarkBuffer,
+                gravity: 'southeast',
+              }
+            ])
+            .toFile(tempPath);
+
+          fs.copyFileSync(tempPath, imagePath);
+          fs.unlinkSync(tempPath);
+        }
+      } catch (e) {
+        console.error("Watermark processing error:", e);
       }
 
       const imageUrl = `/uploads/${req.file.filename}`;
@@ -798,6 +830,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   );
 
+  app.patch(
+    "/api/cars/:id/sold",
+    authMiddleware,
+    async (req: AuthRequest, res: Response) => {
+      try {
+        const { id } = req.params;
+        const { isSold } = req.body;
+
+        const [existingCar] = await db
+          .select()
+          .from(cars)
+          .where(eq(cars.id, id));
+
+        if (!existingCar) {
+          return res.status(404).json({ error: "Car not found" });
+        }
+        if (existingCar.userId !== req.user!.id) {
+          return res
+            .status(403)
+            .json({ error: "Not authorized to edit this car" });
+        }
+
+        const [updatedCar] = await db
+          .update(cars)
+          .set({ isSold, updatedAt: new Date() })
+          .where(eq(cars.id, id))
+          .returning();
+
+        res.json(updatedCar);
+      } catch (error) {
+        console.error("Toggle sold status error:", error);
+        res.status(500).json({ error: "Failed to update sold status" });
+      }
+    }
+  );
 
   // --- Service Category Routes (Admin) ---
 

@@ -50,6 +50,7 @@ export interface Car {
   seatType?: string;
   transmission?: string;
   isFeatured?: boolean;
+  isSold?: boolean;
 }
 
 interface CarCardProps {
@@ -125,6 +126,13 @@ export function CarCard({ car, onPress, horizontal = false }: CarCardProps) {
           <View style={[styles.featuredBadge, isRTL ? styles.featuredBadgeRTL : styles.featuredBadgeLTR]}>
             <ThemedText style={styles.featuredText}>
               {t("featured")}
+            </ThemedText>
+          </View>
+        )}
+        {car.isSold && (
+          <View style={[styles.soldBadge, isRTL ? styles.soldBadgeRTL : styles.soldBadgeLTR]}>
+            <ThemedText style={styles.soldText}>
+              {isRTL ? "تم البيع" : "Sold"}
             </ThemedText>
           </View>
         )}
@@ -226,6 +234,26 @@ const styles = StyleSheet.create({
     right: 10,
   },
   featuredText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  soldBadge: {
+    position: "absolute",
+    top: 10,
+    backgroundColor: "#FF3B30",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    zIndex: 1,
+  },
+  soldBadgeLTR: {
+    right: 10,
+  },
+  soldBadgeRTL: {
+    left: 10,
+  },
+  soldText: {
     color: "#FFFFFF",
     fontSize: 12,
     fontWeight: "bold",
