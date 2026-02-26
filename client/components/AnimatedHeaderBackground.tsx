@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     },
     carContainer: {
         position: 'absolute',
-        bottom: 0,
+        bottom: 85, // Positioned higher up, under the logo
         left: 0, // Base position, animated via transform
         width: 120, // Should match CAR_WIDTH logic or be dynamic
         height: 80, // Adjust height as needed

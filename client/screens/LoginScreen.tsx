@@ -33,7 +33,7 @@ export default function LoginScreen() {
   const { login, setUserRoles, loginAsGuest } = useAuth();
 
   const [step, setStep] = useState<"phone" | "role">("phone");
-  const [isRegistering, setIsRegistering] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(true);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -257,6 +257,48 @@ export default function LoginScreen() {
 
         {step === "phone" ? (
           <View style={styles.form}>
+            {/* Mode Switcher */}
+            <View style={[styles.modeSelector, { backgroundColor: theme.backgroundSecondary }]}>
+              <Pressable
+                onPress={() => {
+                  setIsRegistering(true);
+                  setError("");
+                  Haptics.selectionAsync();
+                }}
+                style={[
+                  styles.modeButton,
+                  isRegistering && { backgroundColor: theme.primary }
+                ]}
+              >
+                <ThemedText style={[
+                  styles.modeButtonText,
+                  isRegistering ? { color: "#FFFFFF", fontWeight: 'bold' } : { color: theme.textSecondary }
+                ]}>
+                  {isRTL ? "إنشاء حساب" : "Create Account"}
+                </ThemedText>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setIsRegistering(false);
+                  setError("");
+                  Haptics.selectionAsync();
+                }}
+                style={[
+                  styles.modeButton,
+                  !isRegistering && { backgroundColor: theme.primary }
+                ]}
+              >
+                <ThemedText style={[
+                  styles.modeButtonText,
+                  !isRegistering ? { color: "#FFFFFF", fontWeight: 'bold' } : { color: theme.textSecondary }
+                ]}>
+                  {isRTL ? "تسجيل الدخول" : "Login"}
+                </ThemedText>
+              </Pressable>
+            </View>
+
+            <View style={{ height: 24 }} />
+
             <ThemedText
               type="small"
               style={[
@@ -273,13 +315,13 @@ export default function LoginScreen() {
                 {
                   backgroundColor: theme.backgroundSecondary,
                   borderColor: theme.border,
-                  flexDirection: "row",
+                  flexDirection: isRTL ? "row-reverse" : "row",
                 },
               ]}
             >
               <Pressable
                 onPress={() => setShowCountryPicker(true)}
-                style={[styles.countrySelector, { flexDirection: "row" }]}
+                style={[styles.countrySelector, { flexDirection: isRTL ? "row-reverse" : "row" }]}
               >
                 <ThemedText style={styles.countryFlag}>
                   {selectedCountry.flag}
@@ -342,24 +384,8 @@ export default function LoginScreen() {
               disabled={isLoading}
               style={styles.button}
             >
-              {isLoading ? t("loading") : (isRegistering ? t("continue") : t("continue"))}
+              {isLoading ? t("loading") : (isRegistering ? (isRTL ? "بدء الإنشاء" : "Start Creating") : (isRTL ? "متابعة" : t("continue")))}
             </Button>
-
-            <Pressable
-              onPress={() => {
-                setIsRegistering(!isRegistering);
-                setError("");
-                Haptics.selectionAsync();
-              }}
-              style={{ marginTop: 16, alignItems: 'center' }}
-            >
-              <ThemedText style={{ color: theme.primary }}>
-                {isRegistering
-                  ? (isRTL ? "لديك حساب بالفعل؟ تسجيل الدخول" : "Already have an account? Login")
-                  : (isRTL ? "ليس لديك حساب؟ إنشاء حساب جديد" : "Don't have an account? Sign Up")
-                }
-              </ThemedText>
-            </Pressable>
 
             <View style={{ height: 16 }} />
 
@@ -378,89 +404,8 @@ export default function LoginScreen() {
                 {isRTL ? "المتابعة كزائر" : "Continue as Guest"}
               </ThemedText>
             </Pressable>
-
-            {/* <Pressable
-              onPress={() => {
-                Haptics.selectionAsync();
-                promptAsync();
-              }}
-              style={[
-                styles.button,
-                {
-                  backgroundColor: "#FFFFFF",
-                  borderWidth: 1,
-                  borderColor: theme.border,
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  gap: 8
-                }
-              ]}
-            >
-              <ThemedText style={{ fontWeight: 'bold', color: '#000' }}>G</ThemedText>
-              <ThemedText style={{ color: "#000000" }}>
-                {isRTL ? "المتابعة باستخدام Google" : "Continue with Google"}
-              </ThemedText>
-            </Pressable> */}
           </View>
         ) : null}
-
-        <Modal
-          visible={showCountryPicker}
-          animationType="slide"
-          transparent
-          onRequestClose={() => setShowCountryPicker(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View
-              style={[
-                styles.modalContent,
-                { backgroundColor: theme.backgroundDefault },
-              ]}
-            >
-              <View style={styles.modalHeader}>
-                <ThemedText type="h4">{t("selectCountry")}</ThemedText>
-                <Pressable onPress={() => setShowCountryPicker(false)}>
-                  <Feather name="x" size={24} color={theme.text} />
-                </Pressable>
-              </View>
-              <FlatList
-                data={SUPPORTED_COUNTRIES}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                  <Pressable
-                    onPress={() => handleSelectCountry(item)}
-                    style={[
-                      styles.countryItem,
-                      { borderBottomColor: theme.border },
-                      selectedCountry.id === item.id && {
-                        backgroundColor: theme.primary + "15",
-                      },
-                    ]}
-                  >
-                    <ThemedText style={styles.countryItemFlag}>
-                      {item.flag}
-                    </ThemedText>
-                    <ThemedText style={styles.countryItemName}>
-                      {item.name}
-                    </ThemedText>
-                    <ThemedText
-                      style={[
-                        styles.countryItemCode,
-                        { color: theme.textSecondary },
-                      ]}
-                    >
-                      {item.dialCode}
-                    </ThemedText>
-                    {selectedCountry.id === item.id ? (
-                      <Feather name="check" size={20} color={theme.primary} />
-                    ) : null}
-                  </Pressable>
-                )}
-              />
-            </View>
-          </View>
-        </Modal>
 
         {step === "role" ? (
           <View style={styles.form}>
@@ -490,8 +435,6 @@ export default function LoginScreen() {
               onChangeText={setName}
               autoFocus
             />
-
-
 
             <ThemedText
               type="small"
@@ -567,6 +510,63 @@ export default function LoginScreen() {
           </View>
         ) : null}
       </KeyboardAwareScrollViewCompat>
+
+      <Modal
+        visible={showCountryPicker}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowCountryPicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.backgroundDefault },
+            ]}
+          >
+            <View style={styles.modalHeader}>
+              <ThemedText type="h4">{t("selectCountry")}</ThemedText>
+              <Pressable onPress={() => setShowCountryPicker(false)}>
+                <Feather name="x" size={24} color={theme.text} />
+              </Pressable>
+            </View>
+            <FlatList
+              data={SUPPORTED_COUNTRIES}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <Pressable
+                  onPress={() => handleSelectCountry(item)}
+                  style={[
+                    styles.countryItem,
+                    { borderBottomColor: theme.border },
+                    selectedCountry.id === item.id && {
+                      backgroundColor: theme.primary + "15",
+                    },
+                  ]}
+                >
+                  <ThemedText style={styles.countryFlag}>
+                    {item.flag}
+                  </ThemedText>
+                  <ThemedText style={styles.countryItemName}>
+                    {item.name}
+                  </ThemedText>
+                  <ThemedText
+                    style={[
+                      styles.countryItemCode,
+                      { color: theme.textSecondary },
+                    ]}
+                  >
+                    {item.dialCode}
+                  </ThemedText>
+                  {selectedCountry.id === item.id ? (
+                    <Feather name="check" size={20} color={theme.primary} />
+                  ) : null}
+                </Pressable>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </ThemedView>
   );
 }
@@ -601,6 +601,22 @@ const styles = StyleSheet.create({
   },
   label: {
     marginBottom: Spacing.sm,
+  },
+  modeSelector: {
+    flexDirection: 'row',
+    padding: 4,
+    borderRadius: BorderRadius.md,
+    height: 50,
+    marginTop: Spacing.md,
+  },
+  modeButton: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: BorderRadius.sm,
+  },
+  modeButtonText: {
+    fontSize: 14,
   },
   inputContainer: {
     flexDirection: "row",

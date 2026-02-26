@@ -27,7 +27,7 @@ const SERVICE_TYPES = [
     { id: "spare_parts", labelKey: "spareParts" },
     { id: "mechanic", labelKey: "mechanic" },
     { id: "electrician", labelKey: "electrician" },
-    { id: "inspection", labelKey: "inspectionCenter" },
+    { id: "inspectionCenter", labelKey: "inspectionCenter" },
     { id: "lawyer", labelKey: "lawyer" },
 ];
 

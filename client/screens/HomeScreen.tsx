@@ -134,16 +134,12 @@ export default function HomeScreen() {
 
   const categories = SEARCH_CATEGORIES;
 
-  const handleSearchPress = () => {
-    navigation.navigate("Search", {});
-  };
-
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: theme.backgroundSecondary }]}
       contentContainerStyle={{
-        paddingTop: Spacing.md,
-        paddingBottom: tabBarHeight + Spacing.xl + 80,
+        paddingTop: 0,
+        paddingBottom: tabBarHeight + Spacing.lg,
       }}
       scrollIndicatorInsets={{ bottom: insets.bottom }}
       showsVerticalScrollIndicator={false}
@@ -156,53 +152,6 @@ export default function HomeScreen() {
         />
       }
     >
-
-      <View
-        style={[styles.searchBarContainer, { paddingHorizontal: Spacing.lg }]}
-      >
-        <View
-          style={[
-            styles.searchBar,
-            { backgroundColor: theme.backgroundSecondary },
-          ]}
-        >
-          <Pressable
-            onPress={() => navigation.navigate("Search", {})}
-            style={[
-              styles.filterButton,
-              { backgroundColor: theme.primary + "15" },
-            ]}
-          >
-            <Feather name="sliders" size={20} color={theme.primary} />
-          </Pressable>
-
-          <Pressable
-            onPress={handleSearchPress}
-            style={{
-              flex: 1,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 8,
-              height: "100%",
-            }}
-          >
-            <View style={{ flex: 1, justifyContent: "center" }}>
-              <ThemedText
-                style={[
-                  styles.searchPlaceholder,
-                  {
-                    color: theme.textSecondary,
-                    textAlign: isRTL ? "right" : "left",
-                  },
-                ]}
-              >
-                {t("searchCars")}
-              </ThemedText>
-            </View>
-            <Feather name="search" size={20} color={theme.textSecondary} />
-          </Pressable>
-        </View>
-      </View>
 
       <View style={[styles.section, { paddingHorizontal: 0 }]}>
         <View style={styles.sliderContainer}>
@@ -306,7 +255,7 @@ export default function HomeScreen() {
       </View>
 
       {featuredCars.length > 0 && (
-        <View style={{ marginBottom: Spacing.xl }}>
+        <View style={{ marginBottom: Spacing.lg }}>
           <View
             style={[
               styles.sectionHeader,
@@ -314,17 +263,17 @@ export default function HomeScreen() {
                 marginHorizontal: Spacing.lg,
                 paddingHorizontal: Spacing.md,
                 paddingVertical: Spacing.sm,
-                backgroundColor: theme.backgroundSecondary,
+                backgroundColor: theme.primary,
                 borderRadius: BorderRadius.md,
                 alignItems: "center", // Center vertically
               },
             ]}
           >
-            <ThemedText type="h4" style={[{ color: theme.text }, isRTL ? styles.rtlText : undefined]}>
+            <ThemedText type="h4" style={[{ color: "#FFFFFF" }, isRTL ? styles.rtlText : undefined]}>
               {t("featuredCars")}
             </ThemedText>
             <Pressable onPress={() => navigation.navigate("Search", { featured: true })}>
-              <ThemedText type="link" style={{ fontSize: 14, color: theme.primary }}>
+              <ThemedText type="link" style={{ fontSize: 14, color: "#FFFFFF" }}>
                 {t("seeAll")}
               </ThemedText>
             </Pressable>
@@ -351,7 +300,7 @@ export default function HomeScreen() {
         </View>
       )}
 
-      <View style={{ marginBottom: Spacing.xl }}>
+      <View style={{ marginBottom: Spacing.lg }}>
         <View
           style={[
             styles.sectionHeader,
@@ -359,17 +308,17 @@ export default function HomeScreen() {
               marginHorizontal: Spacing.lg,
               paddingHorizontal: Spacing.md,
               paddingVertical: Spacing.sm,
-              backgroundColor: theme.backgroundSecondary,
+              backgroundColor: theme.primary,
               borderRadius: BorderRadius.md,
               alignItems: "center", // Center vertically
             },
           ]}
         >
-          <ThemedText type="h4" style={[{ color: theme.text }, isRTL ? styles.rtlText : undefined]}>
+          <ThemedText type="h4" style={[{ color: "#FFFFFF" }, isRTL ? styles.rtlText : undefined]}>
             {t("recentListings")}
           </ThemedText>
           <Pressable onPress={() => navigation.navigate("Search", {})}>
-            <ThemedText type="link" style={{ fontSize: 14, color: theme.primary }}>
+            <ThemedText type="link" style={{ fontSize: 14, color: "#FFFFFF" }}>
               {t("seeAll")}
             </ThemedText>
           </Pressable>
@@ -389,7 +338,7 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <View style={{ height: Spacing.xl }} />
+      <View style={{ height: Spacing.lg }} />
     </ScrollView >
   );
 }
@@ -412,7 +361,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.xl,
+    marginBottom: 0,
     paddingHorizontal: Spacing.sm, // Reduced padding as inner elements handle spacing
     height: 50, // Slightly taller
     borderRadius: BorderRadius.sm,
@@ -428,7 +377,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   section: {
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
     paddingHorizontal: Spacing.lg,
   },
   sectionHeader: {
@@ -472,7 +421,7 @@ const styles = StyleSheet.create({
   },
   searchBarContainer: {
     width: "100%",
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.xs,
   },
   filterButton: {
     width: 40,
@@ -562,7 +511,7 @@ const styles = StyleSheet.create({
     writingDirection: "rtl",
   },
   sponsorSection: {
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
     paddingHorizontal: Spacing.lg,
   },
   sponsorCard: {

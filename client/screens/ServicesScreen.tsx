@@ -66,7 +66,7 @@ export default function ServicesScreen() {
   const fallbackCategories = [
     { key: "mechanic", nameAr: "ميكانيكي", nameEn: "Mechanic", icon: "tool" },
     { key: "electrician", nameAr: "كهربائي", nameEn: "Electrician", icon: "zap" },
-    { key: "inspectionCenter", nameAr: "مركز فحص", nameEn: "Inspection", icon: "search" },
+    { key: "inspectionCenter", nameAr: "مركز فحص", nameEn: "Inspection Center", icon: "search" },
     { key: "spare_parts", nameAr: "اسبيرات وقطع غيار", nameEn: "Spare Parts", icon: "settings" },
     { key: "lawyer", nameAr: "محامي", nameEn: "Lawyer", icon: "briefcase" },
   ];

@@ -159,7 +159,7 @@ export const translations: Translations = {
   electrician: { ar: "كهربائي", en: "Electrician" },
   lawyer: { ar: "محامي", en: "Lawyer" },
   inspectionCenter: { ar: "مركز فحص", en: "Inspection Center" },
-  inspection: { ar: "فحص", en: "Inspection" },
+  inspection: { ar: "مركز فحص", en: "Inspection Center" },
   spareParts: { ar: "اسبيرات وقطع غيار", en: "Spare Parts" },
   mediator: { ar: "وسيط", en: "Mediator" },
 
