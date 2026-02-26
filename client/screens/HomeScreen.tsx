@@ -185,7 +185,7 @@ export default function HomeScreen() {
                   <Image
                     source={{ uri: slide.imageUrl }}
                     style={styles.slideImage}
-                    resizeMode="cover"
+                    resizeMode="contain"
                   />
                 ) : (
                   <LinearGradient
@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
   },
   singleSlide: {
     width: SCREEN_WIDTH,
-    height: 120,
+    aspectRatio: 1200 / 380, // Aspect ratio matching 1200x380 average size
     borderRadius: 0,
     overflow: "hidden",
   },
