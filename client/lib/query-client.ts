@@ -4,15 +4,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const TOKEN_STORAGE_KEY = "@sudamark_token";
 
 export function getApiUrl(): string {
-  // return "https://sudamark.up.railway.app/"; // Safe fallback
+  return "https://sudamark.up.railway.app/"; // Safe fallback
   let host = process.env.EXPO_PUBLIC_DOMAIN;
 
   if (!host) {
     // Fallback for development if not set
     if (__DEV__) {
       // NOTE: Update this IP address to your machine's local IP (check with 'ipconfig' or 'ifconfig')
-      // return "http://10.93.38.105:5000/"; 
-      return "https://sudamark.up.railway.app/";
+      // To activate the local development URL, uncomment the line below and comment out the production URL.
+      return "http://10.93.38.105:5000/";
+      // return "https://sudamark.up.railway.app/"; // This is the production URL, currently active if the local IP is commented out.
     }
     console.warn("EXPO_PUBLIC_DOMAIN is not set");
     return "https://sudamark.up.railway.app/"; // Safe fallback
