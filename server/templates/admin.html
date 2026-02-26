@@ -915,24 +915,30 @@
         statusEl.classList.remove('hidden');
         statusEl.textContent = 'جاري ضغط ومعالجة الصورة...';
 
-        // Simulating upload for now or call backend upload
-        // For base64 we can use FileReader
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          document.getElementById('slider-image-base64').value = e.target.result; // This might be large, better to upload file to /api/upload
-          // Actually let's use the upload endpoint
-          uploadFile(file).then(url => {
-            document.getElementById('slider-image-base64').value = url; // Put URL here
-            const preview = document.getElementById('image-preview');
-            preview.classList.remove('hidden');
-            preview.querySelector('img').src = url;
-            statusEl.classList.add('hidden');
-          }).catch(err => {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        fetch(`${API_BASE}/api/upload`, {
+          method: 'POST',
+          body: formData
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.imageUrl) {
+              document.getElementById('slider-image-base64').value = data.imageUrl; // Put URL here
+              const preview = document.getElementById('image-preview');
+              preview.classList.remove('hidden');
+              preview.querySelector('img').src = data.imageUrl;
+              statusEl.classList.add('hidden');
+            } else {
+              throw new Error('No imageUrl returned');
+            }
+          })
+          .catch(err => {
+            console.error(err);
             alert('فشل رفع الصورة');
             statusEl.classList.add('hidden');
           });
-        };
-        // reader.readAsDataURL(file); // If simple base64
       }
     }
 
