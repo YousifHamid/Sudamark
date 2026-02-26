@@ -186,7 +186,7 @@ export default function HomeScreen() {
                     source={{
                       uri: slide.imageUrl?.startsWith("http") || slide.imageUrl?.startsWith("data:")
                         ? slide.imageUrl
-                        : `${require("@/lib/query-client").getApiUrl().replace(/\/$/, "")}${slide.imageUrl}`
+                        : `${getApiUrl().replace(/\/$/, "")}${slide.imageUrl}`
                     }}
                     style={styles.slideImage}
                     resizeMode="contain"
