@@ -41,6 +41,16 @@ export const SUPPORTED_COUNTRIES: Country[] = [
         maxLength: 8,
     },
     {
+        id: "ae",
+        name: "UAE",
+        nameAr: "الإمارات",
+        dialCode: "+971",
+        flag: "AE",
+        placeholder: "5X XXX XXXX",
+        minLength: 9,
+        maxLength: 9,
+    },
+    {
         id: "qa",
         name: "Qatar",
         nameAr: "قطر",
