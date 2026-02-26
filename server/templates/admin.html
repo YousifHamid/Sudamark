@@ -699,7 +699,48 @@
     let token = localStorage.getItem('adminToken');
     let adminData = JSON.parse(localStorage.getItem('adminData') || 'null');
 
-    // ... (existing api, login, logout functions) ...
+    function getImageUrl(url) {
+      if (!url) return '';
+      if (url.startsWith('data:') || url.startsWith('http')) return url;
+      return API_BASE + (url.startsWith('/') ? url : '/' + url);
+    }
+
+    async function api(endpoint, options = {}) {
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Request failed');
+      return data;
+    }
+
+    async function login() {
+      try {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const deviceId = getDeviceId();
+        const result = await api('/api/admin/login', {
+          method: 'POST',
+          body: JSON.stringify({ email, password }),
+          headers: { 'X-Device-Id': deviceId }
+        });
+        token = result.token;
+        adminData = result.admin;
+        localStorage.setItem('adminToken', token);
+        localStorage.setItem('adminData', JSON.stringify(adminData));
+        showDashboard();
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminData');
+      token = null;
+      adminData = null;
+      location.reload();
+    }
 
     let currentTabInterval;
     let currentActiveTab;
@@ -722,6 +763,10 @@
       if (loadActions[currentActiveTab]) {
         currentTabInterval = setInterval(loadActions[currentActiveTab], 60000);
       }
+    }
+
+    function onUserInteraction() {
+      // Logic for session management if needed
     }
 
     function showTab(tab) {
@@ -824,7 +869,7 @@
         }
         tbody.innerHTML = sliders.map(s => `
           <tr class="border-t border-gray-700 hover:bg-white/5 transition-colors">
-            <td class="p-4"><img src="${s.imageUrl}" class="w-20 h-10 object-cover rounded border border-gray-600"></td>
+            <td class="p-4"><img src="${getImageUrl(s.imageUrl)}" class="w-20 h-10 object-cover rounded border border-gray-600"></td>
             <td class="p-4 font-medium">${s.title || '-'}</td>
             <td class="p-4 text-xs text-gray-400 truncate max-w-[150px] dir-ltr text-right">${s.linkUrl || '-'}</td>
             <td class="p-4">${s.order}</td>
@@ -859,15 +904,14 @@
       document.getElementById('slider-modal-title').textContent = 'تعديل إعلان بانر';
       document.getElementById('edit-slider-id').value = id;
       document.getElementById('slider-title').value = slider.title || '';
-      // Assuming we don't reload image in file input, but we can show preview. 
-      // editing image is tricky via file input without re-upload, so we keep imageURL if not changed.
+      // Store the URL in the hidden field
       document.getElementById('slider-image-base64').value = slider.imageUrl;
       document.getElementById('slider-link').value = slider.linkUrl || '';
       document.getElementById('slider-order').value = slider.order || 0;
 
       const preview = document.getElementById('image-preview');
       preview.classList.remove('hidden');
-      preview.querySelector('img').src = slider.imageUrl;
+      preview.querySelector('img').src = getImageUrl(slider.imageUrl);
 
       document.getElementById('add-slider-modal').classList.remove('hidden');
     }
@@ -879,12 +923,12 @@
     async function addSlider() {
       try {
         const id = document.getElementById('edit-slider-id').value;
-        const imageBase64 = document.getElementById('slider-image-base64').value;
-        if (!imageBase64) return alert('يرجى اختيار صورة');
+        const imageUrl = document.getElementById('slider-image-base64').value;
+        if (!imageUrl) return alert('يرجى اختيار صورة');
 
         const data = {
           title: document.getElementById('slider-title').value,
-          imageUrl: imageBase64,
+          imageUrl: imageUrl,
           linkUrl: document.getElementById('slider-link').value,
           order: parseInt(document.getElementById('slider-order').value) || 0,
           isActive: true
@@ -929,7 +973,7 @@
               document.getElementById('slider-image-base64').value = data.imageUrl; // Put URL here
               const preview = document.getElementById('image-preview');
               preview.classList.remove('hidden');
-              preview.querySelector('img').src = data.imageUrl;
+              preview.querySelector('img').src = getImageUrl(data.imageUrl);
               statusEl.classList.add('hidden');
             } else {
               throw new Error('No imageUrl returned');
@@ -1072,7 +1116,7 @@
       const img = document.getElementById('gallery-image');
       const counter = document.getElementById('gallery-counter');
 
-      img.src = currentGalleryImages[currentImageIndex];
+      img.src = getImageUrl(currentGalleryImages[currentImageIndex]);
       counter.textContent = `${currentImageIndex + 1} / ${currentGalleryImages.length}`;
     }
 
@@ -1094,15 +1138,6 @@
       if (e.key === 'ArrowLeft') prevImage();
     }
 
-    async function api(endpoint, options = {}) {
-      const headers = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-      const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Request failed');
-      return data;
-    }
-
     function getDeviceId() {
       let deviceId = localStorage.getItem('admin_device_id');
       if (!deviceId) {
@@ -1110,34 +1145,6 @@
         localStorage.setItem('admin_device_id', deviceId);
       }
       return deviceId;
-    }
-
-    async function login() {
-      try {
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-        const deviceId = getDeviceId();
-        const result = await api('/api/admin/login', {
-          method: 'POST',
-          body: JSON.stringify({ email, password }),
-          headers: { 'X-Device-Id': deviceId }
-        });
-        token = result.token;
-        adminData = result.admin;
-        localStorage.setItem('adminToken', token);
-        localStorage.setItem('adminData', JSON.stringify(adminData));
-        showDashboard();
-      } catch (err) {
-        showError(err.message);
-      }
-    }
-
-    function logout() {
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('adminData');
-      token = null;
-      adminData = null;
-      location.reload();
     }
 
     function showError(msg) {
@@ -1251,7 +1258,7 @@
       const container = document.getElementById('car-images-preview');
       container.innerHTML = currentCarImages.map((url, idx) => `
         <div class="relative group h-20 w-24">
-          <img src="${url}" class="w-full h-full object-cover rounded-lg border border-gray-600">
+          <img src="${getImageUrl(url)}" class="w-full h-full object-cover rounded-lg border border-gray-600">
           <button onclick="deleteCarImage(${idx})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition">×</button>
         </div>
       `).join('');
@@ -1558,7 +1565,7 @@
                 ${c.car.isActive
             ? '<span class="inline-flex items-center justify-center w-24 h-12 rounded bg-green-500/20 text-green-300 border border-green-500/30 text-xs font-semibold">نشط</span>'
             : (c.car.images && c.car.images.length > 0
-              ? c.car.images.map((img, idx) => `<img src="${img}" class="w-12 h-12 object-cover rounded border border-gray-600 cursor-pointer hover:border-orange-500" onclick="openGallery('${c.car.id}', ${idx})">`).join('')
+              ? c.car.images.map((img, idx) => `<img src="${getImageUrl(img)}" class="w-12 h-12 object-cover rounded border border-gray-600 cursor-pointer hover:border-orange-500" onclick="openGallery('${c.car.id}', ${idx})">`).join('')
               : '<span class="text-xs text-gray-500">لا توجد صور</span>'
             )
           }
