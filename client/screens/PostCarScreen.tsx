@@ -320,11 +320,21 @@ export default function PostCarScreen() {
 
     if (isEditing) {
       await updateCar(carData.id, newCar);
+      setIsLoading(false);
+      navigation.goBack();
     } else {
       await addCar(newCar);
+      setIsLoading(false);
+      Alert.alert(
+        isRTL ? "تم الإدراج بنجاح" : "Success",
+        isRTL
+          ? "تم إدراج إعلانك بنجاح، وسوف تتم الموافقة عليه في أقرب وقت."
+          : "Your ad has been posted successfully, and will be approved soon.",
+        [
+          { text: t("ok"), onPress: () => navigation.goBack() }
+        ]
+      );
     }
-    setIsLoading(false);
-    navigation.goBack();
   };
 
   const handleDelete = () => {
