@@ -28,6 +28,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCars } from "@/hooks/useCars";
 import { useTheme } from "@/hooks/useTheme";
+import { getApiUrl } from "@/lib/query-client";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { CITIES } from "@shared/constants";
 
@@ -303,9 +304,9 @@ export default function CarDetailScreen() {
               <Image
                 key={index}
                 source={{
-                  uri: uri?.startsWith("http")
-                    ? uri
-                    : `${require("@/lib/query-client").getApiUrl().replace(/\/$/, "")}${uri}`
+                  uri: uri?.startsWith("http") || uri?.startsWith("data:")
+                    ? uri?.replace(/\s/g, "")
+                    : `${getApiUrl().replace(/\/$/, "")}${uri}`
                 }}
                 style={styles.image}
                 resizeMode="cover"
