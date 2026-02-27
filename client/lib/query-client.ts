@@ -4,27 +4,28 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const TOKEN_STORAGE_KEY = "@sudamark_token";
 
 export function getApiUrl(): string {
-  return "https://sudamark.up.railway.app/"; // Safe fallback
+  // return "https://sudamark.up.railway.app/"; // Safe fallback
   let host = process.env.EXPO_PUBLIC_DOMAIN;
 
   if (!host) {
+    // Fallback for development if not set
     if (__DEV__) {
-      // NOTE: Using local IP for dev to allow physical devices (iPhone/Android) to connect
-      // Update this if your IP changes
-      // const ip = "10.93.38.105";
-      // return `http://${ip}:5000/`;
-      return "https://sudamark.up.railway.app/";
+      // NOTE: Update this IP address to your machine's local IP (check with 'ipconfig' or 'ifconfig')
+      return "https://sudamark.up.railway.app/"; // Safe fallback
+      const ip = "192.168.1.57";
+      return `http://${ip}:5000/`; // Safe fallback
     }
-    return "https://sudamark.up.railway.app/"; // Final fallback
+    console.warn("EXPO_PUBLIC_DOMAIN is not set");
+    return "https://sudamark.up.railway.app/"; // Safe fallback
   }
 
   // If the host already includes the protocol, return it as is
-  if (host && (host.startsWith("http://") || host.startsWith("https://"))) {
-    return host.endsWith("/") ? (host as string) : `${host}/`;
+  if (host.startsWith("http://") || host.startsWith("https://")) {
+    return host.endsWith("/") ? host : `${host}/`;
   }
 
   // Otherwise default to https
-  return host ? `https://${host}/` : "https://sudamark.up.railway.app/";
+  return `https://${host}/`;
 }
 
 type AuthEventType = 'unauthorized' | 'forbidden';

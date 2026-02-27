@@ -12,7 +12,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { BorderRadius, Spacing } from "@/constants/theme";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/hooks/useTheme";
-import { getApiUrl } from "@/lib/query-client";
+
 
 export interface Car {
   id: string;
@@ -109,9 +109,9 @@ export function CarCard({ car, onPress, horizontal = false }: CarCardProps) {
       <View style={styles.imageContainer}>
         <Image
           source={{
-            uri: car.images[0]?.startsWith("http") || car.images[0]?.startsWith("data:")
+            uri: car.images[0]?.startsWith("http")
               ? car.images[0]
-              : `${getApiUrl()}${car.images[0]?.startsWith("/") ? car.images[0].substring(1) : car.images[0]}`
+              : `${require("@/lib/query-client").getApiUrl().replace(/\/$/, "")}${car.images[0]}`
           }}
           style={[
             styles.image,

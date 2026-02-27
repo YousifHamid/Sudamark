@@ -183,13 +183,9 @@ export default function HomeScreen() {
               >
                 {slide.imageUrl ? (
                   <Image
-                    source={{
-                      uri: slide.imageUrl?.startsWith("http") || slide.imageUrl?.startsWith("data:")
-                        ? slide.imageUrl
-                        : `${getApiUrl().replace(/\\$/, "")}${slide.imageUrl}`
-                    }}
+                    source={{ uri: slide.imageUrl }}
                     style={styles.slideImage}
-                    resizeMode="contain"
+                    resizeMode="cover"
                   />
                 ) : (
                   <LinearGradient
@@ -478,7 +474,7 @@ const styles = StyleSheet.create({
   },
   singleSlide: {
     width: SCREEN_WIDTH,
-    // auto height based on image aspect ratio
+    height: 120,
     borderRadius: 0,
     overflow: "hidden",
   },
