@@ -1,0 +1,15 @@
+﻿d2ac033 | 2026-02-27 04:01:47 +0200 | Fix slider images showing as white by resolving relative URLs and stripping base64 spaces
+eaae66d | 2026-02-27 03:56:18 +0200 | Revert slider updates from 26/02/2026 and 27/02/2026 (preserving recent features)
+57c32b7 | 2026-02-27 03:42:26 +0200 | Adjust slider banner size and image rendering
+8acb44b | 2026-02-27 03:04:50 +0200 | fix: restore slider image display
+5a298b3 | 2026-02-27 02:26:43 +0200 | Restore production API URL and simplify slider image rendering
+21f82e9 | 2026-02-27 00:09:40 +0200 | Fix image visibility in admin dashboard and unify image URL handling
+a1d561c | 2026-02-26 21:49:51 +0200 | fix: ensure base64 image urls do not contain whitespace to prevent parsing errors in React Native Image
+de5badf | 2026-02-26 21:48:59 +0200 | fix: correct getApiUrl usage inside components to correctly render slider images
+f027343 | 2026-02-26 21:02:06 +0200 | fix slider banner image URLs on the frontend
+0388ea1 | 2026-02-26 20:51:49 +0200 | add suggested banner size in admin dashboard slider upload section
+bc3cc09 | 2026-02-26 20:33:32 +0200 | fix slider banner image upload function in admin dashboard
+b1218ba | 2026-02-26 20:30:16 +0200 | update slider aspect ratio to 1200x380 to accept banner sizes without cropping
+501d039 | 2026-02-26 05:09:44 +0200 | update home screen layout and search bar
+7061171 | 2026-02-24 20:52:16 +0200 | Admin reset password, fix services tabs, update version to 1.0.8
+05abbc8 | 2026-02-17 13:05:00 +0200 | Update HomeScreen headers to dark and CarCard title to bold

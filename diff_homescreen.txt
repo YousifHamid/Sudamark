@@ -1,0 +1,19 @@
+﻿diff --git a/client/screens/HomeScreen.tsx b/client/screens/HomeScreen.tsx
+index 3ce9782..1ec845d 100644
+--- a/client/screens/HomeScreen.tsx
++++ b/client/screens/HomeScreen.tsx
+@@ -183,7 +183,13 @@ export default function HomeScreen() {
+               >
+                 {slide.imageUrl ? (
+                   <Image
+-                    source={{ uri: slide.imageUrl }}
++                    source={{
++                      uri: slide.imageUrl?.startsWith("http")
++                        ? slide.imageUrl
++                        : slide.imageUrl?.startsWith("data:")
++                          ? slide.imageUrl.replace(/\s+/g, "")
++                          : `${getApiUrl().replace(/\/$/, "")}/${slide.imageUrl?.startsWith("/") ? slide.imageUrl.substring(1) : slide.imageUrl}`
++                    }}
+                     style={styles.slideImage}
+                     resizeMode="cover"
+                   />
