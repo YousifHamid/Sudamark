@@ -177,7 +177,14 @@ export function CarsProvider({ children }: { children: ReactNode }) {
       if (response.ok) {
         const images = await response.json();
         if (images.length > 0) {
-          setSliderImages(images);
+          // Convert relative image URLs to full absolute URLs for React Native
+          const fullUrlImages = images.map((img: any) => ({
+            ...img,
+            imageUrl: img.imageUrl && !img.imageUrl.startsWith('http')
+              ? `${baseUrl.replace(/\/$/, '')}${img.imageUrl}`
+              : img.imageUrl,
+          }));
+          setSliderImages(fullUrlImages);
         }
       }
     } catch (error) {
