@@ -72,7 +72,11 @@ export function ImageSlider({
         {images.map((image, index) => (
           <Pressable key={image.id} style={styles.slide}>
             <Image
-              source={{ uri: image.imageUrl }}
+              source={{
+                uri: image.imageUrl && !image.imageUrl.startsWith('http')
+                  ? `${require("@/lib/query-client").getApiUrl().replace(/\/$/, '')}${image.imageUrl}`
+                  : image.imageUrl
+              }}
               style={styles.image}
               resizeMode="cover"
             />
