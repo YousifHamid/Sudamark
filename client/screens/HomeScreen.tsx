@@ -189,7 +189,7 @@ export default function HomeScreen() {
                         : `${getApiUrl().replace(/\/$/, "")}${slide.imageUrl}`
                     }}
                     style={styles.slideImage}
-                    resizeMode="contain"
+                    resizeMode="cover"
                   />
                 ) : (
                   <LinearGradient
