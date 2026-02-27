@@ -298,50 +298,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload endpoint
-  app.post("/api/upload", upload.single("image"), async (req, res) => {
+  app.post("/api/upload", upload.single("image"), (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No image file uploaded" });
-      }
-
-      // Add watermark
-      try {
-        const sharp = require('sharp');
-        const imagePath = req.file.path;
-        const watermarkPath = path.join(process.cwd(), "assets", "images", "sudamark_logo.png");
-
-        if (fs.existsSync(watermarkPath)) {
-          const imageMetadata = await sharp(imagePath).metadata();
-          // Resize watermark to be roughly 50% of the image width to be prominent in the center
-          const targetWidth = imageMetadata.width ? Math.floor(imageMetadata.width * 0.5) : 300;
-
-          const watermarkImg = await sharp(watermarkPath)
-            .resize(targetWidth)
-            .png()
-            .toBuffer();
-
-          const watermarkMeta = await sharp(watermarkImg).metadata();
-
-          // Use an SVG to apply 30% opacity to the watermark
-          const svgOverlay = Buffer.from(
-            `<svg width="${watermarkMeta.width}" height="${watermarkMeta.height}"><image href="data:image/png;base64,${watermarkImg.toString('base64')}" width="100%" height="100%" opacity="0.3"/></svg>`
-          );
-
-          const tempPath = imagePath + '_temp' + path.extname(imagePath);
-          await sharp(imagePath)
-            .composite([
-              {
-                input: svgOverlay,
-                gravity: 'center',
-              }
-            ])
-            .toFile(tempPath);
-
-          fs.copyFileSync(tempPath, imagePath);
-          fs.unlinkSync(tempPath);
-        }
-      } catch (e) {
-        console.error("Watermark processing error:", e);
       }
 
       const imageUrl = `/uploads/${req.file.filename}`;
@@ -838,41 +798,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   );
 
-  app.patch(
-    "/api/cars/:id/sold",
-    authMiddleware,
-    async (req: AuthRequest, res: Response) => {
-      try {
-        const { id } = req.params;
-        const { isSold } = req.body;
-
-        const [existingCar] = await db
-          .select()
-          .from(cars)
-          .where(eq(cars.id, id));
-
-        if (!existingCar) {
-          return res.status(404).json({ error: "Car not found" });
-        }
-        if (existingCar.userId !== req.user!.id) {
-          return res
-            .status(403)
-            .json({ error: "Not authorized to edit this car" });
-        }
-
-        const [updatedCar] = await db
-          .update(cars)
-          .set({ isSold, updatedAt: new Date() })
-          .where(eq(cars.id, id))
-          .returning();
-
-        res.json(updatedCar);
-      } catch (error) {
-        console.error("Toggle sold status error:", error);
-        res.status(500).json({ error: "Failed to update sold status" });
-      }
-    }
-  );
 
   // --- Service Category Routes (Admin) ---
 

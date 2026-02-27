@@ -111,7 +111,6 @@ export const cars = pgTable("cars", {
   seatType: text("seat_type"),
   isFeatured: boolean("is_featured").default(false),
   isActive: boolean("is_active").default(true),
-  isSold: boolean("is_sold").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

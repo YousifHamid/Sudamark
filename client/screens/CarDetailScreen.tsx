@@ -28,7 +28,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCars } from "@/hooks/useCars";
 import { useTheme } from "@/hooks/useTheme";
-
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { CITIES } from "@shared/constants";
 
@@ -78,32 +77,6 @@ export default function CarDetailScreen() {
   }
 
   const isOwnCar = user?.id === car.sellerId;
-  const [showContactInfo, setShowContactInfo] = useState(false);
-
-  const handleToggleSold = async () => {
-    try {
-      const response = await fetch(`${require("@/lib/query-client").getApiUrl()}/api/cars/${car.id}/sold`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ isSold: !car.isSold }),
-      });
-      if (response.ok) {
-        Alert.alert(
-          isRTL ? "نجاح" : "Success",
-          !car.isSold ? (isRTL ? "تم تحديث الحالة إلى مباع" : "Marked as sold") : (isRTL ? "تم إزالة حالة البيع" : "Unmarked as sold")
-        );
-        refreshCars();
-      } else {
-        throw new Error("Failed to update status");
-      }
-    } catch (error) {
-      console.error(error);
-      Alert.alert(isRTL ? "خطأ" : "Error", isRTL ? "حدث خطأ" : "An error occurred");
-    }
-  };
 
   const handleFavorite = () => {
     if (isGuest) {
@@ -329,13 +302,6 @@ export default function CarDetailScreen() {
               />
             ))}
           </View>
-          {car.isSold && (
-            <View style={[styles.soldBadge, isRTL ? styles.soldBadgeRTL : styles.soldBadgeLTR]}>
-              <ThemedText style={styles.soldText}>
-                {isRTL ? "تم البيع" : "Sold"}
-              </ThemedText>
-            </View>
-          )}
           <Pressable
             style={[styles.closeButton, { top: insets.top + Spacing.sm }]}
             onPress={() => navigation.goBack()}
@@ -549,27 +515,24 @@ export default function CarDetailScreen() {
                 },
               ]}
             >
-              <View style={styles.sellerButtons}>
-                {!showContactInfo ? (
-                  <Button onPress={() => setShowContactInfo(true)} style={{ flex: 1 }}>
-                    {isRTL ? "اضغط هنا لظهور بيانات البائع" : "Click here to show seller info"}
-                  </Button>
-                ) : (
-                  <>
-                    <Pressable
-                      style={[styles.callButton, { backgroundColor: theme.success }]}
-                      onPress={handleCallSeller}
-                    >
-                      <Feather name="phone" size={28} color="#FFFFFF" />
-                    </Pressable>
-                    <Pressable
-                      style={[styles.callButton, { backgroundColor: "#25D366" }]}
-                      onPress={handleWhatsAppSeller}
-                    >
-                      <Feather name="message-circle" size={28} color="#FFFFFF" />
-                    </Pressable>
-                  </>
-                )}
+              <View
+                style={styles.sellerButtons}
+              >
+                <Pressable
+                  style={[
+                    styles.callButton,
+                    { backgroundColor: theme.success },
+                  ]}
+                  onPress={handleCallSeller}
+                >
+                  <Feather name="phone" size={28} color="#FFFFFF" />
+                </Pressable>
+                <Pressable
+                  style={[styles.callButton, { backgroundColor: "#25D366" }]}
+                  onPress={handleWhatsAppSeller}
+                >
+                  <Feather name="message-circle" size={28} color="#FFFFFF" />
+                </Pressable>
               </View>
             </View>
           </View>
@@ -586,19 +549,9 @@ export default function CarDetailScreen() {
         ]}
       >
         {isOwnCar ? (
-          <View style={{ flexDirection: 'row', flex: 1, gap: Spacing.sm }}>
-            <Button onPress={() => navigation.navigate("PostCar", { carData: car })} style={styles.contactButton}>
-              {isRTL ? "تعديل" : "Edit"}
-            </Button>
-            <Button
-              onPress={handleToggleSold}
-              style={[styles.contactButton, { backgroundColor: car.isSold ? theme.error : theme.success }]}
-            >
-              {car.isSold
-                ? (isRTL ? "إلغاء البيع" : "Unmark Sold")
-                : (isRTL ? "تم البيع" : "Mark as Sold")}
-            </Button>
-          </View>
+          <Button onPress={() => navigation.navigate("PostCar", { carData: car })} style={styles.contactButton}>
+            {isRTL ? "تعديل الإعلان" : "Edit Listing"}
+          </Button>
         ) : (
           <>
             <Button onPress={handleMakeOffer} style={styles.contactButton}>
@@ -999,25 +952,5 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     width: "100%",
-  },
-  soldBadge: {
-    position: "absolute",
-    top: 10,
-    backgroundColor: "#FF3B30",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    zIndex: 1,
-  },
-  soldBadgeLTR: {
-    right: 10,
-  },
-  soldBadgeRTL: {
-    left: 10,
-  },
-  soldText: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "bold",
   },
 });
