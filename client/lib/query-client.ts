@@ -8,24 +8,23 @@ export function getApiUrl(): string {
   let host = process.env.EXPO_PUBLIC_DOMAIN;
 
   if (!host) {
-    // Fallback for development if not set
     if (__DEV__) {
-      // NOTE: Update this IP address to your machine's local IP (check with 'ipconfig' or 'ifconfig')
-      // To activate the local development URL, uncomment the line below and comment out the production URL.
-      return "http://10.93.38.105:5000/";
-      // return "https://sudamark.up.railway.app/"; // This is the production URL, currently active if the local IP is commented out.
+      // NOTE: Using local IP for dev to allow physical devices (iPhone/Android) to connect
+      // Update this if your IP changes
+      // const ip = "10.93.38.105";
+      // return `http://${ip}:5000/`;
+      return "https://sudamark.up.railway.app/";
     }
-    console.warn("EXPO_PUBLIC_DOMAIN is not set");
-    return "https://sudamark.up.railway.app/"; // Safe fallback
+    return "https://sudamark.up.railway.app/"; // Final fallback
   }
 
   // If the host already includes the protocol, return it as is
-  if (host.startsWith("http://") || host.startsWith("https://")) {
+  if (host && (host.startsWith("http://") || host.startsWith("https://"))) {
     return host.endsWith("/") ? host : `${host}/`;
   }
 
   // Otherwise default to https
-  return `https://${host}/`;
+  return host ? `https://${host}/` : "https://sudamark.up.railway.app/";
 }
 
 type AuthEventType = 'unauthorized' | 'forbidden';

@@ -305,8 +305,8 @@ export default function CarDetailScreen() {
                 key={index}
                 source={{
                   uri: uri?.startsWith("http") || uri?.startsWith("data:")
-                    ? uri?.replace(/\s/g, "")
-                    : `${getApiUrl().replace(/\/$/, "")}${uri}`
+                    ? uri
+                    : `${getApiUrl()}${uri?.startsWith("/") ? uri.substring(1) : uri}`
                 }}
                 style={styles.image}
                 resizeMode="cover"

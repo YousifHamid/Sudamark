@@ -185,11 +185,11 @@ export default function HomeScreen() {
                   <Image
                     source={{
                       uri: slide.imageUrl?.startsWith("http") || slide.imageUrl?.startsWith("data:")
-                        ? slide.imageUrl?.replace(/\s/g, "")
-                        : `${getApiUrl().replace(/\/$/, "")}${slide.imageUrl}`
+                        ? slide.imageUrl
+                        : `${getApiUrl()}${slide.imageUrl?.startsWith("/") ? slide.imageUrl.substring(1) : slide.imageUrl}`
                     }}
-                    style={styles.slideImage}
-                    resizeMode="contain"
+                    style={[styles.slideImage, { backgroundColor: theme.cardBackground }]}
+                    resizeMode="cover"
                   />
                 ) : (
                   <LinearGradient
