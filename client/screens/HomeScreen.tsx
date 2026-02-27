@@ -183,11 +183,7 @@ export default function HomeScreen() {
               >
                 {slide.imageUrl ? (
                   <Image
-                    source={{
-                      uri: slide.imageUrl.startsWith("http")
-                        ? slide.imageUrl
-                        : `${getApiUrl().replace(/\/$/, "")}${slide.imageUrl}`
-                    }}
+                    source={{ uri: slide.imageUrl }}
                     style={styles.slideImage}
                     resizeMode="cover"
                   />
