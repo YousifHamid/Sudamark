@@ -905,6 +905,8 @@
     async function handleImageUpload(input) {
       if (input.files && input.files[0]) {
         const file = input.files[0];
+        console.log('[Slider Upload] File selected:', file.name, 'Size:', file.size, 'Type:', file.type);
+
         if (file.size > 5 * 1024 * 1024) {
           alert('حجم الملف كبير جداً. الحد الأقصى 5 ميجابايت');
           input.value = '';
@@ -913,31 +915,58 @@
 
         const statusEl = document.getElementById('upload-status');
         statusEl.classList.remove('hidden');
-        statusEl.textContent = 'جاري ضغط ومعالجة الصورة...';
+        statusEl.textContent = 'جاري رفع الصورة...';
 
         const formData = new FormData();
         formData.append('image', file);
 
+        // Add timeout to prevent hanging forever
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
         try {
+          console.log('[Slider Upload] Sending to:', `${API_BASE}/api/upload`);
           const res = await fetch(`${API_BASE}/api/upload`, {
             method: 'POST',
-            body: formData
+            body: formData,
+            signal: controller.signal
           });
+          clearTimeout(timeoutId);
+
+          console.log('[Slider Upload] Response status:', res.status);
+
+          if (!res.ok) {
+            const errorText = await res.text();
+            console.error('[Slider Upload] Server error:', res.status, errorText);
+            alert('فشل رفع الصورة: ' + (res.status === 413 ? 'الملف كبير جداً' : 'خطأ في الخادم'));
+            return;
+          }
+
           const data = await res.json();
+          console.log('[Slider Upload] Response data:', data);
 
           if (data.imageUrl) {
             document.getElementById('slider-image-base64').value = data.imageUrl;
             const preview = document.getElementById('image-preview');
             preview.classList.remove('hidden');
             preview.querySelector('img').src = data.imageUrl;
+            statusEl.textContent = 'تم رفع الصورة بنجاح ✓';
+            setTimeout(() => statusEl.classList.add('hidden'), 2000);
           } else {
-            alert('فشل رفع الصورة');
+            alert('فشل رفع الصورة: لم يتم استلام رابط الصورة');
           }
         } catch (err) {
-          console.error("Upload failed", err);
-          alert('فشل رفع الصورة');
+          clearTimeout(timeoutId);
+          console.error('[Slider Upload] Upload failed:', err);
+          if (err.name === 'AbortError') {
+            alert('انتهت مهلة رفع الصورة. يرجى المحاولة مرة أخرى.');
+          } else {
+            alert('فشل رفع الصورة: ' + (err.message || 'خطأ غير معروف'));
+          }
         } finally {
-          statusEl.classList.add('hidden');
+          if (statusEl.textContent !== 'تم رفع الصورة بنجاح ✓') {
+            statusEl.classList.add('hidden');
+          }
         }
       }
     }

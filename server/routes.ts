@@ -298,18 +298,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload endpoint
-  app.post("/api/upload", upload.single("image"), (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: "No image file uploaded" });
+  app.post("/api/upload", (req, res, next) => {
+    upload.single("image")(req, res, (err) => {
+      if (err) {
+        console.error("Multer upload error:", err);
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(413).json({ error: "File too large. Maximum size is 10MB." });
+        }
+        return res.status(400).json({ error: err.message || "Upload failed" });
       }
 
-      const imageUrl = `/uploads/${req.file.filename}`;
-      res.json({ imageUrl });
-    } catch (error) {
-      console.error("Upload error:", error);
-      res.status(500).json({ error: "Failed to upload image" });
-    }
+      try {
+        if (!req.file) {
+          return res.status(400).json({ error: "No image file uploaded" });
+        }
+
+        const imageUrl = `/uploads/${req.file.filename}`;
+        console.log("[Upload] Image uploaded successfully:", imageUrl);
+        res.json({ imageUrl });
+      } catch (error) {
+        console.error("Upload error:", error);
+        res.status(500).json({ error: "Failed to upload image" });
+      }
+    });
   });
 
   // --- Auth Routes ---
