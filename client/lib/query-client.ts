@@ -20,7 +20,7 @@ export function getApiUrl(): string {
 
   // If the host already includes the protocol, return it as is
   if (host && (host.startsWith("http://") || host.startsWith("https://"))) {
-    return host.endsWith("/") ? host : `${host}/`;
+    return host.endsWith("/") ? (host as string) : `${host}/`;
   }
 
   // Otherwise default to https

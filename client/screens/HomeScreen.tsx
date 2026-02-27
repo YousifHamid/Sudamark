@@ -184,12 +184,17 @@ export default function HomeScreen() {
                 {slide.imageUrl ? (
                   <Image
                     source={{
-                      uri: slide.imageUrl?.startsWith("http") || slide.imageUrl?.startsWith("data:")
-                        ? slide.imageUrl
-                        : `${getApiUrl()}${slide.imageUrl?.startsWith("/") ? slide.imageUrl.substring(1) : slide.imageUrl}`
+                      uri:
+                        slide.imageUrl.startsWith("http") ||
+                          slide.imageUrl.startsWith("data:")
+                          ? slide.imageUrl
+                          : `${getApiUrl().replace(/\/$/, "")}${slide.imageUrl.startsWith("/")
+                            ? slide.imageUrl
+                            : `/${slide.imageUrl}`
+                          }`,
                     }}
-                    style={[styles.slideImage, { backgroundColor: theme.cardBackground }]}
-                    resizeMode="cover"
+                    style={styles.slideImage}
+                    resizeMode="contain"
                   />
                 ) : (
                   <LinearGradient
