@@ -18,7 +18,8 @@ export type UserRole =
   | "electrician"
   | "lawyer"
   | "inspection"
-  | "spare_parts";
+  | "spare_parts"
+  | "mediator";
 
 export interface User {
   id: string;
@@ -249,6 +250,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await response.json();
       if (!response.ok) {
+        // Handle specific server errors
+        if (data.error === "User already exists") {
+          throw new Error(t && t("userAlreadyExists") ? t("userAlreadyExists") : "This phone number is already registered. Please login instead.");
+        }
         throw new Error(data.error || "Registration failed");
       }
 

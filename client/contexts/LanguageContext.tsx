@@ -143,6 +143,10 @@ export const translations: Translations = {
     en: "Select Your Roles (you can choose multiple)",
   },
   creatingAccount: { ar: "جاري إنشاء الحساب...", en: "Creating Account..." },
+  userAlreadyExists: {
+    ar: "هذا الرقم مسجل مسبقاً، يرجى تسجيل الدخول بدلاً من ذلك.",
+    en: "This number is already registered. Please login instead.",
+  },
   selectCountry: { ar: "اختر البلد", en: "Select Country" },
   loginRequired: { ar: "تسجيل الدخول مطلوب", en: "Login Required" },
   mustLoginToContinue: { ar: "يجب عليك تسجيل الدخول للمتابعة", en: "You must login to continue" },

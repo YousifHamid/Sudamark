@@ -29,7 +29,7 @@ import { Country, SUPPORTED_COUNTRIES } from "@/constants/countries";
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL, language, setLanguage } = useLanguage();
   const { login, setUserRoles, loginAsGuest } = useAuth();
 
   const [step, setStep] = useState<"phone" | "role">("phone");
@@ -196,8 +196,9 @@ export default function LoginScreen() {
         selectedCountry.dialCode
       );
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (err) {
-      setError(t("error"));
+    } catch (err: any) {
+      console.error("Signup error:", err);
+      setError(err.message || t("error"));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setIsLoading(false);
@@ -216,6 +217,25 @@ export default function LoginScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <Pressable
+        onPress={() => {
+          setLanguage(language === "ar" ? "en" : "ar");
+          Haptics.selectionAsync();
+        }}
+        style={[
+          styles.languageSwitcher,
+          {
+            top: insets.top + Spacing.md,
+            [isRTL ? "left" : "right"]: Spacing.xl,
+            backgroundColor: theme.backgroundSecondary,
+          },
+        ]}
+      >
+        <Feather name="globe" size={16} color={theme.primary} />
+        <ThemedText style={styles.languageText}>
+          {language === "ar" ? "English" : "العربية"}
+        </ThemedText>
+      </Pressable>
       <KeyboardAwareScrollViewCompat
         contentContainerStyle={[
           styles.content,
@@ -736,5 +756,21 @@ const styles = StyleSheet.create({
   },
   rtlText: {
     textAlign: "right",
+  },
+  languageSwitcher: {
+    position: 'absolute',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.full,
+    zIndex: 1000,
+    gap: Spacing.xs,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+  },
+  languageText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sudamark",
     "slug": "sudamark",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/images/app-icon.png",
     "splash": {
@@ -29,7 +29,7 @@
           "mailto"
         ]
       },
-      "buildNumber": "10"
+      "buildNumber": "11"
     },
     "android": {
       "package": "com.sudamark.app",
@@ -39,7 +39,7 @@
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE"
       ],
-      "versionCode": 10
+      "versionCode": 11
     },
     "web": {
       "output": "single",
