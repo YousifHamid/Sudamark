@@ -153,12 +153,14 @@ export default function CarDetailScreen() {
       ? `سلام عليكم يا غالي 👋
 جاي من تطبيق سودامارك
 مهتم صراحة بـ (${car.make} ${car.model} ${car.year}).
+سعري المقترح: ${parseInt(offerPrice).toLocaleString()} جنيه.
 ممكن تفاصيل الحالة، الممشى، وأي ملاحظات مع السعر النهائي؟
 
 اذا في مجال تفاوض معقول نتفق من بدري عشان نوفر الزمن لينا الاتنين. واوصلك للمعاينة ونتم البيعة ان شاء الله.
 
 منتظر ردك 🙏 يامحترم`
-      : `Hello, I'm interested in the car: ${car.make} ${car.model} ${car.year}. Can you share details about the condition, mileage, and final price? If there's room for negotiation, let's agree early to save time. Looking forward to your response.`;
+      : `Hello, I'm interested in the car: ${car.make} ${car.model} ${car.year}. My offered price is: ${parseInt(offerPrice).toLocaleString()} SDG. Can you share details about the condition, mileage, and final price? If there's room for negotiation, let's agree early to save time. Looking forward to your response.`;
+
 
 
 
