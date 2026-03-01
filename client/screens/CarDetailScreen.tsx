@@ -149,17 +149,24 @@ export default function CarDetailScreen() {
 
     // @ts-ignore
     const sellerPhone = car.owner?.phone || car.contactPhone || "+249123456789";
+    const webUrl = "https://sudamark.cloud/";
     const message = isRTL
       ? `سلام عليكم يا غالي 👋
 جاي من تطبيق سودامارك
 مهتم صراحة بـ (${car.make} ${car.model} ${car.year}).
 سعري المقترح: ${parseInt(offerPrice).toLocaleString()} جنيه.
+رابط السيارة: ${webUrl}car/${car.id}
+
 ممكن تفاصيل الحالة، الممشى، وأي ملاحظات مع السعر النهائي؟
 
 اذا في مجال تفاوض معقول نتفق من بدري عشان نوفر الزمن لينا الاتنين. واوصلك للمعاينة ونتم البيعة ان شاء الله.
 
 منتظر ردك 🙏 يامحترم`
-      : `Hello, I'm interested in the car: ${car.make} ${car.model} ${car.year}. My offered price is: ${parseInt(offerPrice).toLocaleString()} SDG. Can you share details about the condition, mileage, and final price? If there's room for negotiation, let's agree early to save time. Looking forward to your response.`;
+      : `Hello, I'm interested in the car: ${car.make} ${car.model} ${car.year}. My offered price is: ${parseInt(offerPrice).toLocaleString()} SDG. 
+View Car: ${webUrl}car/${car.id}
+
+Can you share details about the condition, mileage, and final price? If there's room for negotiation, let's agree early to save time. Looking forward to your response.`;
+
 
 
 

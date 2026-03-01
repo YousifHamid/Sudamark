@@ -157,7 +157,7 @@ export const translations: Translations = {
   login: { ar: "تسجيل الدخول", en: "Login" },
 
   // Roles
-  buyer: { ar: "مشتري", en: "Buyer" },
+  buyer: { ar: "شراء الآن", en: "Buy Now" },
   seller: { ar: "بائع", en: "Seller" },
   mechanic: { ar: "ميكانيكي", en: "Mechanic" },
   electrician: { ar: "كهربائي", en: "Electrician" },
@@ -366,7 +366,7 @@ export const translations: Translations = {
   km: { ar: "كم", en: "km" },
 
   // FAB Button
-  sell: { ar: "بيع", en: "Sell" },
+  sell: { ar: "بيع الآن", en: "Sell Now" },
   listYourCar: { ar: "بيع عربيتك الان", en: "Sell Your Car Now" },
   request: { ar: "اعلان سريع", en: "Quick Ad" },
 
