@@ -150,8 +150,17 @@ export default function CarDetailScreen() {
     // @ts-ignore
     const sellerPhone = car.owner?.phone || car.contactPhone || "+249123456789";
     const message = isRTL
-      ? `مرحباً، أريد تقديم عرض سعر للسيارة: ${car.title}\nالسعر المقترح: ${parseInt(offerPrice).toLocaleString()} جنيه`
-      : `Hello, I would like to make an offer for the car: ${car.title}\nOffered Price: ${parseInt(offerPrice).toLocaleString()} SDG`;
+      ? `سلام عليكم يا غالي 👋
+جاي من تطبيق سودامارك
+مهتم صراحة بـ (${car.make} ${car.model} ${car.year}).
+ممكن تفاصيل الحالة، الممشى، وأي ملاحظات مع السعر النهائي؟
+
+اذا في مجال تفاوض معقول نتفق من بدري عشان نوفر الزمن لينا الاتنين. واوصلك للمعاينة ونتم البيعة ان شاء الله.
+
+منتظر ردك 🙏 يامحترم`
+      : `Hello, I'm interested in the car: ${car.make} ${car.model} ${car.year}. Can you share details about the condition, mileage, and final price? If there's room for negotiation, let's agree early to save time. Looking forward to your response.`;
+
+
 
     const cleanPhone = sellerPhone.replace(/[^0-9]/g, "");
     const whatsappUrl = `whatsapp://send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
@@ -185,8 +194,35 @@ export default function CarDetailScreen() {
       const palyStoreUrl = "https://play.google.com/store/apps/details?id=com.sudamark.app"; // Fallback/Landing page
 
       const shareMessage = isRTL
-        ? `${car.title}\n${car.price.toLocaleString()} جنيه\n${car.city}\n\nشاهد التفاصيل في تطبيق سودامارك:\n${webUrl}\n\nأو افتح التطبيق في play store:\n${palyStoreUrl}`
-        : `${car.title}\n${car.price.toLocaleString()} SDG\n${car.city}\n\nCheck it out on Sudamark App:\n${webUrl}\n\nOr open in play store:\n${palyStoreUrl}`;
+        ? `سلام عليكم يا غالي 👋
+جاي من تطبيق سودامارك بشارك معاك العربية دي 
+تفاصيل العربية (${car.make} - ${car.model} - ${car.year})
+
+شاهد التفاصيل في تطبيق سودامارك:
+${webUrl}car/${car.id} 
+
+او نزل التطبيق الآن Google Play 👇
+https://play.google.com/store/apps/details?id=com.sudamark.app
+
+نزل التطبيق الآن Apple store 👇
+https://apps.apple.com/us/app/sudamark/id6758108314
+
+الصفحة الرسمية التطبيق على الفيسبوك
+https://www.facebook.com/share/1C9L8wmK7d/`
+        : `Hello! Sharing this car with you from Sudamark App:
+${car.title} - ${car.price.toLocaleString()} SDG - ${car.city}
+
+View details on Sudamark:
+${webUrl}car/${car.id}
+
+Download the app now:
+Google Play: https://play.google.com/store/apps/details?id=com.sudamark.app
+Apple Store: https://apps.apple.com/us/app/sudamark/id6758108314
+
+Follow us on Facebook:
+https://www.facebook.com/share/1C9L8wmK7d/`;
+
+
 
       await Share.share({
         message: shareMessage,
@@ -222,15 +258,17 @@ export default function CarDetailScreen() {
     // @ts-ignore
     const sellerPhone = car.owner?.phone || car.contactPhone || "+249123456789";
     const message = isRTL
-      ? `مرحب يا غالي 👋
+      ? `سلام عليكم يا غالي 👋
 جاي من تطبيق سودامارك
-مهتم صراحة بـ ${car.title}.
+مهتم صراحة بـ (${car.make} ${car.model} ${car.year}).
 ممكن تفاصيل الحالة، الممشى، وأي ملاحظات مع السعر النهائي؟
 
 اذا في مجال تفاوض معقول نتفق من بدري عشان نوفر الزمن لينا الاتنين. واوصلك للمعاينة ونتم البيعة ان شاء الله.
 
 منتظر ردك 🙏 يامحترم`
-      : `Hello, I'm interested in the car: ${car.title}`;
+      : `Hello, I'm interested in the car: ${car.make} ${car.model} ${car.year}. Can you share details about the condition, mileage, and final price? If there's room for negotiation, let's agree early to save time. Looking forward to your response.`;
+
+
 
     const cleanPhone = sellerPhone.replace(/[^0-9]/g, "");
     const whatsappUrl = `whatsapp://send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;

@@ -705,6 +705,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/car/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const [car] = await db.select().from(cars).where(eq(cars.id, id));
+      if (!car) {
+        return res.status(404).send("Car not found");
+      }
+
+      const templatePath = path.resolve(process.cwd(), "server", "templates", "car-details.html");
+      let html = fs.readFileSync(templatePath, "utf-8");
+
+      const forwardedProto = req.header("x-forwarded-proto");
+      const protocol = forwardedProto || req.protocol || "https";
+      const host = req.get("host");
+      const baseUrl = `${protocol}://${host}/`;
+
+      const carImage = (car.images && car.images.length > 0)
+        ? (car.images[0].startsWith("http") ? car.images[0] : `${baseUrl}${car.images[0].replace(/^\//, "")}`)
+        : `${baseUrl}assets/images/placeholder-car.png`;
+
+      html = html
+        .replace(/CAR_NAME_PLACEHOLDER/g, `${car.make} ${car.model} ${car.year}`)
+        .replace(/CAR_PRICE_PLACEHOLDER/g, car.price.toLocaleString())
+        .replace(/CAR_CITY_PLACEHOLDER/g, car.city)
+        .replace(/CAR_IMAGE_PLACEHOLDER/g, carImage)
+        .replace(/CAR_ID_PLACEHOLDER/g, car.id)
+        .replace(/EXPS_URL_PLACEHOLDER/g, host!)
+        .replace(/CURRENT_URL_PLACEHOLDER/g, `${baseUrl}car/${car.id}`);
+
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.send(html);
+    } catch (error) {
+      console.error("Landing page error:", error);
+      res.status(500).send("Error loading landing page");
+    }
+  });
+
+
   app.post(
     "/api/cars",
     authMiddleware,

@@ -232,8 +232,13 @@ function configureExpoAndLanding(app: express.Application) {
       return res.redirect("/admin");
     }
 
+    if (req.path.startsWith("/car/")) {
+      return next(); // Let routes handle it
+    }
+
     next();
   });
+
 
   app.use("/assets", express.static(path.resolve(process.cwd(), "assets")));
   app.use(express.static(path.resolve(process.cwd(), "static-build")));
