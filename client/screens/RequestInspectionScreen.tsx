@@ -69,8 +69,16 @@ export default function RequestInspectionScreen() {
   const handleWhatsApp = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const message = isRTL
-      ? `مرحباً، أريد الاستفسار عن السيارة: ${car?.title}`
+      ? `مرحب يا غالي 👋
+جاي من تطبيق سودامارك
+مهتم صراحة بـ ${car?.title}.
+ممكن تفاصيل الحالة، الممشى، وأي ملاحظات مع السعر النهائي؟
+
+اذا في مجال تفاوض معقول نتفق من بدري عشان نوفر الزمن لينا الاتنين. واوصلك للمعاينة ونتم البيعة ان شاء الله.
+
+منتظر ردك 🙏 يامحترم`
       : `Hello, I'm interested in the car: ${car?.title}`;
+
     const cleanPhone = sellerWhatsApp.replace(/[^0-9]/g, "");
     const whatsappUrl = `whatsapp://send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
     const webWhatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;

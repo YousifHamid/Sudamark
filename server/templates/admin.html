@@ -1637,12 +1637,13 @@
 
     async function toggleFeatured(id, isFeatured) {
       try {
-        await api(`/ api / admin / cars / ${id}`, { method: 'PUT', body: JSON.stringify({ isFeatured }) });
+        await api(`/api/admin/cars/${id}`, { method: 'PUT', body: JSON.stringify({ isFeatured }) });
         loadCars();
       } catch (err) {
         alert(err.message);
       }
     }
+
 
     async function deleteCar(id) {
       if (!confirm('هل أنت متأكد من حذف هذه السيارة؟')) return;
