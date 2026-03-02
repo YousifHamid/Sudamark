@@ -596,6 +596,11 @@ export const translations: Translations = {
   imageRequired: { ar: "يرجى إرفاق صورة", en: "Please attach an image" },
   failedToSendRequest: { ar: "فشل في إرسال الطلب", en: "Failed to send request" },
   regionCity: { ar: "المنطقة / المدينة", en: "Region / City" },
+  markAsSold: { ar: "تم البيع", en: "Mark as Sold" },
+  markAsAvailable: { ar: "عرض للبيع", en: "Mark as Available" },
+  deleteListing: { ar: "حذف الإعلان", en: "Delete Listing" },
+  deleteConfirm: { ar: "هل أنت متأكد من حذف هذا الإعلان؟", en: "Are you sure you want to delete this listing?" },
+  sold: { ar: "تم البيع", en: "Sold" },
 };
 
 interface LanguageContextType {

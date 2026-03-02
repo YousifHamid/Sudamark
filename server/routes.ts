@@ -969,6 +969,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   );
 
+  app.patch(
+    "/api/cars/:id/toggle-sold",
+    authMiddleware,
+    async (req: AuthRequest, res: Response) => {
+      try {
+        const { id } = req.params;
+        const [existingCar] = await db
+          .select()
+          .from(cars)
+          .where(eq(cars.id, id));
+
+        if (!existingCar) {
+          return res.status(404).json({ error: "Car not found" });
+        }
+        if (existingCar.userId !== req.user!.id) {
+          return res
+            .status(403)
+            .json({ error: "Not authorized to modify this car" });
+        }
+
+        const [updatedCar] = await db
+          .update(cars)
+          .set({ isSold: !existingCar.isSold, updatedAt: new Date() })
+          .where(eq(cars.id, id))
+          .returning();
+        res.json(updatedCar);
+      } catch (error) {
+        res.status(500).json({ error: "Failed to update car status" });
+      }
+    },
+  );
+
+
   app.get(
     "/api/my-cars",
     authMiddleware,

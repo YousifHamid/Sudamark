@@ -89,6 +89,10 @@ To build the application for Android, use the following commands:
 -   **Header Animation**: Implemented a custom `AnimatedHeaderBackground` component on the Home screen.
     -   *Behavior*: A car image drives from right to left (RTL friendly) across the bottom of the header.
     -   *Tech*: Uses `react-native-reanimated` shared values and timing loops.
+-   **Push Notifications (Full Integration)**: 
+    -   *Backend*: Added Express routes to register tokens, send notifications via Expo API, and track history.
+    -   *Frontend*: Integrated `expo-notifications` with a custom hook (`useNotifications`) for auto-registration upon login.
+    -   *Admin*: Added a dedicated "Notifications" tab in the dashboard for manual management.
 
 ### Bug Fixes
 -   **RTL Alignment**: Fixed miscellaneous layout issues where text/icons weren't flipping correctly for Arabic users.
@@ -108,7 +112,7 @@ To build the application for Android, use the following commands:
 - [x] **Localization**: Arabic/English support active.
 - [x] **Car Posting**: Form and API endpoints operational.
 - [x] **Header Animation**: "Driving car" visual effect added.
-- [ ] **Push Notifications**: (Schema exists, implementation pending).
+- [x] **Push Notifications**: Full system implemented (Admin send UI + Client registration).
 - [ ] **Payment Integration**: (Schema exists, detailed gateway integration pending).
 - [ ] **Play Store Release**: Ready for AAB generation via `profile: production`.
 
@@ -166,3 +170,20 @@ This section details specific issues encountered during the session and the exac
         eas build -p android --profile production
         ```
     -   This successfully initialized the build process for the AAB file.
+
+### 6. Issue: Push Notification Implementation
+- **Request**: Add push notification functionality to the app and a control panel in the admin dashboard.
+- **Resolution**:
+    -   **Database**: Modified `shared/schema.ts` to add `pushToken` to `users`/`admins` and created `notifications` table.
+    -   **Server**: Implemented `sendPushNotification` helper using Expo SDK and corresponding API routes in `server/routes.ts`.
+    -   **Admin UI**: Updated `server/templates/admin.html` with a new "Notifications" tab and AJAX logic.
+    -   **Mobile App**: 
+        -   Created `client/hooks/useNotifications.ts` for permission handling and token registration.
+        -   Created `client/components/NotificationHandler.tsx` for background integration.
+        -   Updated `client/App.tsx` to include the handler globally.
+
+### 7. Issue: Version Bump for Store
+- **Request**: Prepare a new build (14) for Google Play with the notification changes.
+- **Resolution**:
+    -   Updated `app.json`: version `1.1.2` -> `1.1.3`, `versionCode` `13` -> `14`, `buildNumber` `13` -> `14`.
+    -   Committed and pushed changes to Railway for production deployment.

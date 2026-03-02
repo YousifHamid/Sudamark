@@ -4,6 +4,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as Haptics from "expo-haptics";
 import React, { useMemo, useState } from "react";
 import {
+  Alert,
   FlatList,
   Modal,
   Pressable,
@@ -36,7 +37,7 @@ export default function SearchScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<SearchScreenRouteProp>();
-  const { cars, favorites } = useCars();
+  const { cars, favorites, toggleSold, deleteCar } = useCars();
   const { user } = useAuth();
 
   const isSpecialCategory =
@@ -152,6 +153,35 @@ export default function SearchScreen() {
     setTempMinPrice("");
     setTempMaxPrice("");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  };
+
+  const handleToggleSold = async (id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const success = await toggleSold(id);
+    if (!success) {
+      Alert.alert(t("error"), isRTL ? "فشل تحديث الحالة" : "Failed to update status");
+    }
+  };
+
+  const handleDeleteListing = (id: string) => {
+    Alert.alert(
+      t("deleteListing"),
+      t("deleteConfirm"),
+      [
+        { text: t("cancel"), style: "cancel" },
+        {
+          text: t("deleteListing"),
+          style: "destructive",
+          onPress: async () => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            const success = await deleteCar(id);
+            if (!success) {
+              Alert.alert(t("error"), isRTL ? "فشل حذف الإعلان" : "Failed to delete listing");
+            }
+          },
+        },
+      ],
+    );
   };
 
   const FilterChip = ({
@@ -286,6 +316,8 @@ export default function SearchScreen() {
           <CarCard
             car={item}
             onPress={() => navigation.navigate("CarDetail", { carId: item.id })}
+            onToggleSold={specialMode === "my-listings" ? () => handleToggleSold(item.id) : undefined}
+            onDelete={specialMode === "my-listings" ? () => handleDeleteListing(item.id) : undefined}
           />
         )}
         ListEmptyComponent={

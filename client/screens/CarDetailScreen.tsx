@@ -6,7 +6,6 @@ import React, { useCallback, useState } from "react";
 import {
   Alert,
   Dimensions,
-  Image,
   Linking,
   Modal,
   Pressable,
@@ -17,7 +16,16 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { Image, ImageProps } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const AnimatedImage = Animated.createAnimatedComponent<ImageProps>(Image);
 
 import { Button } from "@/components/Button";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
@@ -35,6 +43,49 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 type CarDetailRouteProp = RouteProp<RootStackParamList, "CarDetail">;
 
+function PinchableImage({ uri }: { uri: string }) {
+  const scale = useSharedValue(1);
+  const focalX = useSharedValue(0);
+  const focalY = useSharedValue(0);
+
+  const pinchGesture = Gesture.Pinch()
+    .onBegin((event) => {
+      focalX.value = event.focalX;
+      focalY.value = event.focalY;
+    })
+    .onUpdate((event) => {
+      scale.value = event.scale;
+    })
+    .onEnd(() => {
+      scale.value = withTiming(1);
+    });
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: focalX.value },
+        { translateY: focalY.value },
+        { scale: scale.value },
+        { translateX: -focalX.value },
+        { translateY: -focalY.value },
+      ],
+    };
+  });
+
+  return (
+    <GestureDetector gesture={pinchGesture}>
+      <Animated.View style={styles.imageWrapper}>
+        <AnimatedImage
+          source={{ uri }}
+          style={[styles.image, animatedStyle]}
+          contentFit="cover"
+          transition={200}
+        />
+      </Animated.View>
+    </GestureDetector>
+  );
+}
+
 export default function CarDetailScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
@@ -42,7 +93,7 @@ export default function CarDetailScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<CarDetailRouteProp>();
-  const { cars, toggleFavorite, isFavorite, refreshCars } = useCars();
+  const { cars, toggleFavorite, isFavorite, refreshCars, toggleSold, deleteCar } = useCars();
   const { token, user, isGuest, logout } = useAuth();
 
   const car = cars.find((c) => c.id === route.params.carId);
@@ -290,6 +341,37 @@ https://www.facebook.com/share/1C9L8wmK7d/`;
     }
   };
 
+  const handleToggleSold = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const success = await toggleSold(car.id);
+    if (!success) {
+      Alert.alert(t("error"), isRTL ? "فشل تحديث حالة البيع" : "Failed to update sold status");
+    }
+  };
+
+  const handleDeleteListing = () => {
+    Alert.alert(
+      t("deleteListing"),
+      t("deleteConfirm"),
+      [
+        { text: t("cancel"), style: "cancel" },
+        {
+          text: t("deleteListing"),
+          style: "destructive",
+          onPress: async () => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            const success = await deleteCar(car.id);
+            if (success) {
+              navigation.goBack();
+            } else {
+              Alert.alert(t("error"), isRTL ? "فشل حذف الإعلان" : "Failed to delete listing");
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const specs = [
     { labelKey: "year", value: car.year.toString(), icon: "calendar" as const },
     {
@@ -329,15 +411,11 @@ https://www.facebook.com/share/1C9L8wmK7d/`;
             }}
           >
             {car.images.map((uri, index) => (
-              <Image
+              <PinchableImage
                 key={index}
-                source={{
-                  uri: uri?.startsWith("http")
-                    ? uri
-                    : `${require("@/lib/query-client").getApiUrl().replace(/\/$/, "")}${uri}`
-                }}
-                style={styles.image}
-                resizeMode="cover"
+                uri={uri?.startsWith("http")
+                  ? uri
+                  : `${require("@/lib/query-client").getApiUrl().replace(/\/$/, "")}${uri}`}
               />
             ))}
           </ScrollView>
@@ -357,55 +435,19 @@ https://www.facebook.com/share/1C9L8wmK7d/`;
               />
             ))}
           </View>
+          {car.isSold && (
+            <View style={[styles.soldOverlayBadge, isRTL ? { right: Spacing.lg } : { left: Spacing.lg }]}>
+              <ThemedText style={styles.soldBadgeText}>
+                {t("sold")}
+              </ThemedText>
+            </View>
+          )}
           <Pressable
             style={[styles.closeButton, { top: insets.top + Spacing.sm }]}
             onPress={() => navigation.goBack()}
           >
             <Feather name="x" size={24} color="#FFFFFF" />
           </Pressable>
-          <View
-            style={[styles.headerActions, { top: insets.top + Spacing.sm }]}
-          >
-            <Pressable
-              style={styles.headerActionButton}
-              onPress={() => {
-                if (isGuest) {
-                  Alert.alert(
-                    t("loginRequired"),
-                    t("mustLoginToReport"),
-                    [
-                      { text: t("cancel"), style: "cancel" },
-                      { text: t("login"), onPress: () => logout() }
-                    ]
-                  );
-                  return;
-                }
-                navigation.navigate("Report", {
-                  userId: car.sellerId,
-                  targetId: car.id,
-                  targetType: "car",
-                  targetName: car.title
-                });
-              }
-              }
-            >
-              <Feather name="flag" size={20} color="#EF4444" />
-            </Pressable>
-            <Pressable style={styles.headerActionButton} onPress={handleShare}>
-              <Feather name="share" size={20} color="#FFFFFF" />
-            </Pressable>
-            <Pressable
-              style={styles.headerActionButton}
-              onPress={handleFavorite}
-            >
-              <Feather
-                name="heart"
-                size={20}
-                color={isLiked ? "#EF4444" : "#FFFFFF"}
-                fill={isLiked ? "#EF4444" : "transparent"}
-              />
-            </Pressable>
-          </View>
         </View>
 
         <View style={[styles.content, { backgroundColor: theme.backgroundRoot, marginTop: -30, borderTopLeftRadius: 30, borderTopRightRadius: 30, paddingTop: Spacing.xl }]}>
@@ -418,32 +460,81 @@ https://www.facebook.com/share/1C9L8wmK7d/`;
               borderColor: theme.border,
             }}
           >
-            <View style={[styles.priceRow, { marginBottom: Spacing.xs }]}>
-              <ThemedText type="h2" style={{ color: theme.primary }}>
-                {car.price.toLocaleString()} {t("sdg")}
-              </ThemedText>
+            <View style={[styles.infoBoxRow, isRTL && { flexDirection: 'row-reverse' }]}>
+              {/* Column 1: Price and Title */}
+              <View style={[styles.priceTitleColumn, isRTL && { alignItems: 'flex-end' }]}>
+                <ThemedText type="h2" style={{ color: theme.primary }}>
+                  {car.price.toLocaleString()} {t("sdg")}
+                </ThemedText>
+                <ThemedText type="h3" style={[styles.title, { marginTop: Spacing.xs, marginBottom: 0 }, isRTL && styles.rtlText]}>
+                  {car.title}
+                </ThemedText>
+              </View>
+
+              {/* Column 2: Icons and City */}
+              <View style={[styles.iconsCityColumn, isRTL && { alignItems: 'flex-start' }]}>
+                <View style={styles.inlineActions}>
+                  <Pressable
+                    style={styles.inlineActionButton}
+                    onPress={() => {
+                      if (isGuest) {
+                        Alert.alert(
+                          t("loginRequired"),
+                          t("mustLoginToReport"),
+                          [
+                            { text: t("cancel"), style: "cancel" },
+                            { text: t("login"), onPress: () => logout() }
+                          ]
+                        );
+                        return;
+                      }
+                      navigation.navigate("Report", {
+                        userId: car.sellerId,
+                        targetId: car.id,
+                        targetType: "car",
+                        targetName: car.title
+                      });
+                    }}
+                  >
+                    <Feather name="flag" size={18} color="#EF4444" />
+                  </Pressable>
+
+                  <Pressable style={styles.inlineActionButton} onPress={handleShare}>
+                    <Feather name="share" size={18} color={theme.text} />
+                  </Pressable>
+
+                  <Pressable
+                    style={styles.inlineActionButton}
+                    onPress={handleFavorite}
+                  >
+                    <Feather
+                      name="heart"
+                      size={18}
+                      color={isLiked ? "#EF4444" : theme.text}
+                      fill={isLiked ? "#EF4444" : "transparent"}
+                    />
+                  </Pressable>
+                </View>
+
+                <View style={[styles.locationRowInInfo, { marginTop: Spacing.sm }, isRTL && { flexDirection: 'row-reverse' }]}>
+                  <Feather name="map-pin" size={12} color={theme.textSecondary} />
+                  <ThemedText
+                    type="small"
+                    style={[
+                      {
+                        color: theme.textSecondary,
+                        marginLeft: isRTL ? 0 : 4,
+                        marginRight: isRTL ? 4 : 0,
+                      },
+                      isRTL && styles.rtlText,
+                    ]}
+                  >
+                    {t(CITIES.find((c) => c.id === car.city)?.labelKey || car.city)}
+                  </ThemedText>
+                </View>
+              </View>
             </View>
 
-            <ThemedText type="h3" style={[styles.title, { marginTop: 0, marginBottom: Spacing.xs }, isRTL && styles.rtlText]}>
-              {car.title}
-            </ThemedText>
-
-            <View style={[styles.locationRow, { marginTop: 0 }]}>
-              <Feather name="map-pin" size={16} color={theme.textSecondary} />
-              <ThemedText
-                type="small"
-                style={[
-                  {
-                    color: theme.textSecondary,
-                    marginLeft: isRTL ? Spacing.xs : 4,
-                    marginRight: isRTL ? Spacing.xs : 4,
-                  },
-                  isRTL && styles.rtlText,
-                ]}
-              >
-                {t(CITIES.find((c) => c.id === car.city)?.labelKey || car.city)}
-              </ThemedText>
-            </View>
           </View>
 
           <View
@@ -592,7 +683,7 @@ https://www.facebook.com/share/1C9L8wmK7d/`;
             </View>
           </View>
         </View>
-      </ScrollView>
+      </ScrollView >
 
       <View
         style={[
@@ -604,35 +695,32 @@ https://www.facebook.com/share/1C9L8wmK7d/`;
         ]}
       >
         {isOwnCar ? (
-          <Button onPress={() => navigation.navigate("PostCar", { carData: car })} style={styles.contactButton}>
-            {isRTL ? "تعديل الإعلان" : "Edit Listing"}
-          </Button>
+          <View style={styles.ownerActionsRow}>
+            <Button
+              onPress={() => navigation.navigate("PostCar", { carData: car })}
+              style={[styles.ownerActionButton, { flex: 2 }]}
+              variant="outline"
+            >
+              {isRTL ? "تعديل" : "Edit"}
+            </Button>
+            <Button
+              onPress={handleToggleSold}
+              style={[styles.ownerActionButton, { flex: 3 }, car.isSold && { backgroundColor: theme.success }]}
+            >
+              {car.isSold ? t("markAsAvailable") : t("markAsSold")}
+            </Button>
+            <Pressable
+              onPress={handleDeleteListing}
+              style={[styles.deleteIconButton, { backgroundColor: theme.error + "15" }]}
+            >
+              <Feather name="trash-2" size={20} color={theme.error} />
+            </Pressable>
+          </View>
         ) : (
           <>
             <Button onPress={handleMakeOffer} style={styles.contactButton}>
-              {isRTL ? "تقديم عرض" : "Make Offer"}
+              {car.isSold ? (isRTL ? "تم البيع" : "Sold") : (isRTL ? "تقديم عرض" : "Make Offer")}
             </Button>
-            {/* <Pressable
-              style={[
-                styles.inspectionButton,
-                { backgroundColor: theme.backgroundSecondary },
-              ]}
-              onPress={handleRequestInspection}
-            >
-              <Feather name="clipboard" size={20} color={theme.primary} />
-              <ThemedText
-                style={[
-                  {
-                    color: theme.primary,
-                    marginLeft: isRTL ? 0 : Spacing.sm,
-                    marginRight: isRTL ? Spacing.sm : 0,
-                  },
-                  isRTL && styles.rtlText,
-                ]}
-              >
-                {t("requestInspection")}
-              </ThemedText>
-            </Pressable> */}
           </>
         )}
       </View>
@@ -750,7 +838,7 @@ https://www.facebook.com/share/1C9L8wmK7d/`;
           </Pressable>
         </Pressable>
       </Modal>
-    </View>
+    </View >
   );
 }
 
@@ -764,9 +852,14 @@ const styles = StyleSheet.create({
   imageContainer: {
     position: "relative",
   },
-  image: {
+  imageWrapper: {
     width: SCREEN_WIDTH,
     height: SCREEN_WIDTH * 0.75,
+    overflow: "hidden",
+  },
+  image: {
+    width: "100%",
+    height: "100%",
   },
   imageIndicators: {
     position: "absolute",
@@ -814,8 +907,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  priceRowRTL: {
-    flexDirection: "row-reverse",
+  inlineActions: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+    alignItems: "center",
+  },
+  inlineActionButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(0,0,0,0.05)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   offerBadge: {
     flexDirection: "row",
@@ -827,13 +930,22 @@ const styles = StyleSheet.create({
   title: {
     marginTop: Spacing.sm,
   },
-  locationRow: {
+  infoBoxRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    width: "100%",
+  },
+  priceTitleColumn: {
+    flex: 1,
+    alignItems: "flex-start",
+  },
+  iconsCityColumn: {
+    alignItems: "flex-end",
+  },
+  locationRowInInfo: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: Spacing.sm,
-  },
-  locationRowRTL: {
-    flexDirection: "row-reverse",
   },
   specsGrid: {
     flexDirection: "row",
@@ -947,6 +1059,7 @@ const styles = StyleSheet.create({
   },
   rtlText: {
     writingDirection: "rtl",
+    textAlign: "right",
   },
   modalOverlay: {
     flex: 1,
@@ -974,9 +1087,38 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.lg,
   },
   carSummary: {
-    padding: Spacing.md,
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    marginLeft: Spacing.sm,
+  },
+  ownerActionsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  ownerActionButton: {
+    height: 48,
+  },
+  deleteIconButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  soldOverlayBadge: {
+    position: "absolute",
+    top: 60,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: BorderRadius.md,
-    marginBottom: Spacing.lg,
+    zIndex: 10,
+  },
+  soldBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "bold",
   },
   inputGroup: {
     marginBottom: Spacing.lg,

@@ -16,4 +16,8 @@
 5.  **Request**: "build aab production" (and resolving failed build commands)
     -   **Resolved**: Analyzed `eas.json` to identify that the command `eas build -p android --profile production-aab` failed because the profile name was incorrect. Confirmed that the correct command is `eas build -p android --profile production` (which is configured for `app-bundle`).
 
+6.  **Request**: "Implement Push Notifications"
+    -   **Resolved**: Full end-to-end implementation including database schema updates, Expo Push API integration on the server, a new "Notifications" control panel in the Admin Dashboard, and a safe registration hook on the mobile app.
 
+7.  **Request**: "Prepare version 14 for Google Play"
+    -   **Resolved**: Incremented version to 1.1.3 and Build Number/Version Code to 14. Synchronized all local changes with the production server on Railway.

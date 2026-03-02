@@ -50,12 +50,15 @@ export interface Car {
   seatType?: string;
   transmission?: string;
   isFeatured?: boolean;
+  isSold?: boolean;
 }
 
 interface CarCardProps {
   car: Car;
   onPress: () => void;
   horizontal?: boolean;
+  onToggleSold?: () => void;
+  onDelete?: () => void;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -71,7 +74,13 @@ const springConfig: WithSpringConfig = {
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export function CarCard({ car, onPress, horizontal = false }: CarCardProps) {
+export function CarCard({
+  car,
+  onPress,
+  horizontal = false,
+  onToggleSold,
+  onDelete
+}: CarCardProps) {
   const { theme } = useTheme();
   const { t, isRTL } = useLanguage();
   const scale = useSharedValue(1);
@@ -128,6 +137,13 @@ export function CarCard({ car, onPress, horizontal = false }: CarCardProps) {
             </ThemedText>
           </View>
         )}
+        {car.isSold && (
+          <View style={[styles.soldBadge, isRTL ? styles.soldBadgeLTR : styles.soldBadgeRTL]}>
+            <ThemedText style={styles.soldText}>
+              {isRTL ? "تم البيع" : "SOLD"}
+            </ThemedText>
+          </View>
+        )}
       </View>
       <View style={styles.content}>
         <ThemedText
@@ -177,6 +193,51 @@ export function CarCard({ car, onPress, horizontal = false }: CarCardProps) {
             </ThemedText>
           </View>
         </View>
+
+        {(onToggleSold || onDelete) && (
+          <View style={[styles.managementActions, { borderTopColor: theme.border }]}>
+            {onToggleSold && (
+              <Pressable
+                onPress={(e) => {
+                  e.stopPropagation();
+                  onToggleSold();
+                }}
+                style={[
+                  styles.manageButton,
+                  { backgroundColor: car.isSold ? theme.success + '15' : theme.primary + '15' }
+                ]}
+              >
+                <Feather
+                  name={car.isSold ? "check-circle" : "dollar-sign"}
+                  size={14}
+                  color={car.isSold ? theme.success : theme.primary}
+                />
+                <ThemedText
+                  type="small"
+                  style={{
+                    color: car.isSold ? theme.success : theme.primary,
+                    marginLeft: 4,
+                    fontSize: 10,
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {car.isSold ? (isRTL ? "متاح" : "Available") : (isRTL ? "تم البيع" : "Sold")}
+                </ThemedText>
+              </Pressable>
+            )}
+            {onDelete && (
+              <Pressable
+                onPress={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                style={[styles.manageButton, { backgroundColor: theme.error + '10', width: 36, paddingHorizontal: 0 }]}
+              >
+                <Feather name="trash-2" size={14} color={theme.error} />
+              </Pressable>
+            )}
+          </View>
+        )}
       </View>
     </AnimatedPressable>
   );
@@ -229,5 +290,43 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 12,
     fontWeight: "bold",
+  },
+  soldBadge: {
+    position: "absolute",
+    top: 10,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    zIndex: 1,
+  },
+  soldBadgeLTR: {
+    right: 10,
+  },
+  soldBadgeRTL: {
+    left: 10,
+  },
+  soldText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  managementActions: {
+    flexDirection: 'row',
+    marginTop: Spacing.md,
+    paddingTop: Spacing.sm,
+    borderTopWidth: 1,
+    gap: Spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  manageButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: BorderRadius.sm,
   },
 });

@@ -33,6 +33,7 @@ interface CarsContextType {
   isFavorite: (carId: string) => boolean;
   refreshCars: () => Promise<void>;
   searchCars: (filters: CarFilters) => Promise<Car[]>;
+  toggleSold: (id: string) => Promise<boolean>;
 }
 
 export interface CarFilters {
@@ -104,6 +105,7 @@ export function CarsProvider({ children }: { children: ReactNode }) {
             insuranceType: car.insuranceType,
             advertiserType: car.advertiserType,
             isFeatured: car.isFeatured,
+            isSold: car.isSold,
             createdAt: car.createdAt,
           }));
           setCars(formattedCars);
@@ -158,6 +160,7 @@ export function CarsProvider({ children }: { children: ReactNode }) {
           insuranceType: car.insuranceType,
           advertiserType: car.advertiserType,
           isFeatured: car.isFeatured,
+          isSold: car.isSold,
           createdAt: car.createdAt,
         }));
         setFeaturedCars(formattedFeatured);
@@ -311,6 +314,7 @@ export function CarsProvider({ children }: { children: ReactNode }) {
         insuranceType: newCar.insuranceType,
         advertiserType: newCar.advertiserType,
         isFeatured: newCar.isFeatured,
+        isSold: newCar.isSold,
         engineSize: newCar.engineSize,
         color: newCar.color,
         seats: newCar.seats,
@@ -459,6 +463,7 @@ export function CarsProvider({ children }: { children: ReactNode }) {
           insuranceType: car.insuranceType,
           advertiserType: car.advertiserType,
           isFeatured: car.isFeatured,
+          isSold: car.isSold,
           createdAt: car.createdAt,
         }));
       }
@@ -514,6 +519,22 @@ export function CarsProvider({ children }: { children: ReactNode }) {
 
   const isFavorite = (carId: string) => favorites.includes(carId);
 
+  const toggleSold = async (id: string): Promise<boolean> => {
+    try {
+      const response = await apiRequest("PATCH", `/api/cars/${id}/toggle-sold`);
+      const updatedCar = await response.json();
+
+      // Update local state
+      setCars((prev) => prev.map(c => c.id === id ? { ...c, isSold: updatedCar.isSold } : c));
+      setFeaturedCars((prev) => prev.map(c => c.id === id ? { ...c, isSold: updatedCar.isSold } : c));
+
+      return true;
+    } catch (error) {
+      console.error("Error toggling sold status:", error);
+      return false;
+    }
+  };
+
   return (
     <CarsContext.Provider
       value={{
@@ -529,6 +550,7 @@ export function CarsProvider({ children }: { children: ReactNode }) {
         isFavorite,
         refreshCars,
         searchCars,
+        toggleSold,
       }}
     >
       {children}
