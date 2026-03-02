@@ -17,6 +17,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CarsProvider } from "@/hooks/useCars";
 import { ServiceProvidersProvider } from "@/hooks/useServiceProviders";
+import { NotificationHandler } from "@/components/NotificationHandler";
 import RootStackNavigator from "@/navigation/RootStackNavigator";
 
 export default function App() {
@@ -36,6 +37,7 @@ export default function App() {
             <CarsProvider>
               <ServiceProvidersProvider>
                 <SafeAreaProvider>
+                  <NotificationHandler />
                   <GestureHandlerRootView style={styles.root}>
                     <KeyboardProvider>
                       <NavigationContainer>

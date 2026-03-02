@@ -238,6 +238,33 @@ function adminAuthMiddleware(
   }
 }
 
+// Push Notification Helper
+async function sendPushNotification(expoPushTokens: string[], title: string, body: string, data: any = {}) {
+  const messages = expoPushTokens.map(token => ({
+    to: token,
+    sound: 'default',
+    title,
+    body,
+    data,
+  }));
+
+  try {
+    const response = await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(messages),
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Error sending push notification:', error);
+    return null;
+  }
+}
+
 async function ensureDefaultAdmin() {
   try {
     const [existingAdmin] = await db
@@ -2951,6 +2978,76 @@ For privacy inquiries: privacy@arabaty.app
       res.json({ message: "Report deleted" });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete report" });
+    }
+  });
+
+  // --- Push Notification Routes ---
+
+  app.post("/api/notifications/register-token", optionalAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { token, isAdmin } = req.body;
+      if (!token) return res.status(400).json({ error: "Token required" });
+
+      if (req.user) {
+        await db.update(users).set({ pushToken: token }).where(eq(users.id, req.user.id));
+      } else if (isAdmin && req.headers.authorization) {
+        // Simple admin token check without full middleware for registration
+        try {
+          const authHeader = req.headers.authorization;
+          const adminToken = authHeader.substring(7);
+          const decoded = jwt.verify(adminToken, JWT_SECRET) as any;
+          if (decoded.isAdmin) {
+            await db.update(admins).set({ pushToken: token }).where(eq(admins.id, decoded.id));
+          }
+        } catch (e) { }
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to register token" });
+    }
+  });
+
+  app.post("/api/notifications/send", adminAuthMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+      const { title, body, targetType, targetId } = req.body;
+      let tokens: string[] = [];
+
+      if (targetType === 'all') {
+        const allUsers = await db.select({ token: users.pushToken }).from(users).where(sql`${users.pushToken} IS NOT NULL`);
+        tokens = allUsers.map(u => u.token!).filter(t => t.startsWith('ExponentPushToken'));
+      } else if (targetType === 'user' && targetId) {
+        const [user] = await db.select({ token: users.pushToken }).from(users).where(eq(users.id, targetId));
+        if (user?.token) tokens = [user.token];
+      }
+
+      if (tokens.length === 0) {
+        return res.status(400).json({ error: "No target tokens found" });
+      }
+
+      const result = await sendPushNotification(tokens, title, body);
+
+      // Log to DB
+      await db.insert(notifications).values({
+        title,
+        body,
+        targetType,
+        targetId: targetId || null,
+        status: result ? 'sent' : 'failed'
+      });
+
+      res.json({ success: true, result });
+    } catch (error) {
+      console.error("Send notification error:", error);
+      res.status(500).json({ error: "Failed to send notification" });
+    }
+  });
+
+  app.get("/api/notifications/history", adminAuthMiddleware, async (_req: AuthRequest, res: Response) => {
+    try {
+      const history = await db.select().from(notifications).orderBy(desc(notifications.sentAt)).limit(50);
+      res.json(history);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch history" });
     }
   });
 

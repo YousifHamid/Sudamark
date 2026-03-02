@@ -29,7 +29,7 @@
           "mailto"
         ]
       },
-      "buildNumber": "12"
+      "buildNumber": "13"
     },
     "android": {
       "package": "com.sudamark.app",
@@ -39,7 +39,7 @@
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE"
       ],
-      "versionCode": 12
+      "versionCode": 13
     },
     "web": {
       "output": "single",

@@ -24,6 +24,7 @@ export const admins = pgTable("admins", {
     .default(sql`'[]'::jsonb`),
   isActive: boolean("is_active").default(true),
   lastSeen: timestamp("last_seen"),
+  pushToken: text("push_token"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -59,6 +60,7 @@ export const users = pgTable("users", {
   avatar: text("avatar"),
   latitude: text("latitude"),
   longitude: text("longitude"),
+  pushToken: text("push_token"),
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -451,6 +453,26 @@ export const serviceCategories = pgTable("service_categories", {
   icon: text("icon").default("tool"), // Feather icon name
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const notifications = pgTable("notifications", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  targetType: text("target_type").notNull(), // 'all', 'user', 'topic'
+  targetId: text("target_id"), // userId if personal
+  sentAt: timestamp("sent_at").defaultNow().notNull(),
+  status: text("status").default("sent"), // sent, failed
+});
+
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  sentAt: true,
+});
+
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type Notification = typeof notifications.$inferSelect;
 
 export const insertServiceCategorySchema = createInsertSchema(serviceCategories).omit({
   id: true,

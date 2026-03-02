@@ -104,6 +104,8 @@
             class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">فئات الخدمات</button>
           <button onclick="showTab('reports')" id="btn-reports"
             class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-red-400">البلاغات</button>
+          <button onclick="showTab('notifications')" id="btn-notifications"
+            class="tab-btn px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">الإشعارات</button>
         </div>
 
         <div id="users-tab" class="tab-content hidden">
@@ -281,21 +283,69 @@
         </div>
       </div>
 
-      <div id="reports-tab" class="tab-content hidden">
-        <div class="glass rounded-xl border border-gray-700 overflow-hidden overflow-x-auto">
-          <table class="w-full">
-            <thead class="bg-gray-800">
-              <tr>
-                <th class="p-4 text-right">المبلغ (Reporter)</th>
-                <th class="p-4 text-right">النوع</th>
-                <th class="p-4 text-right">السبب</th>
-                <th class="p-4 text-right">التفاصيل</th>
-                <th class="p-4 text-right">التاريخ</th>
-                <th class="p-4 text-right">الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody id="reports-table"></tbody>
-          </table>
+      <div id="notifications-tab" class="tab-content hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Send Notification Form -->
+          <div class="lg:col-span-1">
+            <div class="glass rounded-xl p-6 border border-gray-700">
+              <h3 class="text-xl font-bold mb-4 text-orange-500">إرسال إشعار جديد</h3>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-gray-400 text-sm mb-1">العنوان</label>
+                  <input type="text" id="notif-title" placeholder="عنوان الإشعار"
+                    class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+                </div>
+                <div>
+                  <label class="block text-gray-400 text-sm mb-1">نص الرسالة</label>
+                  <textarea id="notif-body" placeholder="محتوى الإشعار" rows="3"
+                    class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3"></textarea>
+                </div>
+                <div>
+                  <label class="block text-gray-400 text-sm mb-1">المستهدفون</label>
+                  <select id="notif-target" onchange="toggleNotifTarget()"
+                    class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+                    <option value="all">الكل (جميع المستخدمين)</option>
+                    <option value="user">مستخدم محدد (رقم الهاتف)</option>
+                  </select>
+                </div>
+                <div id="notif-phone-group" class="hidden">
+                  <label class="block text-gray-400 text-sm mb-1">رقم الهاتف</label>
+                  <input type="text" id="notif-phone" placeholder="0912345678"
+                    class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3">
+                </div>
+                <button onclick="sendNotification()" id="btn-send-notif"
+                  class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition flex items-center justify-center gap-2">
+                  <span id="send-notif-spinner"
+                    class="hidden animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+                  إرسال الآن
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notification History -->
+          <div class="lg:col-span-2">
+            <div class="glass rounded-xl border border-gray-700 overflow-hidden">
+              <div class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
+                <h3 class="font-bold">سجل الإشعارات المرسلة</h3>
+                <button onclick="loadNotifHistory()" class="text-gray-400 hover:text-white"><i
+                    class="fas fa-sync-alt"></i></button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-gray-800/50">
+                    <tr>
+                      <th class="p-4 text-right">العنوان / النص</th>
+                      <th class="p-4 text-right">المستهدف</th>
+                      <th class="p-4 text-right">الحالة</th>
+                      <th class="p-4 text-right">التاريخ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="notif-history-table"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -715,7 +765,8 @@
         'slider': loadSlider,
         'employees': loadEmployees,
         'service-categories': loadServiceCategories,
-        'reports': loadReports
+        'reports': loadReports,
+        'notifications': loadNotifHistory
       };
 
       if (loadActions[currentActiveTab]) {
@@ -740,7 +791,8 @@
         'slider': loadSlider,
         'employees': loadEmployees,
         'service-categories': loadServiceCategories,
-        'reports': loadReports
+        'reports': loadReports,
+        'notifications': loadNotifHistory
       };
 
       if (loadActions[tab]) {
@@ -794,6 +846,89 @@
       } catch (err) {
         alert('فشل حذف البلاغ');
         console.error(err);
+      }
+    }
+
+    // --- Notifications Logic ---
+    function toggleNotifTarget() {
+      const target = document.getElementById('notif-target').value;
+      const phoneGroup = document.getElementById('notif-phone-group');
+      if (target === 'user') phoneGroup.classList.remove('hidden');
+      else phoneGroup.classList.add('hidden');
+    }
+
+    async function sendNotification() {
+      const title = document.getElementById('notif-title').value;
+      const body = document.getElementById('notif-body').value;
+      const targetType = document.getElementById('notif-target').value;
+      const phone = document.getElementById('notif-phone').value;
+      const btn = document.getElementById('btn-send-notif');
+      const spinner = document.getElementById('send-notif-spinner');
+
+      if (!title || !body) return alert('يرجى إدخال العنوان والنص');
+
+      let targetId = null;
+      if (targetType === 'user') {
+        if (!phone) return alert('يرجى إدخال رقم الهاتف');
+        // Find user by phone in window.usersData
+        const user = window.usersData?.find(u => u.phone === phone);
+        if (!user) return alert('المستخدم غير موجود بهذا الرقم');
+        targetId = user.id;
+      }
+
+      try {
+        btn.disabled = true;
+        spinner.classList.remove('hidden');
+        await api('/api/notifications/send', {
+          method: 'POST',
+          body: JSON.stringify({ title, body, targetType, targetId })
+        });
+        alert('تم إرسال الإشعار بنجاح');
+        document.getElementById('notif-title').value = '';
+        document.getElementById('notif-body').value = '';
+        loadNotifHistory();
+      } catch (err) {
+        alert('حدث خطأ: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        spinner.classList.add('hidden');
+      }
+    }
+
+    async function loadNotifHistory() {
+      try {
+        // Ensure users are loaded for mapping if needed, but the backend doesn't return user names in history yet
+        // If needed, we can call loadUsers() first.
+        if (!window.usersData) await loadUsers();
+
+        const history = await api('/api/notifications/history');
+        const tbody = document.getElementById('notif-history-table');
+        if (history.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-400">لا يوجد سجل إشعارات</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = history.map(n => {
+          let target = 'الكل';
+          if (n.targetType === 'user') {
+            const user = window.usersData?.find(u => u.id === n.targetId);
+            target = user ? user.name : 'مستخدم محدد';
+          }
+          const statusColor = n.status === 'sent' ? 'text-green-400' : 'text-red-400';
+          return `
+            <tr class="border-t border-gray-700 hover:bg-white/5 transition-colors text-sm">
+              <td class="p-4">
+                <div class="font-bold text-gray-200">${n.title}</div>
+                <div class="text-xs text-gray-400 mt-1">${n.body}</div>
+              </td>
+              <td class="p-4 text-gray-300">${target}</td>
+              <td class="p-4 ${statusColor}">${n.status === 'sent' ? 'تم الإرسال' : 'فشل'}</td>
+              <td class="p-4 text-gray-400 text-xs">${new Date(n.sentAt).toLocaleString('ar')}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Failed to load history:', err);
       }
     }
 
@@ -1202,7 +1337,8 @@
         'providers': document.querySelector('button[onclick="showTab(\'providers\')"]'),
         'payments': document.querySelector('button[onclick="showTab(\'payments\')"]'),
         'slider': document.getElementById('btn-slider'),
-        'employees': document.getElementById('btn-employees')
+        'employees': document.getElementById('btn-employees'),
+        'notifications': document.getElementById('btn-notifications')
       };
 
       // Reset visibility
