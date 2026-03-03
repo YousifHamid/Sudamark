@@ -705,6 +705,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(featuredCars);
     } catch (error) {
+      console.error("Featured cars error:", error);
       res.status(500).json({ error: "Failed to fetch featured cars" });
     }
   });
@@ -3071,7 +3072,7 @@ For privacy inquiries: privacy@arabaty.app
       res.json({ success: true, result });
     } catch (error) {
       console.error("Send notification error:", error);
-      res.status(500).json({ error: "Failed to send notification" });
+      res.status(500).json({ error: `Failed to send notification: ${error instanceof Error ? error.message : "Unknown error"}` });
     }
   });
 

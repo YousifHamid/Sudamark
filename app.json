@@ -2,13 +2,13 @@
   "expo": {
     "name": "Sudamark",
     "slug": "sudamark",
-    "version": "1.1.3",
+    "version": "1.1.4",
     "orientation": "portrait",
     "icon": "./assets/images/app-icon.png",
     "splash": {
-      "image": "./assets/images/icon.png",
+      "image": "./assets/images/Intro.jpeg",
       "resizeMode": "contain",
-      "backgroundColor": "#111827"
+      "backgroundColor": "#FFFFFF"
     },
     "scheme": "sudamark",
     "userInterfaceStyle": "automatic",
@@ -29,7 +29,7 @@
           "mailto"
         ]
       },
-      "buildNumber": "14"
+      "buildNumber": "15"
     },
     "android": {
       "package": "com.sudamark.app",
@@ -39,7 +39,7 @@
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE"
       ],
-      "versionCode": 14
+      "versionCode": 15
     },
     "web": {
       "output": "single",
@@ -49,11 +49,11 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/icon.png",
+          "image": "./assets/images/Intro.jpeg",
           "resizeMode": "contain",
-          "backgroundColor": "#111827",
+          "backgroundColor": "#FFFFFF",
           "dark": {
-            "backgroundColor": "#111827"
+            "backgroundColor": "#FFFFFF"
           }
         }
       ],

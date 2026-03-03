@@ -155,7 +155,7 @@ export function CarCard({
         </ThemedText>
         <ThemedText
           type="h4"
-          style={{ color: theme.text }} // Changed from theme.primary to theme.text as per user request
+          style={{ color: theme.text }}
         >
           {car.price.toLocaleString()} {t("sdg")}
         </ThemedText>
@@ -221,7 +221,7 @@ export function CarCard({
                     fontWeight: 'bold'
                   }}
                 >
-                  {car.isSold ? (isRTL ? "متاح" : "Available") : (isRTL ? "تم البيع" : "Sold")}
+                  {car.isSold ? t("markAsAvailable") : t("markAsSold")}
                 </ThemedText>
               </Pressable>
             )}
@@ -231,7 +231,7 @@ export function CarCard({
                   e.stopPropagation();
                   onDelete();
                 }}
-                style={[styles.manageButton, { backgroundColor: theme.error + '10', width: 36, paddingHorizontal: 0 }]}
+                style={[styles.manageButton, { flex: 0, backgroundColor: theme.error + '10', width: 36, paddingHorizontal: 0 }]}
               >
                 <Feather name="trash-2" size={14} color={theme.error} />
               </Pressable>

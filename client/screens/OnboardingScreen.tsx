@@ -62,7 +62,7 @@ export default function OnboardingScreen({
       >
         <View style={styles.logoContainer}>
           <Image
-            source={require("../../assets/images/sudamark_logo.png")}
+            source={require("../../assets/images/Intro.jpeg")}
             style={styles.logo}
             resizeMode="contain"
           />

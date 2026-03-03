@@ -26,9 +26,9 @@ export default function CustomSplashScreen({ onFinish }: CustomSplashScreenProps
         <View style={styles.container}>
             <StatusBar style="light" />
             <Image
-                source={require('../../assets/images/splash.jpeg')}
+                source={require('../../assets/images/Intro.jpeg')}
                 style={styles.image}
-                resizeMode="cover"
+                resizeMode="contain"
             />
         </View>
     );
@@ -37,7 +37,7 @@ export default function CustomSplashScreen({ onFinish }: CustomSplashScreenProps
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#111827',
+        backgroundColor: '#FFFFFF',
     },
     image: {
         width: Dimensions.get('window').width,

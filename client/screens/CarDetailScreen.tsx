@@ -461,60 +461,60 @@ https://www.facebook.com/share/1C9L8wmK7d/`;
             }}
           >
             <View style={[styles.infoBoxRow, isRTL && { flexDirection: 'row-reverse' }]}>
-              {/* Column 1: Price and Title */}
+              {/* Box Content: Price, Title, and Icons integrated */}
               <View style={[styles.priceTitleColumn, isRTL && { alignItems: 'flex-end' }]}>
-                <ThemedText type="h2" style={{ color: theme.primary }}>
-                  {car.price.toLocaleString()} {t("sdg")}
-                </ThemedText>
+                <View style={[styles.priceRow, { width: '100%', justifyContent: 'space-between', alignItems: 'center' }, isRTL && { flexDirection: 'row-reverse' }]}>
+                  <ThemedText type="h2" style={{ color: theme.primary }}>
+                    {car.price.toLocaleString()} {t("sdg")}
+                  </ThemedText>
+
+                  <View style={styles.inlineActions}>
+                    <Pressable
+                      style={styles.inlineActionButton}
+                      onPress={() => {
+                        if (isGuest) {
+                          Alert.alert(
+                            t("loginRequired"),
+                            t("mustLoginToReport"),
+                            [
+                              { text: t("cancel"), style: "cancel" },
+                              { text: t("login"), onPress: () => logout() }
+                            ]
+                          );
+                          return;
+                        }
+                        navigation.navigate("Report", {
+                          userId: car.sellerId,
+                          targetId: car.id,
+                          targetType: "car",
+                          targetName: car.title
+                        });
+                      }}
+                    >
+                      <Feather name="flag" size={18} color="#EF4444" />
+                    </Pressable>
+
+                    <Pressable style={styles.inlineActionButton} onPress={handleShare}>
+                      <Feather name="share" size={18} color={theme.text} />
+                    </Pressable>
+
+                    <Pressable
+                      style={styles.inlineActionButton}
+                      onPress={handleFavorite}
+                    >
+                      <Feather
+                        name="heart"
+                        size={18}
+                        color={isLiked ? "#EF4444" : theme.text}
+                        fill={isLiked ? "#EF4444" : "transparent"}
+                      />
+                    </Pressable>
+                  </View>
+                </View>
+
                 <ThemedText type="h3" style={[styles.title, { marginTop: Spacing.xs, marginBottom: 0 }, isRTL && styles.rtlText]}>
                   {car.title}
                 </ThemedText>
-              </View>
-
-              {/* Column 2: Icons and City */}
-              <View style={[styles.iconsCityColumn, isRTL && { alignItems: 'flex-start' }]}>
-                <View style={styles.inlineActions}>
-                  <Pressable
-                    style={styles.inlineActionButton}
-                    onPress={() => {
-                      if (isGuest) {
-                        Alert.alert(
-                          t("loginRequired"),
-                          t("mustLoginToReport"),
-                          [
-                            { text: t("cancel"), style: "cancel" },
-                            { text: t("login"), onPress: () => logout() }
-                          ]
-                        );
-                        return;
-                      }
-                      navigation.navigate("Report", {
-                        userId: car.sellerId,
-                        targetId: car.id,
-                        targetType: "car",
-                        targetName: car.title
-                      });
-                    }}
-                  >
-                    <Feather name="flag" size={18} color="#EF4444" />
-                  </Pressable>
-
-                  <Pressable style={styles.inlineActionButton} onPress={handleShare}>
-                    <Feather name="share" size={18} color={theme.text} />
-                  </Pressable>
-
-                  <Pressable
-                    style={styles.inlineActionButton}
-                    onPress={handleFavorite}
-                  >
-                    <Feather
-                      name="heart"
-                      size={18}
-                      color={isLiked ? "#EF4444" : theme.text}
-                      fill={isLiked ? "#EF4444" : "transparent"}
-                    />
-                  </Pressable>
-                </View>
 
                 <View style={[styles.locationRowInInfo, { marginTop: Spacing.sm }, isRTL && { flexDirection: 'row-reverse' }]}>
                   <Feather name="map-pin" size={12} color={theme.textSecondary} />
